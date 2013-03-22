@@ -42,8 +42,13 @@
 
 #include "test_precomp.hpp"
 #include <opencv2/viz.hpp>
+#include <q/visualization/window.h>
 
 TEST(Viz_viz3d, accuracy)
 {
-    pcl::visualization::PCLVisualizer v;
+    cv::Window wnd("wind");
+    wnd.spin();
+    //pcl::visualization::PCLVisualizer v;
+
+    //v.spin();
 }

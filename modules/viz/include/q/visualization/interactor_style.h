@@ -144,14 +144,14 @@ namespace pcl
           * \return a connection object that allows to disconnect the callback function.
           */
         boost::signals2::connection 
-        registerMouseCallback (boost::function<void (const pcl::visualization::MouseEvent&)> cb);
+        registerMouseCallback (boost::function<void (const cv::MouseEvent&)> cb);
 
         /** \brief Register a callback boost::function for keyboard events
           * \param[in] cb a boost function that will be registered as a callback for a keyboard event
           * \return a connection object that allows to disconnect the callback function.
           */
         boost::signals2::connection 
-        registerKeyboardCallback (boost::function<void (const pcl::visualization::KeyboardEvent&)> cb);
+        registerKeyboardCallback (boost::function<void (const cv::KeyboardEvent&)> cb);
 
         /** \brief Register a callback function for point picking events
           * \param[in] cb a boost function that will be registered as a callback for a point picking event
@@ -216,8 +216,8 @@ namespace pcl
         /** \brief Internal window to image filter. Needed by \a snapshot_writer_. */
         vtkSmartPointer<vtkWindowToImageFilter> wif_;
 
-        boost::signals2::signal<void (const pcl::visualization::MouseEvent&)> mouse_signal_;
-        boost::signals2::signal<void (const pcl::visualization::KeyboardEvent&)> keyboard_signal_;
+        boost::signals2::signal<void (const cv::MouseEvent&)> mouse_signal_;
+        boost::signals2::signal<void (const cv::KeyboardEvent&)> keyboard_signal_;
         boost::signals2::signal<void (const pcl::visualization::PointPickingEvent&)> point_picking_signal_;
 
         /** \brief Interactor style internal method. Gets called whenever a key is pressed. */

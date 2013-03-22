@@ -72,6 +72,7 @@ endif()
 
 add_definitions(-DHAVE_VTK)
 
+include_directories(src)
 set(the_description "Viz")
 ocv_define_module(viz opencv_core ${PCL_LIBRARIES})
 

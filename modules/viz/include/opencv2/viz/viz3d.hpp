@@ -99,7 +99,7 @@ namespace pcl
           * \return a connection object that allows to disconnect the callback function.
           */
         boost::signals2::connection
-        registerKeyboardCallback (boost::function<void (const pcl::visualization::KeyboardEvent&)> cb);
+        registerKeyboardCallback (boost::function<void (const cv::KeyboardEvent&)> cb);
 
         /** \brief Register a callback function for keyboard events
           * \param[in] callback  the function that will be registered as a callback for a keyboard event
@@ -107,7 +107,7 @@ namespace pcl
           * \return a connection object that allows to disconnect the callback function.
           */
         inline boost::signals2::connection
-        registerKeyboardCallback (void (*callback) (const pcl::visualization::KeyboardEvent&, void*), void* cookie = NULL)
+        registerKeyboardCallback (void (*callback) (const cv::KeyboardEvent&, void*), void* cookie = NULL)
         {
           return (registerKeyboardCallback (boost::bind (callback, _1, cookie)));
         }
@@ -119,7 +119,7 @@ namespace pcl
           * \return a connection object that allows to disconnect the callback function.
           */
         template<typename T> inline boost::signals2::connection
-        registerKeyboardCallback (void (T::*callback) (const pcl::visualization::KeyboardEvent&, void*), T& instance, void* cookie = NULL)
+        registerKeyboardCallback (void (T::*callback) (const cv::KeyboardEvent&, void*), T& instance, void* cookie = NULL)
         {
           return (registerKeyboardCallback (boost::bind (callback,  boost::ref (instance), _1, cookie)));
         }
@@ -129,7 +129,7 @@ namespace pcl
           * \return a connection object that allows to disconnect the callback function.
           */
         boost::signals2::connection
-        registerMouseCallback (boost::function<void (const pcl::visualization::MouseEvent&)> cb);
+        registerMouseCallback (boost::function<void (const cv::MouseEvent&)> cb);
 
         /** \brief Register a callback function for mouse events
           * \param[in] callback  the function that will be registered as a callback for a mouse event
@@ -137,7 +137,7 @@ namespace pcl
           * \return a connection object that allows to disconnect the callback function.
           */
         inline boost::signals2::connection
-        registerMouseCallback (void (*callback) (const pcl::visualization::MouseEvent&, void*), void* cookie = NULL)
+        registerMouseCallback (void (*callback) (const cv::MouseEvent&, void*), void* cookie = NULL)
         {
           return (registerMouseCallback (boost::bind (callback, _1, cookie)));
         }
@@ -149,7 +149,7 @@ namespace pcl
           * \return a connection object that allows to disconnect the callback function.
           */
         template<typename T> inline boost::signals2::connection
-        registerMouseCallback (void (T::*callback) (const pcl::visualization::MouseEvent&, void*), T& instance, void* cookie = NULL)
+        registerMouseCallback (void (T::*callback) (const cv::MouseEvent&, void*), T& instance, void* cookie = NULL)
         {
           return (registerMouseCallback (boost::bind (callback, boost::ref (instance), _1, cookie)));
         }

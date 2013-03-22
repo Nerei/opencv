@@ -55,6 +55,8 @@
 
 #include <q/visualization/vtk/vtkVertexBufferObjectMapper.h>
 
+using namespace cv;
+
 //////////////////////////////////////////////////////////////////////////////////////////////
 void
 pcl::visualization::PCLVisualizerInteractorStyle::Initialize ()
@@ -203,14 +205,14 @@ pcl::visualization::PCLVisualizerInteractorStyle::OnChar ()
 
 //////////////////////////////////////////////////////////////////////////////////////////////
 boost::signals2::connection
-pcl::visualization::PCLVisualizerInteractorStyle::registerMouseCallback (boost::function<void (const pcl::visualization::MouseEvent&)> callback)
+pcl::visualization::PCLVisualizerInteractorStyle::registerMouseCallback (boost::function<void (const cv::MouseEvent&)> callback)
 {
   return (mouse_signal_.connect (callback));
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////
 boost::signals2::connection
-pcl::visualization::PCLVisualizerInteractorStyle::registerKeyboardCallback (boost::function<void (const pcl::visualization::KeyboardEvent&)> callback)
+pcl::visualization::PCLVisualizerInteractorStyle::registerKeyboardCallback (boost::function<void (const cv::KeyboardEvent&)> callback)
 {
   return (keyboard_signal_.connect (callback));
 }
