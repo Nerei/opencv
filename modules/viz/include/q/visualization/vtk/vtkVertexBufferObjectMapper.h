@@ -22,7 +22,7 @@
 #ifndef __vtkVertexBufferObjectMapper_h
 #define __vtkVertexBufferObjectMapper_h
 
-#include <pcl/pcl_exports.h>
+#include <opencv2/core/cvdef.h>
 
 #include "vtkMapper.h"
 #include "vtkSmartPointer.h"
@@ -35,7 +35,7 @@ class vtkShader2;
 class vtkShaderProgram2;
 class vtkVertexBufferObject;
 
-class PCL_EXPORTS vtkVertexBufferObjectMapper : public vtkMapper
+class CV_EXPORTS vtkVertexBufferObjectMapper : public vtkMapper
 {
 public:
   static vtkVertexBufferObjectMapper *New();

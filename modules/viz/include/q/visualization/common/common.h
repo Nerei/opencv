@@ -41,15 +41,23 @@
 #pragma GCC system_header
 #endif
 
-#include <pcl/pcl_macros.h>
-#include <pcl/point_types.h>
+#include <opencv2/core/cvdef.h>
+//#include <q/point_types.h>
 #include <q/visualization/eigen.h>
 #include <vtkMatrix4x4.h>
 
 namespace pcl
 {
+//  struct RGB
+//  {
+//      unsigned char r, g, b, a;
+
+//  };
+
+
   namespace visualization
   {
+
     /** \brief Get (good) random values for R/G/B.
       * \param[out] r the resultant R color value
       * \param[out] g the resultant G color value
@@ -57,7 +65,7 @@ namespace pcl
       * \param[in] min minimum value for the colors
       * \param[in] max maximum value for the colors
       */
-    PCL_EXPORTS void
+    CV_EXPORTS void
     getRandomColors (double &r, double &g, double &b, double min = 0.2, double max = 2.8);
 
     /** \brief Get (good) random values for R/G/B.
@@ -65,16 +73,16 @@ namespace pcl
       * \param[in] min minimum value for the colors
       * \param[in] max maximum value for the colors
       */
-    PCL_EXPORTS void
+    CV_EXPORTS void
     getRandomColors (pcl::RGB &rgb, double min = 0.2, double max = 2.8);
 
-    PCL_EXPORTS Eigen::Matrix4d
+    CV_EXPORTS Eigen::Matrix4d
     vtkToEigen (vtkMatrix4x4* vtk_matrix);
 
-    PCL_EXPORTS Eigen::Vector2i
+    CV_EXPORTS Eigen::Vector2i
     worldToView (const Eigen::Vector4d &world_pt, const Eigen::Matrix4d &view_projection_matrix, int width, int height);
 
-    PCL_EXPORTS void
+    CV_EXPORTS void
     getViewFrustum (const Eigen::Matrix4d &view_projection_matrix, double planes[24]);
 
     enum FrustumCull
@@ -84,10 +92,10 @@ namespace pcl
       PCL_OUTSIDE_FRUSTUM
     };
 
-    PCL_EXPORTS int
+    CV_EXPORTS int
     cullFrustum (double planes[24], const Eigen::Vector3d &min_bb, const Eigen::Vector3d &max_bb);
 
-    PCL_EXPORTS float
+    CV_EXPORTS float
     viewScreenArea (const Eigen::Vector3d &eye, const Eigen::Vector3d &min_bb, const Eigen::Vector3d &max_bb, const Eigen::Matrix4d &view_projection_matrix, int width, int height);
 
     enum RenderingProperties
@@ -118,7 +126,7 @@ namespace pcl
 
     //////////////////////////////////////////////////////////////////////////////////////////////
     /** \brief Camera class holds a set of camera parameters together with the window pos/size. */
-    class PCL_EXPORTS Camera
+    class CV_EXPORTS Camera
     {
       public:
         /** \brief Focal point or lookAt.

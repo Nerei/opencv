@@ -39,7 +39,7 @@
 #ifndef PCL_PCL_VISUALIZER_INTERACTOR_STYLE_H_
 #define PCL_PCL_VISUALIZER_INTERACTOR_STYLE_H_
 
-#include <pcl/console/print.h>
+//#include <pcl/console/print.h>
 
 #include <q/visualization/vtk.h>
 #include <q/visualization/common/actor_map.h>
@@ -92,7 +92,7 @@ namespace pcl
       * \author Radu B. Rusu
       * \ingroup visualization
       */
-    class PCL_EXPORTS PCLVisualizerInteractorStyle : public vtkInteractorStyleTrackballCamera
+    class CV_EXPORTS PCLVisualizerInteractorStyle : public vtkInteractorStyleTrackballCamera
     {
       typedef boost::shared_ptr<CloudActorMap> CloudActorMapPtr;
 

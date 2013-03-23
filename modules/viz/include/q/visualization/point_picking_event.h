@@ -38,14 +38,14 @@
 #ifndef PCL_VISUALIZATION_POINT_PICKING_EVENT_H_
 #define PCL_VISUALIZATION_POINT_PICKING_EVENT_H_
 
-#include <pcl/pcl_macros.h>
+#include <opencv2/core/cvdef.h>
 #include <q/visualization/vtk.h>
 
 namespace pcl
 {
   namespace visualization
   {
-    class PCL_EXPORTS PointPickingCallback : public vtkCommand
+    class CV_EXPORTS PointPickingCallback : public vtkCommand
     {
       public:
         static PointPickingCallback *New () 
@@ -74,7 +74,7 @@ namespace pcl
      };
 
     /** /brief Class representing 3D point picking events. */
-    class PCL_EXPORTS PointPickingEvent
+    class CV_EXPORTS PointPickingEvent
     {
       public:
         PointPickingEvent (int idx) : idx_ (idx), idx2_ (-1), x_ (), y_ (), z_ (), x2_ (), y2_ (), z2_ () {}

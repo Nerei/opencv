@@ -38,9 +38,12 @@
  *
  */
 
-#include <q/visualization/common/common.h>
-#include <pcl/ros/conversions.h>
+//#include <q/visualization/common/common.h>
+//#include <pcl/ros/conversions.h>
 //#include <pcl/visualization/pcl_visualizer.h>
+
+#include <q/visualization/common/shapes.h>
+#include <pcl/common/time.h>
 #include <opencv2/viz/viz3d.hpp>
 #include <vtkTextActor.h>
 #include <vtkTextProperty.h>
@@ -133,85 +136,10 @@ pcl::visualization::PCLVisualizer::PCLVisualizer (const std::string &name, const
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
-pcl::visualization::PCLVisualizer::PCLVisualizer (int &argc, char **argv, const std::string &name, PCLVisualizerInteractorStyle* style, const bool create_interactor)
-  : interactor_ ()
-  , update_fps_ (vtkSmartPointer<FPSCallback>::New ())
-#if !((VTK_MAJOR_VERSION == 5) && (VTK_MINOR_VERSION <= 4))
-  , stopped_ ()
-  , timer_id_ ()
-#endif
-  , exit_main_loop_timer_callback_ ()
-  , exit_callback_ ()
-  , rens_ (vtkSmartPointer<vtkRendererCollection>::New ())
-  , win_ ()
-  , style_ (style)
-  , cloud_actor_map_ (new CloudActorMap)
-  , shape_actor_map_ (new ShapeActorMap)
-  , coordinate_actor_map_ ()
-  , camera_set_ ()
-{
-  style_ = style;
-
-  // Create a Renderer
-  vtkSmartPointer<vtkRenderer> ren = vtkSmartPointer<vtkRenderer>::New ();
-  ren->AddObserver (vtkCommand::EndEvent, update_fps_);
-  // Add it to the list of renderers
-  rens_->AddItem (ren);
-
-  // FPS callback
-  vtkSmartPointer<vtkTextActor> txt = vtkSmartPointer<vtkTextActor>::New ();
-  update_fps_->actor = txt;
-  update_fps_->pcl_visualizer = this;
-  update_fps_->decimated = false;
-  ren->AddActor (txt);
-
-  // Create a RendererWindow
-  win_ = vtkSmartPointer<vtkRenderWindow>::New ();
-  win_->SetWindowName (name.c_str ());
-
-  // Get screen size
-  int *scr_size = win_->GetScreenSize ();
-
-  // Set default camera parameters
-  initCameraParameters ();
-
-  // Parse the camera settings and update the internal camera
-  camera_set_ = getCameraParameters (argc, argv);
-  // Set the window size as 1/2 of the screen size or the user given parameter
-  win_->SetSize (scr_size[0]/2, scr_size[1]/2);
-  win_->SetPosition (0, 0);
-
-  // By default, don't use vertex buffer objects
-  use_vbos_ = false;
-
-  // Add all renderers to the window
-  rens_->InitTraversal ();
-  vtkRenderer* renderer = NULL;
-  while ((renderer = rens_->GetNextItem ()) != NULL)
-    win_->AddRenderer (renderer);
-
-  // Create the interactor style
-  style_->Initialize ();
-  style_->setRendererCollection (rens_);
-  style_->setCloudActorMap (cloud_actor_map_);
-  style_->UseTimersOn ();
-
-  if (create_interactor)
-    createInteractor ();
-
-  win_->SetWindowName (name.c_str ());
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////////
 void
 pcl::visualization::PCLVisualizer::createInteractor ()
 {
-#if ((VTK_MAJOR_VERSION == 5) && (VTK_MINOR_VERSION <= 4))
-  interactor_ = vtkSmartPointer<PCLVisualizerInteractor>::New ();
-#else
-  //interactor_ = vtkSmartPointer<vtkRenderWindowInteractor>::New ();
   interactor_ = vtkSmartPointer <vtkRenderWindowInteractor>::Take (vtkRenderWindowInteractorFixNew ());
-#endif
 
   //win_->PointSmoothingOn ();
   //win_->LineSmoothingOn ();
@@ -745,108 +673,6 @@ pcl::visualization::PCLVisualizer::removeAllShapes (int viewport)
   return (true);
 }
 
-/////////////////////////////////////////////////////////////////////////////////////////////
-bool
-pcl::visualization::PCLVisualizer::addPointCloudPrincipalCurvatures (const pcl::PointCloud<pcl::PointXYZ>::ConstPtr &cloud,
-                                                                     const pcl::PointCloud<pcl::Normal>::ConstPtr &normals,
-                                                                     const pcl::PointCloud<pcl::PrincipalCurvatures>::ConstPtr &pcs,
-                                                                     int level, float scale,
-                                                                     const std::string &id, int viewport)
-{
-  if (pcs->points.size () != cloud->points.size () || normals->points.size () != cloud->points.size ())
-  {
-    pcl::console::print_error ("[addPointCloudPrincipalCurvatures] The number of points differs from the number of principal curvatures/normals!\n");
-    return (false);
-  }
-  // Check to see if this ID entry already exists (has it been already added to the visualizer?)
-  CloudActorMap::iterator am_it = cloud_actor_map_->find (id);
-
-  if (am_it != cloud_actor_map_->end ())
-  {
-    pcl::console::print_warn (stderr, "[addPointCloudPrincipalCurvatures] A PointCloud with id <%s> already exists! Please choose a different id and retry.\n", id.c_str ());
-    return (false);
-  }
-
-  vtkSmartPointer<vtkAppendPolyData> polydata_1 = vtkSmartPointer<vtkAppendPolyData>::New ();
-  vtkSmartPointer<vtkAppendPolyData> polydata_2 = vtkSmartPointer<vtkAppendPolyData>::New ();
-
-  // Setup two colors - one for each line
-  unsigned char green[3] = {0, 255, 0};
-  unsigned char blue[3] = {0, 0, 255};
-
-  // Setup the colors array
-  vtkSmartPointer<vtkUnsignedCharArray> line_1_colors =vtkSmartPointer<vtkUnsignedCharArray>::New ();
-  line_1_colors->SetNumberOfComponents (3);
-  line_1_colors->SetName ("Colors");
-  vtkSmartPointer<vtkUnsignedCharArray> line_2_colors =vtkSmartPointer<vtkUnsignedCharArray>::New ();
-  line_2_colors->SetNumberOfComponents (3);
-  line_2_colors->SetName ("Colors");
-
-  // Create the first sets of lines
-  for (size_t i = 0; i < cloud->points.size (); i+=level)
-  {
-    pcl::PointXYZ p = cloud->points[i];
-    p.x += (pcs->points[i].pc1 * pcs->points[i].principal_curvature[0]) * scale;
-    p.y += (pcs->points[i].pc1 * pcs->points[i].principal_curvature[1]) * scale;
-    p.z += (pcs->points[i].pc1 * pcs->points[i].principal_curvature[2]) * scale;
-
-    vtkSmartPointer<vtkLineSource> line_1 = vtkSmartPointer<vtkLineSource>::New ();
-    line_1->SetPoint1 (cloud->points[i].x, cloud->points[i].y, cloud->points[i].z);
-    line_1->SetPoint2 (p.x, p.y, p.z);
-    line_1->Update ();
-    polydata_1->AddInput (line_1->GetOutput ());
-    line_1_colors->InsertNextTupleValue (green);
-  }
-  polydata_1->Update ();
-  vtkSmartPointer<vtkPolyData> line_1_data = polydata_1->GetOutput ();
-  line_1_data->GetCellData ()->SetScalars (line_1_colors);
-
-  // Create the second sets of lines
-  for (size_t i = 0; i < cloud->points.size (); i += level)
-  {
-    Eigen::Vector3f pc (pcs->points[i].principal_curvature[0],
-                        pcs->points[i].principal_curvature[1],
-                        pcs->points[i].principal_curvature[2]);
-    Eigen::Vector3f normal (normals->points[i].normal[0],
-                            normals->points[i].normal[1],
-                            normals->points[i].normal[2]);
-    Eigen::Vector3f pc_c = pc.cross (normal);
-
-    pcl::PointXYZ p = cloud->points[i];
-    p.x += (pcs->points[i].pc2 * pc_c[0]) * scale;
-    p.y += (pcs->points[i].pc2 * pc_c[1]) * scale;
-    p.z += (pcs->points[i].pc2 * pc_c[2]) * scale;
-
-    vtkSmartPointer<vtkLineSource> line_2 = vtkSmartPointer<vtkLineSource>::New ();
-    line_2->SetPoint1 (cloud->points[i].x, cloud->points[i].y, cloud->points[i].z);
-    line_2->SetPoint2 (p.x, p.y, p.z);
-    line_2->Update ();
-    polydata_2->AddInput (line_2->GetOutput ());
-    line_2_colors->InsertNextTupleValue (blue);
-  }
-  polydata_2->Update ();
-  vtkSmartPointer<vtkPolyData> line_2_data = polydata_2->GetOutput ();
-  line_2_data->GetCellData ()->SetScalars (line_2_colors);
-
-  // Assemble the two sets of lines
-  vtkSmartPointer<vtkAppendPolyData> alldata = vtkSmartPointer<vtkAppendPolyData>::New ();
-  alldata->AddInput (line_1_data);
-  alldata->AddInput (line_2_data);
-
-  // Create an Actor
-  vtkSmartPointer<vtkLODActor> actor;
-  createActorFromVTKDataSet (alldata->GetOutput (), actor);
-  actor->GetMapper ()->SetScalarModeToUseCellData ();
-
-  // Add it to all renderers
-  addActorToRenderer (actor, viewport);
-
-  // Save the pointer/ID pair to the global actor map
-  CloudActor act;
-  act.actor = actor;
-  (*cloud_actor_map_)[id] = act;
-  return (true);
-}
 
 //////////////////////////////////////////////////////////////////////////////////////////
 bool
@@ -1158,40 +984,6 @@ pcl::visualization::PCLVisualizer::createActorFromVTKDataSet (const vtkSmartPoin
 
   //actor->SetNumberOfCloudPoints (std::max<vtkIdType> (1, data->GetNumberOfPoints () / 10));
   actor->GetProperty ()->SetInterpolationToFlat ();
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////////
-void
-pcl::visualization::PCLVisualizer::convertPointCloudToVTKPolyData (
-    const GeometryHandlerConstPtr &geometry_handler,
-    vtkSmartPointer<vtkPolyData> &polydata,
-    vtkSmartPointer<vtkIdTypeArray> &initcells)
-{
-  vtkSmartPointer<vtkCellArray> vertices;
-
-  if (!polydata)
-  {
-    allocVtkPolyData (polydata);
-    vertices = vtkSmartPointer<vtkCellArray>::New ();
-    polydata->SetVerts (vertices);
-  }
-
-  // Use the handler to obtain the geometry
-  vtkSmartPointer<vtkPoints> points;
-  geometry_handler->getGeometry (points);
-  polydata->SetPoints (points);
-
-  vtkIdType nr_points = points->GetNumberOfPoints ();
-
-  // Create the supporting structures
-  vertices = polydata->GetVerts ();
-  if (!vertices)
-    vertices = vtkSmartPointer<vtkCellArray>::New ();
-
-  vtkSmartPointer<vtkIdTypeArray> cells = vertices->GetData ();
-  updateCells (cells, initcells, nr_points);
-  // Set the cells and the vertices
-  vertices->SetCells (nr_points, cells);
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////
@@ -3593,69 +3385,6 @@ pcl::visualization::PCLVisualizer::renderView (int xres, int yres, pcl::PointClo
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////
-bool
-pcl::visualization::PCLVisualizer::fromHandlersToScreen (
-    const GeometryHandlerConstPtr &geometry_handler,
-    const ColorHandlerConstPtr &color_handler,
-    const std::string &id,
-    int viewport,
-    const Eigen::Vector4f& sensor_origin,
-    const Eigen::Quaternion<float>& sensor_orientation)
-{
-  if (!geometry_handler->isCapable ())
-  {
-    PCL_WARN ("[fromHandlersToScreen] PointCloud <%s> requested with an invalid geometry handler (%s)!\n", id.c_str (), geometry_handler->getName ().c_str ());
-    return (false);
-  }
-
-  if (!color_handler->isCapable ())
-  {
-    PCL_WARN ("[fromHandlersToScreen] PointCloud <%s> requested with an invalid color handler (%s)!\n", id.c_str (), color_handler->getName ().c_str ());
-    return (false);
-  }
-
-  vtkSmartPointer<vtkPolyData> polydata;
-  vtkSmartPointer<vtkIdTypeArray> initcells;
-  // Convert the PointCloud to VTK PolyData
-  convertPointCloudToVTKPolyData (geometry_handler, polydata, initcells);
-  // use the given geometry handler
-  polydata->Update ();
-
-  // Get the colors from the handler
-  bool has_colors = false;
-  double minmax[2];
-  vtkSmartPointer<vtkDataArray> scalars;
-  if (color_handler->getColor (scalars))
-  {
-    polydata->GetPointData ()->SetScalars (scalars);
-    scalars->GetRange (minmax);
-    has_colors = true;
-  }
-
-  // Create an Actor
-  vtkSmartPointer<vtkLODActor> actor;
-  createActorFromVTKDataSet (polydata, actor);
-  if (has_colors)
-    actor->GetMapper ()->SetScalarRange (minmax);
-
-  // Add it to all renderers
-  addActorToRenderer (actor, viewport);
-
-  // Save the pointer/ID pair to the global actor map
-  (*cloud_actor_map_)[id].actor = actor;
-  (*cloud_actor_map_)[id].cells = reinterpret_cast<vtkPolyDataMapper*>(actor->GetMapper ())->GetInput ()->GetVerts ()->GetData ();
-  (*cloud_actor_map_)[id].geometry_handlers.push_back (geometry_handler);
-  (*cloud_actor_map_)[id].color_handlers.push_back (color_handler);
-
-  // Save the viewpoint transformation matrix to the global actor map
-  vtkSmartPointer<vtkMatrix4x4> transformation = vtkSmartPointer<vtkMatrix4x4>::New ();
-  convertToVtkMatrix (sensor_origin, sensor_orientation, transformation);
-  (*cloud_actor_map_)[id].viewpoint_transformation_ = transformation;
-
-  return (true);
-}
-
-//////////////////////////////////////////////////////////////////////////////////////////////
 void
 pcl::visualization::PCLVisualizer::updateCells (vtkSmartPointer<vtkIdTypeArray> &cells,
                                                 vtkSmartPointer<vtkIdTypeArray> &initcells,
@@ -3772,76 +3501,6 @@ pcl::visualization::PCLVisualizer::convertToEigenMatrix (
   for (int i = 0; i < 4; i++)
     for (int k = 0; k < 4; k++)
       m (i,k) = static_cast<float> (vtk_matrix->GetElement (i, k));
-}
-
-//////////////////////////////////////////////////////////////////////////////////////////////
-bool
-pcl::visualization::PCLVisualizer::addPointCloud (
-    const sensor_msgs::PointCloud2::ConstPtr &,
-    const GeometryHandlerConstPtr &geometry_handler,
-    const ColorHandlerConstPtr &color_handler,
-    const Eigen::Vector4f& sensor_origin,
-    const Eigen::Quaternion<float>& sensor_orientation,
-    const std::string &id, int viewport)
-{
-  // Check to see if this entry already exists (has it been already added to the visualizer?)
-  CloudActorMap::iterator am_it = cloud_actor_map_->find (id);
-  if (am_it != cloud_actor_map_->end ())
-  {
-    // Here we're just pushing the handlers onto the queue. If needed, something fancier could
-    // be done such as checking if a specific handler already exists, etc.
-    am_it->second.geometry_handlers.push_back (geometry_handler);
-    am_it->second.color_handlers.push_back (color_handler);
-    return (true);
-  }
-  return (fromHandlersToScreen (geometry_handler, color_handler, id, viewport, sensor_origin, sensor_orientation));
-}
-
-//////////////////////////////////////////////////////////////////////////////////////////////
-bool
-pcl::visualization::PCLVisualizer::addPointCloud (
-    const sensor_msgs::PointCloud2::ConstPtr &cloud,
-    const GeometryHandlerConstPtr &geometry_handler,
-    const Eigen::Vector4f& sensor_origin,
-    const Eigen::Quaternion<float>& sensor_orientation,
-    const std::string &id, int viewport)
-{
-  // Check to see if this ID entry already exists (has it been already added to the visualizer?)
-  CloudActorMap::iterator am_it = cloud_actor_map_->find (id);
-
-  if (am_it != cloud_actor_map_->end ())
-  {
-    // Here we're just pushing the handlers onto the queue. If needed, something fancier could
-    // be done such as checking if a specific handler already exists, etc.
-    am_it->second.geometry_handlers.push_back (geometry_handler);
-    return (true);
-  }
-
-  PointCloudColorHandlerCustom<sensor_msgs::PointCloud2>::Ptr color_handler (new PointCloudColorHandlerCustom<sensor_msgs::PointCloud2> (cloud, 255, 255, 255));
-  return (fromHandlersToScreen (geometry_handler, color_handler, id, viewport, sensor_origin, sensor_orientation));
-}
-
-//////////////////////////////////////////////////////////////////////////////////////////////
-bool
-pcl::visualization::PCLVisualizer::addPointCloud (
-    const sensor_msgs::PointCloud2::ConstPtr &cloud,
-    const ColorHandlerConstPtr &color_handler,
-    const Eigen::Vector4f& sensor_origin,
-    const Eigen::Quaternion<float>& sensor_orientation,
-    const std::string &id, int viewport)
-{
-  // Check to see if this entry already exists (has it been already added to the visualizer?)
-  CloudActorMap::iterator am_it = cloud_actor_map_->find (id);
-  if (am_it != cloud_actor_map_->end ())
-  {
-    // Here we're just pushing the handlers onto the queue. If needed, something fancier could
-    // be done such as checking if a specific handler already exists, etc.
-    am_it->second.color_handlers.push_back (color_handler);
-    return (true);
-  }
-
-  PointCloudGeometryHandlerXYZ<sensor_msgs::PointCloud2>::Ptr geometry_handler (new PointCloudGeometryHandlerXYZ<sensor_msgs::PointCloud2> (cloud));
-  return (fromHandlersToScreen (geometry_handler, color_handler, id, viewport, sensor_origin, sensor_orientation));
 }
 
 

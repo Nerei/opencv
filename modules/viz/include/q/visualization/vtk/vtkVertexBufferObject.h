@@ -33,7 +33,7 @@
 #include "vtkWeakPointer.h"
 
 #include "vtkgl.h" // Needed for gl data types exposed in API
-#include <pcl/pcl_macros.h>
+#include <opencv2/core/cvdef.h>
 
 class vtkCellArray;
 class vtkDataArray;
@@ -43,7 +43,7 @@ class vtkUnsignedCharArray;
 class vtkOpenGLExtensionManager;
 class vtkRenderWindow;
 
-class PCL_EXPORTS vtkVertexBufferObject : public vtkObject
+class CV_EXPORTS vtkVertexBufferObject : public vtkObject
 {
 public:
   

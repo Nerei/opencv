@@ -2,62 +2,44 @@
 
 #include <opencv2/core.hpp>
 // PCL includes
-#include <pcl/point_types.h>
-#include <pcl/correspondence.h>
+//#include <pcl/point_types.h>
+//#include <pcl/correspondence.h>
 #include <pcl/point_cloud.h>
-#include <pcl/PolygonMesh.h>
-#include <pcl/geometry/planar_polygon.h>
-#include <pcl/common/time.h>
-#include <pcl/console/print.h>
+#include <q/PolygonMesh.h>
+#include <q/planar_polygon.h>
+//#include <pcl/common/time.h>
+//#include <pcl/console/print.h>
 
-#include <q/visualization/common/common.h>
-#include <q/visualization/common/shapes.h>
-#include <q/visualization/window.h>
+//#include <q/visualization/common/common.h>
+//#include <q/visualization/common/shapes.h>
+#include <q/visualization/interactor_style.h>
+//#include <q/visualization/window.h>
+
+#include <q/visualization/keyboard_event.h>
+#include <q/visualization/mouse_event.h>
+#include <q/visualization/point_picking_event.h>
+#include <q/visualization/point_cloud_geometry_handlers.h>
+#include <q/visualization/point_cloud_color_handlers.h>
+#include <q/visualization/common/actor_map.h>
+
 // VTK includes
 #include <q/visualization/vtk.h>
 #include <q/visualization/boost.h>
+
+#include <Eigen/Geometry>
 
 namespace pcl
 {
   namespace visualization
   {
-    /** \brief PCL Visualizer main class.
-      * \author Radu Bogdan Rusu
-      * \ingroup visualization
-      * \note This class can NOT be used across multiple threads. Only call functions of objects of this class
-      * from the same thread that they were created in! Some methods, e.g. addPointCloud, will crash if called
-      * from other threads.
-      */
     class CV_EXPORTS PCLVisualizer
     {
       public:
         typedef boost::shared_ptr<PCLVisualizer> Ptr;
         typedef boost::shared_ptr<const PCLVisualizer> ConstPtr;
 
-        typedef PointCloudGeometryHandler<sensor_msgs::PointCloud2> GeometryHandler;
-        typedef GeometryHandler::Ptr GeometryHandlerPtr;
-        typedef GeometryHandler::ConstPtr GeometryHandlerConstPtr;
+        PCLVisualizer (const std::string &name = "Viz", const bool create_interactor = true);
 
-        typedef PointCloudColorHandler<sensor_msgs::PointCloud2> ColorHandler;
-        typedef ColorHandler::Ptr ColorHandlerPtr;
-        typedef ColorHandler::ConstPtr ColorHandlerConstPtr;
-
-        /** \brief PCL Visualizer constructor.
-          * \param[in] name the window name (empty by default)
-          * \param[in] create_interactor if true (default), create an interactor, false otherwise
-          */
-        PCLVisualizer (const std::string &name = "", const bool create_interactor = true);
-        /** \brief PCL Visualizer constructor.
-          * \param[in] argc
-          * \param[in] argv
-          * \param[in] name the window name (empty by default)
-          * \param[in] style interactor style (defaults to PCLVisualizerInteractorStyle)
-          * \param[in] create_interactor if true (default), create an interactor, false otherwise
-          */
-        PCLVisualizer (int &argc, char **argv, const std::string &name = "",
-            PCLVisualizerInteractorStyle* style = PCLVisualizerInteractorStyle::New (), const bool create_interactor = true);
-
-        /** \brief PCL Visualizer destructor. */
         virtual ~PCLVisualizer ();
 
         /** \brief Enables/Disabled the underlying window mode to full screen.
@@ -65,18 +47,13 @@ namespace pcl
           * See the VTK documentation for additional details.
           * \param[in] mode true for full screen, false otherwise
           */
-        inline void
-        setFullScreen (bool mode)
+        inline void setFullScreen (bool mode)
         {
           if (win_)
             win_->SetFullScreen (mode);
         }
 
-        /** \brief Set the visualizer window name.
-          * \param[in] name the name of the window
-          */
-        inline void
-        setWindowName (const std::string &name)
+        inline void setWindowName (const std::string &name)
         {
           if (win_)
             win_->SetWindowName (name.c_str ());
@@ -87,8 +64,7 @@ namespace pcl
           * See the VTK documentation for additional details.
           * \param[in] mode true for borders, false otherwise
           */
-        inline void
-        setWindowBorders (bool mode)
+        inline void setWindowBorders (bool mode)
         {
           if (win_)
             win_->SetBorders (mode);
@@ -184,17 +160,8 @@ namespace pcl
           return (registerPointPickingCallback (boost::bind (callback, boost::ref (instance), _1, cookie)));
         }
 
-        /** \brief Spin method. Calls the interactor and runs an internal loop. */
-        void
-        spin ();
-
-        /** \brief Spin once method. Calls the interactor and updates the screen once.
-          *  \param[in] time - How long (in ms) should the visualization loop be allowed to run.
-          *  \param[in] force_redraw - if false it might return without doing anything if the
-          *  interactor's framerate does not require a redraw yet.
-          */
-        void
-        spinOnce (int time = 1, bool force_redraw = false);
+        void spin ();
+        void spinOnce (int time = 1, bool force_redraw = false);
 
         /** \brief Adds a widget which shows an interactive axes display for orientation
          *  \param[in] interactor - Pointer to the vtk interactor object used by the PCLVisualizer window
@@ -254,14 +221,12 @@ namespace pcl
            *         |
            *         y
            */
-        void
-        addCoordinateSystem (double scale, const Eigen::Affine3f& t, int viewport = 0);
+        void addCoordinateSystem (double scale, const Eigen::Affine3f& t, int viewport = 0);
 
         /** \brief Removes a previously added 3D axes (coordinate system)
           * \param[in] viewport view port where the 3D axes should be removed from (default: all)
           */
-        bool
-        removeCoordinateSystem (int viewport = 0);
+        bool removeCoordinateSystem (int viewport = 0);
 
         /** \brief Removes a Point Cloud from screen, based on a given ID.
           * \param[in] id the point cloud object id (i.e., given on \a addPointCloud)
@@ -269,8 +234,7 @@ namespace pcl
           * \return true if the point cloud is successfully removed and false if the point cloud is
           * not actually displayed
           */
-        bool
-        removePointCloud (const std::string &id = "cloud", int viewport = 0);
+        bool removePointCloud (const std::string &id = "cloud", int viewport = 0);
 
         /** \brief Removes a PolygonMesh from screen, based on a given ID.
           * \param[in] id the polygon object id (i.e., given on \a addPolygonMesh)
@@ -288,27 +252,23 @@ namespace pcl
           * \param[in] id the shape object id (i.e., given on \a addLine etc.)
           * \param[in] viewport view port from where the Point Cloud should be removed (default: all)
           */
-        bool
-        removeShape (const std::string &id = "cloud", int viewport = 0);
+        bool removeShape (const std::string &id = "cloud", int viewport = 0);
 
         /** \brief Removes an added 3D text from the scene, based on a given ID
           * \param[in] id the 3D text id (i.e., given on \a addText3D etc.)
           * \param[in] viewport view port from where the 3D text should be removed (default: all)
           */
-        bool
-        removeText3D (const std::string &id = "cloud", int viewport = 0);
+        bool removeText3D (const std::string &id = "cloud", int viewport = 0);
 
         /** \brief Remove all point cloud data on screen from the given viewport.
           * \param[in] viewport view port from where the clouds should be removed (default: all)
           */
-        bool
-        removeAllPointClouds (int viewport = 0);
+        bool removeAllPointClouds (int viewport = 0);
 
         /** \brief Remove all 3D shape data on screen from the given viewport.
           * \param[in] viewport view port from where the shapes should be removed (default: all)
           */
-        bool
-        removeAllShapes (int viewport = 0);
+        bool removeAllShapes (int viewport = 0);
 
         /** \brief Set the viewport's background color.
           * \param[in] r the red component of the RGB color
@@ -316,8 +276,7 @@ namespace pcl
           * \param[in] b the blue component of the RGB color
           * \param[in] viewport the view port (default: all)
           */
-        void
-        setBackgroundColor (const double &r, const double &g, const double &b, int viewport = 0);
+        void setBackgroundColor (const double &r, const double &g, const double &b, int viewport = 0);
 
         /** \brief Add a text to screen
           * \param[in] text the text to add
@@ -326,10 +285,7 @@ namespace pcl
           * \param[in] id the text object id (default: equal to the "text" parameter)
           * \param[in] viewport the view port (default: all)
           */
-        bool
-        addText (const std::string &text,
-                 int xpos, int ypos,
-                 const std::string &id = "", int viewport = 0);
+        bool addText (const std::string &text, int xpos, int ypos, const std::string &id = "", int viewport = 0);
 
         /** \brief Add a text to screen
           * \param[in] text the text to add
@@ -341,9 +297,7 @@ namespace pcl
           * \param[in] id the text object id (default: equal to the "text" parameter)
           * \param[in] viewport the view port (default: all)
           */
-        bool
-        addText (const std::string &text, int xpos, int ypos, double r, double g, double b,
-                 const std::string &id = "", int viewport = 0);
+        bool addText (const std::string &text, int xpos, int ypos, double r, double g, double b, const std::string &id = "", int viewport = 0);
 
         /** \brief Add a text to screen
           * \param[in] text the text to add
@@ -356,10 +310,7 @@ namespace pcl
           * \param[in] id the text object id (default: equal to the "text" parameter)
           * \param[in] viewport the view port (default: all)
           */
-        bool
-        addText (const std::string &text, int xpos, int ypos, int fontsize, double r, double g, double b,
-                 const std::string &id = "", int viewport = 0);
-
+        bool addText (const std::string &text, int xpos, int ypos, int fontsize, double r, double g, double b, const std::string &id = "", int viewport = 0);
 
         /** \brief Update a text to screen
           * \param[in] text the text to update
@@ -367,10 +318,7 @@ namespace pcl
           * \param[in] ypos the new Y position on screen
           * \param[in] id the text object id (default: equal to the "text" parameter)
           */
-        bool
-        updateText (const std::string &text,
-                    int xpos, int ypos,
-                    const std::string &id = "");
+        bool updateText (const std::string &text, int xpos, int ypos, const std::string &id = "");
 
         /** \brief Update a text to screen
           * \param[in] text the text to update
@@ -381,10 +329,7 @@ namespace pcl
           * \param[in] b the blue color vlaue
           * \param[in] id the text object id (default: equal to the "text" parameter)
           */
-        bool
-        updateText (const std::string &text,
-                    int xpos, int ypos, double r, double g, double b,
-                    const std::string &id = "");
+        bool updateText (const std::string &text, int xpos, int ypos, double r, double g, double b, const std::string &id = "");
 
         /** \brief Update a text to screen
           * \param[in] text the text to update
@@ -396,10 +341,7 @@ namespace pcl
           * \param[in] b the blue color vlaue
           * \param[in] id the text object id (default: equal to the "text" parameter)
           */
-        bool
-        updateText (const std::string &text,
-                    int xpos, int ypos, int fontsize, double r, double g, double b,
-                    const std::string &id = "");
+        bool updateText (const std::string &text, int xpos, int ypos, int fontsize, double r, double g, double b, const std::string &id = "");
 
         /** \brief Set the pose of an existing shape.
           *
@@ -410,8 +352,7 @@ namespace pcl
           * \param[in] pose the new pose
           * \return false if no shape or cloud with the specified ID was found
           */
-        bool
-        updateShapePose (const std::string &id, const Eigen::Affine3f& pose);
+        bool updateShapePose (const std::string &id, const Eigen::Affine3f& pose);
 
         /** \brief Add a 3d text to the scene
           * \param[in] text the text to add
@@ -438,9 +379,7 @@ namespace pcl
           * \param[in] viewport the view port where the Point Cloud should be added (default: all)
           */
         template <typename PointNT> bool
-        addPointCloudNormals (const typename pcl::PointCloud<PointNT>::ConstPtr &cloud,
-                              int level = 100, float scale = 0.02f,
-                              const std::string &id = "cloud", int viewport = 0);
+        addPointCloudNormals (const typename pcl::PointCloud<PointNT>::ConstPtr &cloud, int level = 100, float scale = 0.02f, const std::string &id = "cloud", int viewport = 0);
 
         /** \brief Add the estimated surface normals of a Point Cloud to screen.
           * \param[in] cloud the input point cloud dataset containing the XYZ data
@@ -455,37 +394,6 @@ namespace pcl
                               const typename pcl::PointCloud<PointNT>::ConstPtr &normals,
                               int level = 100, float scale = 0.02f,
                               const std::string &id = "cloud", int viewport = 0);
-
-        /** \brief Add the estimated principal curvatures of a Point Cloud to screen.
-          * \param[in] cloud the input point cloud dataset containing the XYZ data
-          * \param[in] normals the input point cloud dataset containing the normal data
-          * \param[in] pcs the input point cloud dataset containing the principal curvatures data
-          * \param[in] level display only every level'th point. Default: 100
-          * \param[in] scale the normal arrow scale. Default: 1.0
-          * \param[in] id the point cloud object id. Default: "cloud"
-          * \param[in] viewport the view port where the Point Cloud should be added (default: all)
-          */
-        bool
-        addPointCloudPrincipalCurvatures (
-            const pcl::PointCloud<pcl::PointXYZ>::ConstPtr &cloud,
-            const pcl::PointCloud<pcl::Normal>::ConstPtr &normals,
-            const pcl::PointCloud<pcl::PrincipalCurvatures>::ConstPtr &pcs,
-            int level = 100, float scale = 1.0f,
-            const std::string &id = "cloud", int viewport = 0);
-
-        /** \brief Add the estimated surface intensity gradients of a Point Cloud to screen.
-          * \param[in] cloud the input point cloud dataset containing the XYZ data
-          * \param[in] gradients the input point cloud dataset containing the intensity gradient data
-          * \param[in] level display only every level'th point (default: 100)
-          * \param[in] scale the intensity gradient arrow scale (default: 1e-6m)
-          * \param[in] id the point cloud object id (default: cloud)
-          * \param[in] viewport the view port where the Point Cloud should be added (default: all)
-          */
-        template <typename PointT, typename GradientT> bool
-        addPointCloudIntensityGradients (const typename pcl::PointCloud<PointT>::ConstPtr &cloud,
-                                         const typename pcl::PointCloud<GradientT>::ConstPtr &gradients,
-                                         int level = 100, double scale = 1e-6,
-                                         const std::string &id = "cloud", int viewport = 0);
 
         /** \brief Add a Point Cloud (templated) to screen.
           * \param[in] cloud the input point cloud dataset
@@ -538,22 +446,7 @@ namespace pcl
                        const PointCloudGeometryHandler<PointT> &geometry_handler,
                        const std::string &id = "cloud", int viewport = 0);
 
-        /** \brief Add a Point Cloud (templated) to screen.
-          *
-          * Because the geometry handler is given as a pointer, it will be pushed back to the list of available
-          * handlers, rather than replacing the current active geometric handler. This makes it possible to
-          * switch between different geometric handlers 'on-the-fly' at runtime, from the PCLVisualizer
-          * interactor interface (using Alt+0..9).
-          *
-          * \param[in] cloud the input point cloud dataset
-          * \param[in] geometry_handler use a geometry handler object to extract the XYZ data
-          * \param[in] id the point cloud object id (default: cloud)
-          * \param[in] viewport the view port where the Point Cloud should be added (default: all)
-          */
-        template <typename PointT> bool
-        addPointCloud (const typename pcl::PointCloud<PointT>::ConstPtr &cloud,
-                       const GeometryHandlerConstPtr &geometry_handler,
-                       const std::string &id = "cloud", int viewport = 0);
+
 
         /** \brief Add a Point Cloud (templated) to screen.
           * \param[in] cloud the input point cloud dataset
@@ -566,106 +459,6 @@ namespace pcl
                        const PointCloudColorHandler<PointT> &color_handler,
                        const std::string &id = "cloud", int viewport = 0);
 
-        /** \brief Add a Point Cloud (templated) to screen.
-          *
-          * Because the color handler is given as a pointer, it will be pushed back to the list of available
-          * handlers, rather than replacing the current active color handler. This makes it possible to
-          * switch between different color handlers 'on-the-fly' at runtime, from the PCLVisualizer
-          * interactor interface (using 0..9).
-          *
-          * \param[in] cloud the input point cloud dataset
-          * \param[in] color_handler a specific PointCloud visualizer handler for colors
-          * \param[in] id the point cloud object id (default: cloud)
-          * \param[in] viewport the view port where the Point Cloud should be added (default: all)
-          */
-        template <typename PointT> bool
-        addPointCloud (const typename pcl::PointCloud<PointT>::ConstPtr &cloud,
-                       const ColorHandlerConstPtr &color_handler,
-                       const std::string &id = "cloud", int viewport = 0);
-
-        /** \brief Add a Point Cloud (templated) to screen.
-          *
-          * Because the geometry/color handler is given as a pointer, it will be pushed back to the list of
-          * available handlers, rather than replacing the current active handler. This makes it possible to
-          * switch between different handlers 'on-the-fly' at runtime, from the PCLVisualizer interactor
-          * interface (using [Alt+]0..9).
-          *
-          * \param[in] cloud the input point cloud dataset
-          * \param[in] geometry_handler a specific PointCloud visualizer handler for geometry
-          * \param[in] color_handler a specific PointCloud visualizer handler for colors
-          * \param[in] id the point cloud object id (default: cloud)
-          * \param[in] viewport the view port where the Point Cloud should be added (default: all)
-          */
-        template <typename PointT> bool
-        addPointCloud (const typename pcl::PointCloud<PointT>::ConstPtr &cloud,
-                       const GeometryHandlerConstPtr &geometry_handler,
-                       const ColorHandlerConstPtr &color_handler,
-                       const std::string &id = "cloud", int viewport = 0);
-
-        /** \brief Add a binary blob Point Cloud to screen.
-          *
-          * Because the geometry/color handler is given as a pointer, it will be pushed back to the list of
-          * available handlers, rather than replacing the current active handler. This makes it possible to
-          * switch between different handlers 'on-the-fly' at runtime, from the PCLVisualizer interactor
-          * interface (using [Alt+]0..9).
-          *
-          * \param[in] cloud the input point cloud dataset
-          * \param[in] geometry_handler a specific PointCloud visualizer handler for geometry
-          * \param[in] color_handler a specific PointCloud visualizer handler for colors
-          * \param[in] sensor_origin the origin of the cloud data in global coordinates (defaults to 0,0,0)
-          * \param[in] sensor_orientation the orientation of the cloud data in global coordinates (defaults to 1,0,0,0)
-          * \param[in] id the point cloud object id (default: cloud)
-          * \param[in] viewport the view port where the Point Cloud should be added (default: all)
-          */
-        bool
-        addPointCloud (const sensor_msgs::PointCloud2::ConstPtr &cloud,
-                       const GeometryHandlerConstPtr &geometry_handler,
-                       const ColorHandlerConstPtr &color_handler,
-                       const Eigen::Vector4f& sensor_origin,
-                       const Eigen::Quaternion<float>& sensor_orientation,
-                       const std::string &id = "cloud", int viewport = 0);
-
-        /** \brief Add a binary blob Point Cloud to screen.
-          *
-          * Because the geometry/color handler is given as a pointer, it will be pushed back to the list of
-          * available handlers, rather than replacing the current active handler. This makes it possible to
-          * switch between different handlers 'on-the-fly' at runtime, from the PCLVisualizer interactor
-          * interface (using [Alt+]0..9).
-          *
-          * \param[in] cloud the input point cloud dataset
-          * \param[in] geometry_handler a specific PointCloud visualizer handler for geometry
-          * \param[in] sensor_origin the origin of the cloud data in global coordinates (defaults to 0,0,0)
-          * \param[in] sensor_orientation the orientation of the cloud data in global coordinates (defaults to 1,0,0,0)
-          * \param[in] id the point cloud object id (default: cloud)
-          * \param[in] viewport the view port where the Point Cloud should be added (default: all)
-          */
-        bool
-        addPointCloud (const sensor_msgs::PointCloud2::ConstPtr &cloud,
-                       const GeometryHandlerConstPtr &geometry_handler,
-                       const Eigen::Vector4f& sensor_origin,
-                       const Eigen::Quaternion<float>& sensor_orientation,
-                       const std::string &id = "cloud", int viewport = 0);
-
-        /** \brief Add a binary blob Point Cloud to screen.
-          *
-          * Because the geometry/color handler is given as a pointer, it will be pushed back to the list of
-          * available handlers, rather than replacing the current active handler. This makes it possible to
-          * switch between different handlers 'on-the-fly' at runtime, from the PCLVisualizer interactor
-          * interface (using [Alt+]0..9).
-          *
-          * \param[in] cloud the input point cloud dataset
-          * \param[in] color_handler a specific PointCloud visualizer handler for colors
-          * \param[in] sensor_origin the origin of the cloud data in global coordinates (defaults to 0,0,0)
-          * \param[in] sensor_orientation the orientation of the cloud data in global coordinates (defaults to 1,0,0,0)
-          * \param[in] id the point cloud object id (default: cloud)
-          * \param[in] viewport the view port where the Point Cloud should be added (default: all)
-          */
-        bool
-        addPointCloud (const sensor_msgs::PointCloud2::ConstPtr &cloud,
-                       const ColorHandlerConstPtr &color_handler,
-                       const Eigen::Vector4f& sensor_origin,
-                       const Eigen::Quaternion<float>& sensor_orientation,
-                       const std::string &id = "cloud", int viewport = 0);
 
         /** \brief Add a Point Cloud (templated) to screen.
           * \param[in] cloud the input point cloud dataset
@@ -702,7 +495,7 @@ namespace pcl
         addPointCloud (const pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr &cloud,
                        const std::string &id = "cloud", int viewport = 0)
         {
-          pcl::visualization::PointCloudColorHandlerRGBField<pcl::PointXYZRGB> color_handler (cloud);
+          pcl::visualization::PointCloudColorHandlerRandom<pcl::PointXYZRGB> color_handler (cloud);
           return (addPointCloud<pcl::PointXYZRGB> (cloud, color_handler, id, viewport));
         }
 
@@ -715,7 +508,7 @@ namespace pcl
         addPointCloud (const pcl::PointCloud<pcl::PointXYZRGBA>::ConstPtr &cloud,
                        const std::string &id = "cloud", int viewport = 0)
         {
-          pcl::visualization::PointCloudColorHandlerRGBField<pcl::PointXYZRGBA> color_handler (cloud);
+          pcl::visualization::PointCloudColorHandlerRandom<pcl::PointXYZRGBA> color_handler (cloud);
           return (addPointCloud<pcl::PointXYZRGBA> (cloud, color_handler, id, viewport));
         }
 
@@ -740,7 +533,7 @@ namespace pcl
         updatePointCloud (const pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr &cloud,
                           const std::string &id = "cloud")
         {
-          pcl::visualization::PointCloudColorHandlerRGBField<pcl::PointXYZRGB> color_handler (cloud);
+          pcl::visualization::PointCloudColorHandlerRandom<pcl::PointXYZRGB> color_handler (cloud);
           return (updatePointCloud<pcl::PointXYZRGB> (cloud, color_handler, id));
         }
 
@@ -753,7 +546,7 @@ namespace pcl
         updatePointCloud (const pcl::PointCloud<pcl::PointXYZRGBA>::ConstPtr &cloud,
                           const std::string &id = "cloud")
         {
-          pcl::visualization::PointCloudColorHandlerRGBField<pcl::PointXYZRGBA> color_handler (cloud);
+          pcl::visualization::PointCloudColorHandlerRandom<pcl::PointXYZRGBA> color_handler (cloud);
           return (updatePointCloud<pcl::PointXYZRGBA> (cloud, color_handler, id));
         }
 
@@ -809,79 +602,6 @@ namespace pcl
                                     const std::string &id = "polyline",
                                     int viewport = 0);
 
-        /** \brief Add the specified correspondences to the display.
-          * \param[in] source_points The source points
-          * \param[in] target_points The target points
-          * \param[in] correspondences The mapping from source points to target points. Each element must be an index into target_points
-          * \param[in] id the polygon object id (default: "correspondences")
-          * \param[in] viewport the view port where the correspondences should be added (default: all)
-          */
-        template <typename PointT> bool
-        addCorrespondences (const typename pcl::PointCloud<PointT>::ConstPtr &source_points,
-                            const typename pcl::PointCloud<PointT>::ConstPtr &target_points,
-                            const std::vector<int> & correspondences,
-                            const std::string &id = "correspondences",
-                            int viewport = 0);
-
-        /** \brief Add the specified correspondences to the display.
-          * \param[in] source_points The source points
-          * \param[in] target_points The target points
-          * \param[in] correspondences The mapping from source points to target points. Each element must be an index into target_points
-          * \param[in] nth display only the Nth correspondence (e.g., skip the rest)
-          * \param[in] id the polygon object id (default: "correspondences")
-          * \param[in] viewport the view port where the correspondences should be added (default: all)
-          */
-        template <typename PointT> bool
-        addCorrespondences (const typename pcl::PointCloud<PointT>::ConstPtr &source_points,
-                            const typename pcl::PointCloud<PointT>::ConstPtr &target_points,
-                            const pcl::Correspondences &correspondences,
-                            int nth,
-                            const std::string &id = "correspondences",
-                            int viewport = 0);
-
-        /** \brief Add the specified correspondences to the display.
-          * \param[in] source_points The source points
-          * \param[in] target_points The target points
-          * \param[in] correspondences The mapping from source points to target points. Each element must be an index into target_points
-          * \param[in] id the polygon object id (default: "correspondences")
-          * \param[in] viewport the view port where the correspondences should be added (default: all)
-          */
-        template <typename PointT> bool
-        addCorrespondences (const typename pcl::PointCloud<PointT>::ConstPtr &source_points,
-                            const typename pcl::PointCloud<PointT>::ConstPtr &target_points,
-                            const pcl::Correspondences &correspondences,
-                            const std::string &id = "correspondences",
-                            int viewport = 0)
-        {
-          // If Nth not given, display all correspondences
-          return (addCorrespondences<PointT> (source_points, target_points,
-                                              correspondences, 1, id, viewport));
-        }
-
-        /** \brief Update the specified correspondences to the display.
-          * \param[in] source_points The source points
-          * \param[in] target_points The target points
-          * \param[in] correspondences The mapping from source points to target points. Each element must be an index into target_points
-          * \param[in] nth display only the Nth correspondence (e.g., skip the rest)
-          * \param[in] id the polygon object id (default: "correspondences")
-          */
-        template <typename PointT> bool
-        updateCorrespondences (
-            const typename pcl::PointCloud<PointT>::ConstPtr &source_points,
-            const typename pcl::PointCloud<PointT>::ConstPtr &target_points,
-            const pcl::Correspondences &correspondences,
-            int nth,
-            const std::string &id = "correspondences");
-
-        /** \brief Remove the specified correspondences from the display.
-          * \param[in] id the polygon correspondences object id (i.e., given on \ref addCorrespondences)
-          * \param[in] viewport view port from where the correspondences should be removed (default: all)
-          */
-        inline void
-        removeCorrespondences (const std::string &id = "correspondences", int viewport = 0)
-        {
-          removeShape (id, viewport);
-        }
 
         /** \brief Get the color handler index of a rendered PointCloud based on its ID
           * \param[in] id the point cloud object id
@@ -976,15 +696,7 @@ namespace pcl
          setShapeRenderingProperties (int property, double val1, double val2, double val3,
                                       const std::string &id, int viewport = 0);
 
-#if ((VTK_MAJOR_VERSION == 5) && (VTK_MINOR_VERSION <= 4))
-        /** \brief Returns true when the user tried to close the window */
-        bool
-        wasStopped () const { if (interactor_ != NULL) return (interactor_->stopped); else return true; }
 
-        /** \brief Set the stopped flag back to false */
-        void
-        resetStoppedFlag () { if (interactor_ != NULL) interactor_->stopped = false; }
-#else
         /** \brief Returns true when the user tried to close the window */
         bool
         wasStopped () const { if (interactor_ != NULL) return (stopped_); else return (true); }
@@ -992,21 +704,14 @@ namespace pcl
         /** \brief Set the stopped flag back to false */
         void
         resetStoppedFlag () { if (interactor_ != NULL) stopped_ = false; }
-#endif
 
         /** \brief Stop the interaction and close the visualizaton window. */
         void
         close ()
         {
-#if ((VTK_MAJOR_VERSION == 5) && (VTK_MINOR_VERSION <= 4))
-          interactor_->stopped = true;
-          // This tends to close the window...
-          interactor_->stopLoop ();
-#else
           stopped_ = true;
           // This tends to close the window...
           interactor_->TerminateApp ();
-#endif
         }
 
         /** \brief Create a new viewport from [xmin,ymin] -> [xmax,ymax].
@@ -1075,8 +780,7 @@ namespace pcl
           * \param[in] viewport (optional) the id of the new viewport (default: 0)
           */
         template <typename P1, typename P2> bool
-        addLine (const P1 &pt1, const P2 &pt2, const std::string &id = "line",
-                 int viewport = 0);
+        addLine (const P1 &pt1, const P2 &pt2, const std::string &id = "line", int viewport = 0);
 
         /** \brief Add a line segment from two points
           * \param[in] pt1 the first (start) point on the line
@@ -1088,8 +792,7 @@ namespace pcl
           * \param[in] viewport (optional) the id of the new viewport (default: 0)
           */
         template <typename P1, typename P2> bool
-        addLine (const P1 &pt1, const P2 &pt2, double r, double g, double b,
-                 const std::string &id = "line", int viewport = 0);
+        addLine (const P1 &pt1, const P2 &pt2, double r, double g, double b, const std::string &id = "line", int viewport = 0);
 
         /** \brief Add a line arrow segment between two points, and display the distance between them
           * \param[in] pt1 the first (start) point on the line
@@ -1648,11 +1351,8 @@ namespace pcl
         }
       protected:
         /** \brief The render window interactor. */
-#if ((VTK_MAJOR_VERSION == 5) && (VTK_MINOR_VERSION <= 4))
-        vtkSmartPointer<PCLVisualizerInteractor> interactor_;
-#else
+
         vtkSmartPointer<vtkRenderWindowInteractor> interactor_;
-#endif
       private:
         struct ExitMainLoopTimerCallback : public vtkCommand
         {
@@ -1669,11 +1369,7 @@ namespace pcl
             if (timer_id != right_timer_id)
               return;
             // Stop vtk loop and send notification to app to wake it up
-#if ((VTK_MAJOR_VERSION == 5) && (VTK_MINOR_VERSION <= 4))
-            pcl_visualizer->interactor_->stopLoop ();
-#else
             pcl_visualizer->interactor_->TerminateApp ();
-#endif
           }
           int right_timer_id;
           PCLVisualizer* pcl_visualizer;
@@ -1688,15 +1384,9 @@ namespace pcl
           {
             if (event_id != vtkCommand::ExitEvent)
               return;
-#if ((VTK_MAJOR_VERSION == 5) && (VTK_MINOR_VERSION <= 4))
-            pcl_visualizer->interactor_->stopped = true;
-            // This tends to close the window...
-            pcl_visualizer->interactor_->stopLoop ();
-#else
             pcl_visualizer->stopped_ = true;
             // This tends to close the window...
             pcl_visualizer->interactor_->TerminateApp ();
-#endif
           }
           PCLVisualizer* pcl_visualizer;
         };
@@ -1836,16 +1526,6 @@ namespace pcl
                                         vtkSmartPointer<vtkPolyData> &polydata,
                                         vtkSmartPointer<vtkIdTypeArray> &initcells);
 
-        /** \brief Converts a PCL templated PointCloud object to a vtk polydata object.
-          * \param[in] geometry_handler the geometry handler object used to extract the XYZ data
-          * \param[out] polydata the resultant polydata containing the cloud
-          * \param[out] initcells a list of cell indices used for the conversion. This can be set once and then passed
-          * around to speed up the conversion.
-          */
-        void
-        convertPointCloudToVTKPolyData (const GeometryHandlerConstPtr &geometry_handler,
-                                        vtkSmartPointer<vtkPolyData> &polydata,
-                                        vtkSmartPointer<vtkIdTypeArray> &initcells);
 
         /** \brief Updates a set of cells (vtkIdTypeArray) if the number of points in a cloud changes
           * \param[out] cells the vtkIdTypeArray object (set of cells) to update
@@ -1855,10 +1535,7 @@ namespace pcl
           * \param[in] nr_points the number of points in the new cloud. This dictates how many cells we need to
           * generate
           */
-        void
-        updateCells (vtkSmartPointer<vtkIdTypeArray> &cells,
-                     vtkSmartPointer<vtkIdTypeArray> &initcells,
-                     vtkIdType nr_points);
+        void updateCells (vtkSmartPointer<vtkIdTypeArray> &cells, vtkSmartPointer<vtkIdTypeArray> &initcells, vtkIdType nr_points);
 
         /** \brief Internal function which converts the information present in the geometric
           * and color handlers into VTK PolyData+Scalars, constructs a vtkActor object, and adds
@@ -1878,59 +1555,6 @@ namespace pcl
                               const Eigen::Vector4f& sensor_origin = Eigen::Vector4f (0, 0, 0, 0),
                               const Eigen::Quaternion<float>& sensor_orientation = Eigen::Quaternion<float> (1, 0, 0 ,0));
 
-        /** \brief Internal function which converts the information present in the geometric
-          * and color handlers into VTK PolyData+Scalars, constructs a vtkActor object, and adds
-          * all the required information to the internal cloud_actor_map_ object.
-          * \param[in] geometry_handler the geometric handler that contains the XYZ data
-          * \param[in] color_handler the color handler that contains the "RGB" (scalar) data
-          * \param[in] id the point cloud object id
-          * \param[in] viewport the view port where the Point Cloud should be added
-          * \param[in] sensor_origin the origin of the cloud data in global coordinates (defaults to 0,0,0)
-          * \param[in] sensor_orientation the orientation of the cloud data in global coordinates (defaults to 1,0,0,0)
-          */
-        template <typename PointT> bool
-        fromHandlersToScreen (const PointCloudGeometryHandler<PointT> &geometry_handler,
-                              const ColorHandlerConstPtr &color_handler,
-                              const std::string &id,
-                              int viewport,
-                              const Eigen::Vector4f& sensor_origin = Eigen::Vector4f (0, 0, 0, 0),
-                              const Eigen::Quaternion<float>& sensor_orientation = Eigen::Quaternion<float> (1, 0, 0 ,0));
-
-        /** \brief Internal function which converts the information present in the geometric
-          * and color handlers into VTK PolyData+Scalars, constructs a vtkActor object, and adds
-          * all the required information to the internal cloud_actor_map_ object.
-          * \param[in] geometry_handler the geometric handler that contains the XYZ data
-          * \param[in] color_handler the color handler that contains the "RGB" (scalar) data
-          * \param[in] id the point cloud object id
-          * \param[in] viewport the view port where the Point Cloud should be added
-          * \param[in] sensor_origin the origin of the cloud data in global coordinates (defaults to 0,0,0)
-          * \param[in] sensor_orientation the orientation of the cloud data in global coordinates (defaults to 1,0,0,0)
-          */
-        bool
-        fromHandlersToScreen (const GeometryHandlerConstPtr &geometry_handler,
-                              const ColorHandlerConstPtr &color_handler,
-                              const std::string &id,
-                              int viewport,
-                              const Eigen::Vector4f& sensor_origin = Eigen::Vector4f (0, 0, 0, 0),
-                              const Eigen::Quaternion<float>& sensor_orientation = Eigen::Quaternion<float> (1, 0, 0 ,0));
-
-        /** \brief Internal function which converts the information present in the geometric
-          * and color handlers into VTK PolyData+Scalars, constructs a vtkActor object, and adds
-          * all the required information to the internal cloud_actor_map_ object.
-          * \param[in] geometry_handler the geometric handler that contains the XYZ data
-          * \param[in] color_handler the color handler that contains the "RGB" (scalar) data
-          * \param[in] id the point cloud object id
-          * \param[in] viewport the view port where the Point Cloud should be added
-          * \param[in] sensor_origin the origin of the cloud data in global coordinates (defaults to 0,0,0)
-          * \param[in] sensor_orientation the orientation of the cloud data in global coordinates (defaults to 1,0,0,0)
-          */
-        template <typename PointT> bool
-        fromHandlersToScreen (const GeometryHandlerConstPtr &geometry_handler,
-                              const PointCloudColorHandler<PointT> &color_handler,
-                              const std::string &id,
-                              int viewport,
-                              const Eigen::Vector4f& sensor_origin = Eigen::Vector4f (0, 0, 0, 0),
-                              const Eigen::Quaternion<float>& sensor_orientation = Eigen::Quaternion<float> (1, 0, 0 ,0));
 
         /** \brief Allocate a new polydata smartpointer. Internal
           * \param[out] polydata the resultant poly data
@@ -1985,13 +1609,12 @@ namespace pcl
           * \param[out] m the resultant Eigen 4x4 matrix
           */
         static void
-        convertToEigenMatrix (const vtkSmartPointer<vtkMatrix4x4> &vtk_matrix,
-                              Eigen::Matrix4f &m);
+        convertToEigenMatrix (const vtkSmartPointer<vtkMatrix4x4> &vtk_matrix, Eigen::Matrix4f &m);
 
     };
   }
 }
 
 #include <opencv2/viz/viz3d_impl.hpp>
-//#include <pcl/visualization/impl/pcl_visualizer.hpp>
+
 
