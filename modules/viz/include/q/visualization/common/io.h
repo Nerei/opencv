@@ -39,7 +39,7 @@
 
 #include <q/visualization/common/actor_map.h>
 #include <q/visualization/vtk.h>
-#include <pcl/kdtree/kdtree_flann.h>
+//#include <pcl/kdtree/kdtree_flann.h>
 #include <pcl/console/print.h>
 
 namespace pcl

@@ -37,7 +37,9 @@
 #ifndef PCL_PCL_VISUALIZER_ACTOR_MAP_H_
 #define PCL_PCL_VISUALIZER_ACTOR_MAP_H_
 
-#include <q/visualization/point_cloud_handlers.h>
+
+#include <q/visualization/point_cloud_geometry_handlers.h>
+#include <q/visualization/point_cloud_color_handlers.h>
 #include <vector>
 #include <vtkLODActor.h>
 #include <vtkSmartPointer.h>

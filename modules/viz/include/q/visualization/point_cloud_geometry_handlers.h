@@ -42,7 +42,7 @@
 #endif
 
 // PCL includes
-//#include <q/point_cloud.h>
+#include <pcl/point_cloud.h>
 //#include <d:/git/pcl/common/include/pcl/point_cloud.h>
 
 //#include <q/common/io.h>
@@ -222,104 +222,11 @@ namespace pcl
         using PointCloudGeometryHandler<PointT>::field_z_idx_;
         using PointCloudGeometryHandler<PointT>::fields_;
     };
-
-    //////////////////////////////////////////////////////////////////////////////////////
-    /** \brief Custom handler class for PointCloud geometry. Given an input dataset and
-      * three user defined fields, all data present in them is extracted and displayed on
-      * screen as XYZ data.
-      * \author Radu B. Rusu 
-      * \ingroup visualization
-      */
-    template <typename PointT>
-    class PointCloudGeometryHandlerCustom : public PointCloudGeometryHandler<PointT>
-    {
-      public:
-        typedef typename PointCloudGeometryHandler<PointT>::PointCloud PointCloud;
-        typedef typename PointCloud::Ptr PointCloudPtr;
-        typedef typename PointCloud::ConstPtr PointCloudConstPtr;
-
-        typedef typename boost::shared_ptr<PointCloudGeometryHandlerCustom<PointT> > Ptr;
-        typedef typename boost::shared_ptr<const PointCloudGeometryHandlerCustom<PointT> > ConstPtr;
-
-        /** \brief Constructor. */
-        PointCloudGeometryHandlerCustom (const PointCloudConstPtr &cloud,
-                                         const std::string &x_field_name,
-                                         const std::string &y_field_name,
-                                         const std::string &z_field_name)
-        {
-          field_x_idx_ = pcl::getFieldIndex (*cloud, x_field_name, fields_);
-          if (field_x_idx_ == -1)
-            return;
-          field_y_idx_ = pcl::getFieldIndex (*cloud, y_field_name, fields_);
-          if (field_y_idx_ == -1)
-            return;
-          field_z_idx_ = pcl::getFieldIndex (*cloud, z_field_name, fields_);
-          if (field_z_idx_ == -1)
-            return;
-          field_name_ = x_field_name + y_field_name + z_field_name;
-          capable_ = true;
-        }
-
-        /** \brief Class getName method. */
-        virtual std::string
-        getName () const { return ("PointCloudGeometryHandlerCustom"); }
-
-        /** \brief Get the name of the field used. */
-        virtual std::string
-        getFieldName () const { return (field_name_); }
-
-        /** \brief Obtain the actual point geometry for the input dataset in VTK format.
-          * \param[out] points the resultant geometry
-          */
-        virtual void
-        getGeometry (vtkSmartPointer<vtkPoints> &points) const
-        {
-          if (!capable_)
-            return;
-
-          if (!points)
-            points = vtkSmartPointer<vtkPoints>::New ();
-          points->SetDataTypeToFloat ();
-          points->SetNumberOfPoints (cloud_->points.size ());
-
-          float data;
-          // Add all points
-          double p[3];
-          for (vtkIdType i = 0; i < static_cast<vtkIdType> (cloud_->points.size ()); ++i)
-          {
-            // Copy the value at the specified field
-            const uint8_t* pt_data = reinterpret_cast<const uint8_t*> (&cloud_->points[i]);
-            memcpy (&data, pt_data + fields_[field_x_idx_].offset, sizeof (float));
-            p[0] = data;
-
-            memcpy (&data, pt_data + fields_[field_y_idx_].offset, sizeof (float));
-            p[1] = data;
-
-            memcpy (&data, pt_data + fields_[field_z_idx_].offset, sizeof (float));
-            p[2] = data;
-
-            points->SetPoint (i, p);
-          }
-        }
-
-      private:
-        // Members derived from the base class
-        using PointCloudGeometryHandler<PointT>::cloud_;
-        using PointCloudGeometryHandler<PointT>::capable_;
-        using PointCloudGeometryHandler<PointT>::field_x_idx_;
-        using PointCloudGeometryHandler<PointT>::field_y_idx_;
-        using PointCloudGeometryHandler<PointT>::field_z_idx_;
-        using PointCloudGeometryHandler<PointT>::fields_;
-
-        /** \brief Name of the field used to create the geometry handler. */
-        std::string field_name_;
-    };
   }
 }
 
-#ifdef PCL_NO_PRECOMPILE
-#include <pcl/visualization/impl/point_cloud_geometry_handlers.hpp>
-#endif
+#include <q/visualization/impl/point_cloud_geometry_handlers.hpp>
+
 
 #endif    // PCL_POINT_CLOUD_GEOMETRY_HANDLERS_H_
 

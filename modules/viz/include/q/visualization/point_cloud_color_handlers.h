@@ -37,10 +37,6 @@
 #ifndef PCL_POINT_CLOUD_COLOR_HANDLERS_H_
 #define PCL_POINT_CLOUD_COLOR_HANDLERS_H_
 
-#if defined __GNUC__
-#pragma GCC system_header
-#endif
-
 // PCL includes
 #include <pcl/point_cloud.h>
 #include <pcl/common/io.h>

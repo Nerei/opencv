@@ -37,7 +37,7 @@ macro(find_vtk)
 endmacro()
 
 macro(find_pcl)
-  find_package(PCL REQUIRED COMPONENTS common io kdtree search) #visualization #geometry
+  find_package(PCL REQUIRED COMPONENTS common io ) #kdtree #search #visualization #geometry
   if(PCL_FOUND)
     set(HAVE_PCL ON)
     include_directories(SYSTEM ${PCL_INCLUDE_DIRS})

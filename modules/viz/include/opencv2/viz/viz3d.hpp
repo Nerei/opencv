@@ -1550,11 +1550,7 @@ namespace pcl
         template <typename PointT> bool
         fromHandlersToScreen (const PointCloudGeometryHandler<PointT> &geometry_handler,
                               const PointCloudColorHandler<PointT> &color_handler,
-                              const std::string &id,
-                              int viewport,
-                              const Eigen::Vector4f& sensor_origin = Eigen::Vector4f (0, 0, 0, 0),
-                              const Eigen::Quaternion<float>& sensor_orientation = Eigen::Quaternion<float> (1, 0, 0 ,0));
-
+                              const std::string &id, int viewport);
 
         /** \brief Allocate a new polydata smartpointer. Internal
           * \param[out] polydata the resultant poly data

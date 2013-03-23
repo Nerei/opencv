@@ -33,33 +33,23 @@ pcl::visualization::PCLVisualizer::addPointCloud (const typename pcl::PointCloud
   }
 
   PointCloudColorHandlerRandom<PointT> color_handler;
-  return (fromHandlersToScreen (geometry_handler, color_handler, id, viewport, cloud->sensor_origin_, cloud->sensor_orientation_));
+  return (fromHandlersToScreen (geometry_handler, color_handler, id, viewport));
 }
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////
 template <typename PointT> bool
-pcl::visualization::PCLVisualizer::addPointCloud (
-  const typename pcl::PointCloud<PointT>::ConstPtr &cloud,
-  const PointCloudColorHandler<PointT> &color_handler,
-  const std::string &id, int viewport)
+pcl::visualization::PCLVisualizer::addPointCloud (const typename pcl::PointCloud<PointT>::ConstPtr &cloud,
+  const PointCloudColorHandler<PointT> &color_handler, const std::string &id, int viewport)
 {
-  // Check to see if this ID entry already exists (has it been already added to the visualizer?)
-  CloudActorMap::iterator am_it = cloud_actor_map_->find (id);
-
-  if (am_it != cloud_actor_map_->end ())
+  if (cloud_actor_map_->find (id) != cloud_actor_map_->end ())
   {
     PCL_WARN ("[addPointCloud] A PointCloud with id <%s> already exists! Please choose a different id and retry.\n", id.c_str ());
-
-    // Here we're just pushing the handlers onto the queue. If needed, something fancier could
-    // be done such as checking if a specific handler already exists, etc.
-    //cloud_actor_map_[id].color_handlers.push_back (color_handler);
-    //style_->setCloudActorMap (boost::make_shared<CloudActorMap> (cloud_actor_map_));
     return (false);
   }
   // Convert the PointCloud to VTK PolyData
   PointCloudGeometryHandlerXYZ<PointT> geometry_handler (cloud);
-  return (fromHandlersToScreen (geometry_handler, color_handler, id, viewport, cloud->sensor_origin_, cloud->sensor_orientation_));
+  return (fromHandlersToScreen (geometry_handler, color_handler, id, viewport));
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////
@@ -70,20 +60,12 @@ pcl::visualization::PCLVisualizer::addPointCloud (
   const PointCloudGeometryHandler<PointT> &geometry_handler,
   const std::string &id, int viewport)
 {
-  // Check to see if this ID entry already exists (has it been already added to the visualizer?)
-  CloudActorMap::iterator am_it = cloud_actor_map_->find (id);
-
-  if (am_it != cloud_actor_map_->end ())
+  if (cloud_actor_map_->find (id) != cloud_actor_map_->end ())
   {
     PCL_WARN ("[addPointCloud] A PointCloud with id <%s> already exists! Please choose a different id and retry.\n", id.c_str ());
-    // Here we're just pushing the handlers onto the queue. If needed, something fancier could
-    // be done such as checking if a specific handler already exists, etc.
-    //cloud_actor_map_[id].geometry_handlers.push_back (geometry_handler);
-    //cloud_actor_map_[id].color_handlers.push_back (color_handler);
-    //style_->setCloudActorMap (boost::make_shared<CloudActorMap> (cloud_actor_map_));
     return (false);
   }
-  return (fromHandlersToScreen (geometry_handler, color_handler, id, viewport, cloud->sensor_origin_, cloud->sensor_orientation_));
+  return (fromHandlersToScreen (geometry_handler, color_handler, id, viewport));
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////
@@ -739,25 +721,12 @@ pcl::visualization::PCLVisualizer::addPointCloudNormals (
 
 //////////////////////////////////////////////////////////////////////////////////////////////
 template <typename PointT> bool
-pcl::visualization::PCLVisualizer::fromHandlersToScreen (
-  const PointCloudGeometryHandler<PointT> &geometry_handler,
-  const PointCloudColorHandler<PointT> &color_handler,
-  const std::string &id,
-  int viewport,
-  const Eigen::Vector4f& sensor_origin,
-  const Eigen::Quaternion<float>& sensor_orientation)
+pcl::visualization::PCLVisualizer::fromHandlersToScreen (const PointCloudGeometryHandler<PointT> &geometry_handler,
+  const PointCloudColorHandler<PointT> &color_handler, const std::string &id, int viewport)
 {
-  if (!geometry_handler.isCapable ())
-  {
-    PCL_WARN ("[fromHandlersToScreen] PointCloud <%s> requested with an invalid geometry handler (%s)!\n", id.c_str (), geometry_handler.getName ().c_str ());
-    return (false);
-  }
+   const Eigen::Vector4f& sensor_origin = Eigen::Vector4f::Zero ();
+   const Eigen::Quaternion<float>& sensor_orientation = Eigen::Quaternionf::Identity ();
 
-  if (!color_handler.isCapable ())
-  {
-    PCL_WARN ("[fromHandlersToScreen] PointCloud <%s> requested with an invalid color handler (%s)!\n", id.c_str (), color_handler.getName ().c_str ());
-    return (false);
-  }
 
   vtkSmartPointer<vtkPolyData> polydata;
   vtkSmartPointer<vtkIdTypeArray> initcells;

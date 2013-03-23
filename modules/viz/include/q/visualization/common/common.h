@@ -42,19 +42,12 @@
 #endif
 
 #include <opencv2/core/cvdef.h>
-//#include <q/point_types.h>
+#include <pcl/point_types.h>
 #include <q/visualization/eigen.h>
 #include <vtkMatrix4x4.h>
 
 namespace pcl
 {
-//  struct RGB
-//  {
-//      unsigned char r, g, b, a;
-
-//  };
-
-
   namespace visualization
   {
 
