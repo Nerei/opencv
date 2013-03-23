@@ -76,6 +76,8 @@ TEST(Viz_viz3d, accuracy)
 
     pcl::visualization::PCLVisualizer v;
 
-    //v.addPointCloud<pcl::PointXYZ>(cloud_load());
+    v.addCoordinateSystem(1.0, Eigen::Affine3f::Identity());
+
+    v.addPointCloud<pcl::PointXYZ>(cloud_load());
     v.spin();
 }

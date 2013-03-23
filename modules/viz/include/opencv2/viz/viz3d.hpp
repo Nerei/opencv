@@ -115,32 +115,6 @@ namespace pcl
         void spin ();
         void spinOnce (int time = 1, bool force_redraw = false);
 
-        /** \brief Adds a widget which shows an interactive axes display for orientation
-         *  \param[in] interactor - Pointer to the vtk interactor object used by the PCLVisualizer window
-         */
-        void addOrientationMarkerWidgetAxes (vtkRenderWindowInteractor* interactor);
-
-        /** \brief Disables the Orientatation Marker Widget so it is removed from the renderer */
-        void
-        removeOrientationMarkerWidgetAxes ();
-
-        /** \brief Adds 3D axes describing a coordinate system to screen at 0,0,0.
-          * \param[in] scale the scale of the axes (default: 1)
-          * \param[in] viewport the view port where the 3D axes should be added (default: all)
-          */
-        void
-        addCoordinateSystem (double scale = 1.0, int viewport = 0);
-
-        /** \brief Adds 3D axes describing a coordinate system to screen at x, y, z
-          * \param[in] scale the scale of the axes (default: 1)
-          * \param[in] x the X position of the axes
-          * \param[in] y the Y position of the axes
-          * \param[in] z the Z position of the axes
-          * \param[in] viewport the view port where the 3D axes should be added (default: all)
-          */
-        void
-        addCoordinateSystem (double scale, float x, float y, float z, int viewport = 0);
-
          /** \brief Adds 3D axes describing a coordinate system to screen at x, y, z, Roll,Pitch,Yaw
            *
            * \param[in] scale the scale of the axes (default: 1)
@@ -420,44 +394,6 @@ namespace pcl
                        const PointCloudGeometryHandler<PointT> &geometry_handler,
                        const std::string &id = "cloud", int viewport = 0);
 
-        /** \brief Add a PointXYZ Point Cloud to screen.
-          * \param[in] cloud the input point cloud dataset
-          * \param[in] id the point cloud object id (default: cloud)
-          * \param[in] viewport the view port where the Point Cloud should be added (default: all)
-          */
-        inline bool
-        addPointCloud (const pcl::PointCloud<pcl::PointXYZ>::ConstPtr &cloud,
-                       const std::string &id = "cloud", int viewport = 0)
-        {
-          return (addPointCloud<pcl::PointXYZ> (cloud, id, viewport));
-        }
-
-
-        /** \brief Add a PointXYZRGB Point Cloud to screen.
-          * \param[in] cloud the input point cloud dataset
-          * \param[in] id the point cloud object id (default: cloud)
-          * \param[in] viewport the view port where the Point Cloud should be added (default: all)
-          */
-        inline bool
-        addPointCloud (const pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr &cloud,
-                       const std::string &id = "cloud", int viewport = 0)
-        {
-          pcl::visualization::PointCloudColorHandlerRandom<pcl::PointXYZRGB> color_handler (cloud);
-          return (addPointCloud<pcl::PointXYZRGB> (cloud, color_handler, id, viewport));
-        }
-
-        /** \brief Add a PointXYZRGBA Point Cloud to screen.
-          * \param[in] cloud the input point cloud dataset
-          * \param[in] id the point cloud object id (default: cloud)
-          * \param[in] viewport the view port where the Point Cloud should be added (default: all)
-          */
-        inline bool
-        addPointCloud (const pcl::PointCloud<pcl::PointXYZRGBA>::ConstPtr &cloud,
-                       const std::string &id = "cloud", int viewport = 0)
-        {
-          pcl::visualization::PointCloudColorHandlerRandom<pcl::PointXYZRGBA> color_handler (cloud);
-          return (addPointCloud<pcl::PointXYZRGBA> (cloud, color_handler, id, viewport));
-        }
 
         /** \brief Add a PolygonMesh object to screen
           * \param[in] polymesh the polygonal mesh
@@ -990,23 +926,10 @@ namespace pcl
           */
         void setShowFPS (bool show_fps);
 
-        /** \brief Renders a virtual scene as seen from the camera viewpoint and returns the rendered point cloud.
-          * ATT: This method will only render the scene if only on viewport exists. Otherwise, returns an empty
-          * point cloud and exits immediately.
-          * \param[in] xres is the size of the window (X) used to render the scene
-          * \param[in] yres is the size of the window (Y) used to render the scene
-          * \param[in] cloud is the rendered point cloud
-          */
-        void
-        renderView (int xres, int yres, pcl::PointCloud<pcl::PointXYZ>::Ptr & cloud);
-
         /** \brief Initialize camera parameters with some default values. */
         void initCameraParameters ();
 
         /** \brief Search for camera parameters at the command line and set them internally.
-          * \param[in] argc
-          * \param[in] argv
-          */
         bool getCameraParameters (int argc, char **argv);
 
         /** \brief Checks whether the camera parameters were manually loaded from file.*/

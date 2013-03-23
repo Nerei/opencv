@@ -71,142 +71,142 @@
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 pcl::visualization::PCLVisualizer::PCLVisualizer (const std::string &name, const bool create_interactor)
-  : interactor_ ()
-  , update_fps_ (vtkSmartPointer<FPSCallback>::New ())
-  , stopped_ ()
-  , timer_id_ ()
-  , exit_main_loop_timer_callback_ ()
-  , exit_callback_ ()
-  , rens_ (vtkSmartPointer<vtkRendererCollection>::New ())
-  , win_ ()
-  , style_ (vtkSmartPointer<pcl::visualization::PCLVisualizerInteractorStyle>::New ())
-  , cloud_actor_map_ (new CloudActorMap)
-  , shape_actor_map_ (new ShapeActorMap)
-  , coordinate_actor_map_ ()
-  , camera_set_ ()
+    : interactor_ ()
+    , update_fps_ (vtkSmartPointer<FPSCallback>::New ())
+    , stopped_ ()
+    , timer_id_ ()
+    , exit_main_loop_timer_callback_ ()
+    , exit_callback_ ()
+    , rens_ (vtkSmartPointer<vtkRendererCollection>::New ())
+    , win_ ()
+    , style_ (vtkSmartPointer<pcl::visualization::PCLVisualizerInteractorStyle>::New ())
+    , cloud_actor_map_ (new CloudActorMap)
+    , shape_actor_map_ (new ShapeActorMap)
+    , coordinate_actor_map_ ()
+    , camera_set_ ()
 {
-  // Create a Renderer
-  vtkSmartPointer<vtkRenderer> ren = vtkSmartPointer<vtkRenderer>::New ();
-  ren->AddObserver (vtkCommand::EndEvent, update_fps_);
-  // Add it to the list of renderers
-  rens_->AddItem (ren);
+    // Create a Renderer
+    vtkSmartPointer<vtkRenderer> ren = vtkSmartPointer<vtkRenderer>::New ();
+    ren->AddObserver (vtkCommand::EndEvent, update_fps_);
+    // Add it to the list of renderers
+    rens_->AddItem (ren);
 
-  // FPS callback
-  vtkSmartPointer<vtkTextActor> txt = vtkSmartPointer<vtkTextActor>::New ();
-  update_fps_->actor = txt;
-  update_fps_->pcl_visualizer = this;
-  update_fps_->decimated = false;
-  ren->AddActor (txt);
+    // FPS callback
+    vtkSmartPointer<vtkTextActor> txt = vtkSmartPointer<vtkTextActor>::New ();
+    update_fps_->actor = txt;
+    update_fps_->pcl_visualizer = this;
+    update_fps_->decimated = false;
+    ren->AddActor (txt);
 
 
-  // Create a RendererWindow
-  win_ = vtkSmartPointer<vtkRenderWindow>::New ();
-  win_->SetWindowName (name.c_str ());
+    // Create a RendererWindow
+    win_ = vtkSmartPointer<vtkRenderWindow>::New ();
+    win_->SetWindowName (name.c_str ());
 
-  // Get screen size
-  int *scr_size = win_->GetScreenSize ();
-  // Set the window size as 1/2 of the screen size
-  win_->SetSize (scr_size[0] / 2, scr_size[1] / 2);
+    // Get screen size
+    int *scr_size = win_->GetScreenSize ();
+    // Set the window size as 1/2 of the screen size
+    win_->SetSize (scr_size[0] / 2, scr_size[1] / 2);
 
-  // By default, don't use vertex buffer objects
-  use_vbos_ = false;
+    // By default, don't use vertex buffer objects
+    use_vbos_ = false;
 
-  // Add all renderers to the window
-  rens_->InitTraversal ();
-  vtkRenderer* renderer = NULL;
-  while ((renderer = rens_->GetNextItem ()) != NULL)
-    win_->AddRenderer (renderer);
+    // Add all renderers to the window
+    rens_->InitTraversal ();
+    vtkRenderer* renderer = NULL;
+    while ((renderer = rens_->GetNextItem ()) != NULL)
+        win_->AddRenderer (renderer);
 
-  // Create the interactor style
-  style_->Initialize ();
-  style_->setRendererCollection (rens_);
-  style_->setCloudActorMap (cloud_actor_map_);
-  style_->UseTimersOn ();
-  style_->setUseVbos(use_vbos_);
+    // Create the interactor style
+    style_->Initialize ();
+    style_->setRendererCollection (rens_);
+    style_->setCloudActorMap (cloud_actor_map_);
+    style_->UseTimersOn ();
+    style_->setUseVbos(use_vbos_);
 
-  if (create_interactor)
-    createInteractor ();
+    if (create_interactor)
+        createInteractor ();
 
-  win_->SetWindowName (name.c_str ());
+    win_->SetWindowName (name.c_str ());
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 void
 pcl::visualization::PCLVisualizer::createInteractor ()
 {
-  interactor_ = vtkSmartPointer <vtkRenderWindowInteractor>::Take (vtkRenderWindowInteractorFixNew ());
+    interactor_ = vtkSmartPointer <vtkRenderWindowInteractor>::Take (vtkRenderWindowInteractorFixNew ());
 
-  //win_->PointSmoothingOn ();
-  //win_->LineSmoothingOn ();
-  //win_->PolygonSmoothingOn ();
-  win_->AlphaBitPlanesOff ();
-  win_->PointSmoothingOff ();
-  win_->LineSmoothingOff ();
-  win_->PolygonSmoothingOff ();
-  win_->SwapBuffersOn ();
-  win_->SetStereoTypeToAnaglyph ();
+    //win_->PointSmoothingOn ();
+    //win_->LineSmoothingOn ();
+    //win_->PolygonSmoothingOn ();
+    win_->AlphaBitPlanesOff ();
+    win_->PointSmoothingOff ();
+    win_->LineSmoothingOff ();
+    win_->PolygonSmoothingOff ();
+    win_->SwapBuffersOn ();
+    win_->SetStereoTypeToAnaglyph ();
 
-  interactor_->SetRenderWindow (win_);
-  interactor_->SetInteractorStyle (style_);
-  //interactor_->SetStillUpdateRate (30.0);
-  interactor_->SetDesiredUpdateRate (30.0);
+    interactor_->SetRenderWindow (win_);
+    interactor_->SetInteractorStyle (style_);
+    //interactor_->SetStillUpdateRate (30.0);
+    interactor_->SetDesiredUpdateRate (30.0);
 
-  // Initialize and create timer, also create window
-  interactor_->Initialize ();
-  timer_id_ = interactor_->CreateRepeatingTimer (5000L);
+    // Initialize and create timer, also create window
+    interactor_->Initialize ();
+    timer_id_ = interactor_->CreateRepeatingTimer (5000L);
 
-  // Set a simple PointPicker
-  vtkSmartPointer<vtkPointPicker> pp = vtkSmartPointer<vtkPointPicker>::New ();
-  pp->SetTolerance (pp->GetTolerance () * 2);
-  interactor_->SetPicker (pp);
+    // Set a simple PointPicker
+    vtkSmartPointer<vtkPointPicker> pp = vtkSmartPointer<vtkPointPicker>::New ();
+    pp->SetTolerance (pp->GetTolerance () * 2);
+    interactor_->SetPicker (pp);
 
-  exit_main_loop_timer_callback_ = vtkSmartPointer<ExitMainLoopTimerCallback>::New ();
-  exit_main_loop_timer_callback_->pcl_visualizer = this;
-  exit_main_loop_timer_callback_->right_timer_id = -1;
-  interactor_->AddObserver (vtkCommand::TimerEvent, exit_main_loop_timer_callback_);
+    exit_main_loop_timer_callback_ = vtkSmartPointer<ExitMainLoopTimerCallback>::New ();
+    exit_main_loop_timer_callback_->pcl_visualizer = this;
+    exit_main_loop_timer_callback_->right_timer_id = -1;
+    interactor_->AddObserver (vtkCommand::TimerEvent, exit_main_loop_timer_callback_);
 
-  exit_callback_ = vtkSmartPointer<ExitCallback>::New ();
-  exit_callback_->pcl_visualizer = this;
-  interactor_->AddObserver (vtkCommand::ExitEvent, exit_callback_);
+    exit_callback_ = vtkSmartPointer<ExitCallback>::New ();
+    exit_callback_->pcl_visualizer = this;
+    interactor_->AddObserver (vtkCommand::ExitEvent, exit_callback_);
 
-  resetStoppedFlag ();
+    resetStoppedFlag ();
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 void pcl::visualization::PCLVisualizer::setupInteractor (vtkRenderWindowInteractor *iren, vtkRenderWindow *win)
 {
-  win->AlphaBitPlanesOff ();
-  win->PointSmoothingOff ();
-  win->LineSmoothingOff ();
-  win->PolygonSmoothingOff ();
-  win->SwapBuffersOn ();
-  win->SetStereoTypeToAnaglyph ();
+    win->AlphaBitPlanesOff ();
+    win->PointSmoothingOff ();
+    win->LineSmoothingOff ();
+    win->PolygonSmoothingOff ();
+    win->SwapBuffersOn ();
+    win->SetStereoTypeToAnaglyph ();
 
-  iren->SetRenderWindow (win);
-  iren->SetInteractorStyle (style_);
-  //iren->SetStillUpdateRate (30.0);
-  iren->SetDesiredUpdateRate (30.0);
+    iren->SetRenderWindow (win);
+    iren->SetInteractorStyle (style_);
+    //iren->SetStillUpdateRate (30.0);
+    iren->SetDesiredUpdateRate (30.0);
 
-  // Initialize and create timer, also create window
-  iren->Initialize ();
-  timer_id_ = iren->CreateRepeatingTimer (5000L);
+    // Initialize and create timer, also create window
+    iren->Initialize ();
+    timer_id_ = iren->CreateRepeatingTimer (5000L);
 
 
-  // Set a simple PointPicker
-  vtkSmartPointer<vtkPointPicker> pp = vtkSmartPointer<vtkPointPicker>::New ();
-  pp->SetTolerance (pp->GetTolerance () * 2);
-  iren->SetPicker (pp);
+    // Set a simple PointPicker
+    vtkSmartPointer<vtkPointPicker> pp = vtkSmartPointer<vtkPointPicker>::New ();
+    pp->SetTolerance (pp->GetTolerance () * 2);
+    iren->SetPicker (pp);
 
-  exit_main_loop_timer_callback_ = vtkSmartPointer<ExitMainLoopTimerCallback>::New ();
-  exit_main_loop_timer_callback_->pcl_visualizer = this;
-  exit_main_loop_timer_callback_->right_timer_id = -1;
-  iren->AddObserver (vtkCommand::TimerEvent, exit_main_loop_timer_callback_);
+    exit_main_loop_timer_callback_ = vtkSmartPointer<ExitMainLoopTimerCallback>::New ();
+    exit_main_loop_timer_callback_->pcl_visualizer = this;
+    exit_main_loop_timer_callback_->right_timer_id = -1;
+    iren->AddObserver (vtkCommand::TimerEvent, exit_main_loop_timer_callback_);
 
-  exit_callback_ = vtkSmartPointer<ExitCallback>::New ();
-  exit_callback_->pcl_visualizer = this;
-  iren->AddObserver (vtkCommand::ExitEvent, exit_callback_);
+    exit_callback_ = vtkSmartPointer<ExitCallback>::New ();
+    exit_callback_->pcl_visualizer = this;
+    iren->AddObserver (vtkCommand::ExitEvent, exit_callback_);
 
-  resetStoppedFlag ();
+    resetStoppedFlag ();
 }
 
 
@@ -214,237 +214,113 @@ void pcl::visualization::PCLVisualizer::setupInteractor (vtkRenderWindowInteract
 void
 pcl::visualization::PCLVisualizer::setupInteractor (vtkRenderWindowInteractor *iren, vtkRenderWindow *win, vtkInteractorStyle *style)
 {
-  win->AlphaBitPlanesOff ();
-  win->PointSmoothingOff ();
-  win->LineSmoothingOff ();
-  win->PolygonSmoothingOff ();
-  win->SwapBuffersOn ();
-  win->SetStereoTypeToAnaglyph ();
+    win->AlphaBitPlanesOff ();
+    win->PointSmoothingOff ();
+    win->LineSmoothingOff ();
+    win->PolygonSmoothingOff ();
+    win->SwapBuffersOn ();
+    win->SetStereoTypeToAnaglyph ();
 
-  iren->SetRenderWindow (win);
-  iren->SetInteractorStyle (style);
-  //iren->SetStillUpdateRate (30.0);
-  iren->SetDesiredUpdateRate (30.0);
+    iren->SetRenderWindow (win);
+    iren->SetInteractorStyle (style);
+    //iren->SetStillUpdateRate (30.0);
+    iren->SetDesiredUpdateRate (30.0);
 
-  // Initialize and create timer, also create window
-  iren->Initialize ();
-  timer_id_ = iren->CreateRepeatingTimer (5000L);
+    // Initialize and create timer, also create window
+    iren->Initialize ();
+    timer_id_ = iren->CreateRepeatingTimer (5000L);
 
-  // Set a simple PointPicker
-  //vtkSmartPointer<vtkPointPicker> pp = vtkSmartPointer<vtkPointPicker>::New ();
- // pp->SetTolerance (pp->GetTolerance () * 2);
- // iren->SetPicker (pp);
+    // Set a simple PointPicker
+    //vtkSmartPointer<vtkPointPicker> pp = vtkSmartPointer<vtkPointPicker>::New ();
+    // pp->SetTolerance (pp->GetTolerance () * 2);
+    // iren->SetPicker (pp);
 
-  exit_main_loop_timer_callback_ = vtkSmartPointer<ExitMainLoopTimerCallback>::New ();
-  exit_main_loop_timer_callback_->pcl_visualizer = this;
-  exit_main_loop_timer_callback_->right_timer_id = -1;
-  iren->AddObserver (vtkCommand::TimerEvent, exit_main_loop_timer_callback_);
+    exit_main_loop_timer_callback_ = vtkSmartPointer<ExitMainLoopTimerCallback>::New ();
+    exit_main_loop_timer_callback_->pcl_visualizer = this;
+    exit_main_loop_timer_callback_->right_timer_id = -1;
+    iren->AddObserver (vtkCommand::TimerEvent, exit_main_loop_timer_callback_);
 
-  exit_callback_ = vtkSmartPointer<ExitCallback>::New ();
-  exit_callback_->pcl_visualizer = this;
-  iren->AddObserver (vtkCommand::ExitEvent, exit_callback_);
+    exit_callback_ = vtkSmartPointer<ExitCallback>::New ();
+    exit_callback_->pcl_visualizer = this;
+    iren->AddObserver (vtkCommand::ExitEvent, exit_callback_);
 
-  resetStoppedFlag ();
+    resetStoppedFlag ();
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 pcl::visualization::PCLVisualizer::~PCLVisualizer ()
 {
-  if (interactor_ != NULL)
-    interactor_->DestroyTimer (timer_id_);
-  // Clear the collections
-  rens_->RemoveAllItems ();
+    if (interactor_ != NULL)
+        interactor_->DestroyTimer (timer_id_);
+    // Clear the collections
+    rens_->RemoveAllItems ();
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 void
 pcl::visualization::PCLVisualizer::saveScreenshot (const std::string &file)
 {
-  style_->saveScreenshot (file);
+    style_->saveScreenshot (file);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 boost::signals2::connection
 pcl::visualization::PCLVisualizer::registerKeyboardCallback (boost::function<void (const cv::KeyboardEvent&)> callback)
 {
-  return (style_->registerKeyboardCallback (callback));
+    return (style_->registerKeyboardCallback (callback));
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 boost::signals2::connection
 pcl::visualization::PCLVisualizer::registerMouseCallback (boost::function<void (const cv::MouseEvent&)> callback)
 {
-  return (style_->registerMouseCallback (callback));
+    return (style_->registerMouseCallback (callback));
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 boost::signals2::connection
 pcl::visualization::PCLVisualizer::registerPointPickingCallback (boost::function<void (const pcl::visualization::PointPickingEvent&)> callback)
 {
-  return (style_->registerPointPickingCallback (callback));
+    return (style_->registerPointPickingCallback (callback));
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 void pcl::visualization::PCLVisualizer::spin ()
 {
-  resetStoppedFlag ();
-  // Render the window before we start the interactor
-  win_->Render ();
-  interactor_->Start ();
+    resetStoppedFlag ();
+    // Render the window before we start the interactor
+    win_->Render ();
+    interactor_->Start ();
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 void
 pcl::visualization::PCLVisualizer::spinOnce (int time, bool force_redraw)
 {
-  resetStoppedFlag ();
+    resetStoppedFlag ();
 
-  if (time <= 0)
-    time = 1;
+    if (time <= 0)
+        time = 1;
 
-  if (force_redraw)
-    interactor_->Render ();
+    if (force_redraw)
+        interactor_->Render ();
 
-  DO_EVERY (1.0 / interactor_->GetDesiredUpdateRate (),
-    exit_main_loop_timer_callback_->right_timer_id = interactor_->CreateRepeatingTimer (time);
-    interactor_->Start ();
+    DO_EVERY (1.0 / interactor_->GetDesiredUpdateRate (),
+              exit_main_loop_timer_callback_->right_timer_id = interactor_->CreateRepeatingTimer (time);
+            interactor_->Start ();
     interactor_->DestroyTimer (exit_main_loop_timer_callback_->right_timer_id);
-  );
+    );
 }
 
-/////////////////////////////////////////////////////////////////////////////////////////////
-void
-pcl::visualization::PCLVisualizer::addOrientationMarkerWidgetAxes (vtkRenderWindowInteractor* interactor)
+int feq (double a, double b) { return fabs (a - b) < 1e-9; }
+
+void quat_to_angle_axis (const Eigen::Quaternionf &qx, double &theta, double axis[3])
 {
-  if ( !axes_widget_ )
-  {
-    vtkSmartPointer<vtkAxesActor> axes = vtkSmartPointer<vtkAxesActor>::New ();
-
-    axes_widget_ = vtkSmartPointer<vtkOrientationMarkerWidget>::New ();
-    axes_widget_->SetOutlineColor (0.9300, 0.5700, 0.1300);
-    axes_widget_->SetOrientationMarker (axes);
-    axes_widget_->SetInteractor (interactor);
-    axes_widget_->SetViewport (0.0, 0.0, 0.4, 0.4);
-    axes_widget_->SetEnabled (true);
-    axes_widget_->InteractiveOn ();
-  }
-  else
-  {
-    axes_widget_->SetEnabled (true);
-    pcl::console::print_warn (stderr, "Orientation Widget Axes already exists, just enabling it");
-  }
-
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////
-void
-pcl::visualization::PCLVisualizer::removeOrientationMarkerWidgetAxes ()
-{
-  if (axes_widget_)
-  {
-    if (axes_widget_->GetEnabled ())
-      axes_widget_->SetEnabled (false);
-    else
-      pcl::console::print_warn (stderr, "Orientation Widget Axes was already disabled, doing nothing.");
-  }
-  else
-  {
-    pcl::console::print_error ("Attempted to delete Orientation Widget Axes which does not exist!\n");
-  }
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////////
-void
-pcl::visualization::PCLVisualizer::addCoordinateSystem (double scale, int viewport)
-{
-  vtkSmartPointer<vtkAxes> axes = vtkSmartPointer<vtkAxes>::New ();
-  axes->SetOrigin (0, 0, 0);
-  axes->SetScaleFactor (scale);
-
-  vtkSmartPointer<vtkFloatArray> axes_colors = vtkSmartPointer<vtkFloatArray>::New ();
-  axes_colors->Allocate (6);
-  axes_colors->InsertNextValue (0.0);
-  axes_colors->InsertNextValue (0.0);
-  axes_colors->InsertNextValue (0.5);
-  axes_colors->InsertNextValue (0.5);
-  axes_colors->InsertNextValue (1.0);
-  axes_colors->InsertNextValue (1.0);
-
-  vtkSmartPointer<vtkPolyData> axes_data = axes->GetOutput ();
-  axes_data->Update ();
-  axes_data->GetPointData ()->SetScalars (axes_colors);
-
-  vtkSmartPointer<vtkTubeFilter> axes_tubes = vtkSmartPointer<vtkTubeFilter>::New ();
-  axes_tubes->SetInput (axes_data);
-  axes_tubes->SetRadius (axes->GetScaleFactor () / 50.0);
-  axes_tubes->SetNumberOfSides (6);
-
-  vtkSmartPointer<vtkPolyDataMapper> axes_mapper = vtkSmartPointer<vtkPolyDataMapper>::New ();
-  axes_mapper->SetScalarModeToUsePointData ();
-  axes_mapper->SetInput (axes_tubes->GetOutput ());
-
-  vtkSmartPointer<vtkLODActor> axes_actor = vtkSmartPointer<vtkLODActor>::New ();
-  axes_actor->SetMapper (axes_mapper);
-
-  // Save the ID and actor pair to the global actor map
-  coordinate_actor_map_[viewport] = axes_actor;
-
-  addActorToRenderer (axes_actor, viewport);
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////////
-void
-pcl::visualization::PCLVisualizer::addCoordinateSystem (double scale, float x, float y, float z, int viewport)
-{
-  vtkSmartPointer<vtkAxes> axes = vtkSmartPointer<vtkAxes>::New ();
-  axes->SetOrigin (0, 0, 0);
-  axes->SetScaleFactor (scale);
-
-  vtkSmartPointer<vtkFloatArray> axes_colors = vtkSmartPointer<vtkFloatArray>::New ();
-  axes_colors->Allocate (6);
-  axes_colors->InsertNextValue (0.0);
-  axes_colors->InsertNextValue (0.0);
-  axes_colors->InsertNextValue (0.5);
-  axes_colors->InsertNextValue (0.5);
-  axes_colors->InsertNextValue (1.0);
-  axes_colors->InsertNextValue (1.0);
-
-  vtkSmartPointer<vtkPolyData> axes_data = axes->GetOutput ();
-  axes_data->Update ();
-  axes_data->GetPointData ()->SetScalars (axes_colors);
-
-  vtkSmartPointer<vtkTubeFilter> axes_tubes = vtkSmartPointer<vtkTubeFilter>::New ();
-  axes_tubes->SetInput (axes_data);
-  axes_tubes->SetRadius (axes->GetScaleFactor () / 50.0);
-  axes_tubes->SetNumberOfSides (6);
-
-  vtkSmartPointer<vtkPolyDataMapper> axes_mapper = vtkSmartPointer<vtkPolyDataMapper>::New ();
-  axes_mapper->SetScalarModeToUsePointData ();
-  axes_mapper->SetInput (axes_tubes->GetOutput ());
-
-  vtkSmartPointer<vtkLODActor> axes_actor = vtkSmartPointer<vtkLODActor>::New ();
-  axes_actor->SetMapper (axes_mapper);
-  axes_actor->SetPosition (x, y, z);
-
-  // Save the ID and actor pair to the global actor map
-  coordinate_actor_map_[viewport] = axes_actor;
-
-  addActorToRenderer (axes_actor, viewport);
-}
-
-int
-feq (double a, double b) {
-    return fabs (a - b) < 1e-9;
-}
-
-void
-quat_to_angle_axis (const Eigen::Quaternionf &qx, double &theta, double axis[3])
-{
-double q[4];
-  q[0] = qx.w();
-  q[1] = qx.x();
-  q[2] = qx.y();
-  q[3] = qx.z();
+    double q[4];
+    q[0] = qx.w();
+    q[1] = qx.x();
+    q[2] = qx.y();
+    q[3] = qx.z();
 
     double halftheta = acos (q[0]);
     theta = halftheta * 2;
@@ -465,184 +341,184 @@ double q[4];
 /////////////////////////////////////////////////////////////////////////////////////////////
 void pcl::visualization::PCLVisualizer::addCoordinateSystem (double scale, const Eigen::Affine3f& t, int viewport)
 {
-  vtkSmartPointer<vtkAxes> axes = vtkSmartPointer<vtkAxes>::New ();
-  axes->SetOrigin (0, 0, 0);
-  axes->SetScaleFactor (scale);
+    vtkSmartPointer<vtkAxes> axes = vtkSmartPointer<vtkAxes>::New ();
+    axes->SetOrigin (0, 0, 0);
+    axes->SetScaleFactor (scale);
 
-  vtkSmartPointer<vtkFloatArray> axes_colors = vtkSmartPointer<vtkFloatArray>::New ();
-  axes_colors->Allocate (6);
-  axes_colors->InsertNextValue (0.0);
-  axes_colors->InsertNextValue (0.0);
-  axes_colors->InsertNextValue (0.5);
-  axes_colors->InsertNextValue (0.5);
-  axes_colors->InsertNextValue (1.0);
-  axes_colors->InsertNextValue (1.0);
+    vtkSmartPointer<vtkFloatArray> axes_colors = vtkSmartPointer<vtkFloatArray>::New ();
+    axes_colors->Allocate (6);
+    axes_colors->InsertNextValue (0.0);
+    axes_colors->InsertNextValue (0.0);
+    axes_colors->InsertNextValue (0.5);
+    axes_colors->InsertNextValue (0.5);
+    axes_colors->InsertNextValue (1.0);
+    axes_colors->InsertNextValue (1.0);
 
-  vtkSmartPointer<vtkPolyData> axes_data = axes->GetOutput ();
-  axes_data->Update ();
-  axes_data->GetPointData ()->SetScalars (axes_colors);
+    vtkSmartPointer<vtkPolyData> axes_data = axes->GetOutput ();
+    axes_data->Update ();
+    axes_data->GetPointData ()->SetScalars (axes_colors);
 
-  vtkSmartPointer<vtkTubeFilter> axes_tubes = vtkSmartPointer<vtkTubeFilter>::New ();
-  axes_tubes->SetInput (axes_data);
-  axes_tubes->SetRadius (axes->GetScaleFactor () / 50.0);
-  axes_tubes->SetNumberOfSides (6);
+    vtkSmartPointer<vtkTubeFilter> axes_tubes = vtkSmartPointer<vtkTubeFilter>::New ();
+    axes_tubes->SetInput (axes_data);
+    axes_tubes->SetRadius (axes->GetScaleFactor () / 50.0);
+    axes_tubes->SetNumberOfSides (6);
 
-  vtkSmartPointer<vtkPolyDataMapper> axes_mapper = vtkSmartPointer<vtkPolyDataMapper>::New ();
-  axes_mapper->SetScalarModeToUsePointData ();
-  axes_mapper->SetInput (axes_tubes->GetOutput ());
+    vtkSmartPointer<vtkPolyDataMapper> axes_mapper = vtkSmartPointer<vtkPolyDataMapper>::New ();
+    axes_mapper->SetScalarModeToUsePointData ();
+    axes_mapper->SetInput (axes_tubes->GetOutput ());
 
-  vtkSmartPointer<vtkLODActor> axes_actor = vtkSmartPointer<vtkLODActor>::New ();
-  axes_actor->SetMapper (axes_mapper);
+    vtkSmartPointer<vtkLODActor> axes_actor = vtkSmartPointer<vtkLODActor>::New ();
+    axes_actor->SetMapper (axes_mapper);
 
-  axes_actor->SetPosition (t (0, 3), t(1, 3), t(2, 3));
+    axes_actor->SetPosition (t(0, 3), t(1, 3), t(2, 3));
 
-  Eigen::Matrix3f m;
-  m =t.rotation();
-  Eigen::Quaternionf rf;
-  rf = Eigen::Quaternionf(m);
-  double r_angle;
-  double r_axis[3];
-  quat_to_angle_axis(rf,r_angle,r_axis);
-  //
-  axes_actor->SetOrientation(0,0,0);
-  axes_actor->RotateWXYZ(r_angle*180/M_PI,r_axis[0],r_axis[1],r_axis[2]);
-  //WAS:  axes_actor->SetOrientation (roll, pitch, yaw);
+    Eigen::Matrix3f m;
+    m =t.rotation();
+    Eigen::Quaternionf rf;
+    rf = Eigen::Quaternionf(m);
+    double r_angle;
+    double r_axis[3];
+    quat_to_angle_axis(rf,r_angle,r_axis);
+    //
+    axes_actor->SetOrientation(0,0,0);
+    axes_actor->RotateWXYZ(r_angle*180/M_PI,r_axis[0],r_axis[1],r_axis[2]);
+    //WAS:  axes_actor->SetOrientation (roll, pitch, yaw);
 
-  // Save the ID and actor pair to the global actor map
-  coordinate_actor_map_[viewport] = axes_actor;
-  addActorToRenderer (axes_actor, viewport);
+    // Save the ID and actor pair to the global actor map
+    coordinate_actor_map_[viewport] = axes_actor;
+    addActorToRenderer (axes_actor, viewport);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 bool pcl::visualization::PCLVisualizer::removeCoordinateSystem (int viewport)
 {
-  // Check to see if the given ID entry exists
-  CoordinateActorMap::iterator am_it = coordinate_actor_map_.find (viewport);
+    // Check to see if the given ID entry exists
+    CoordinateActorMap::iterator am_it = coordinate_actor_map_.find (viewport);
 
-  if (am_it == coordinate_actor_map_.end ())
+    if (am_it == coordinate_actor_map_.end ())
+        return (false);
+
+    // Remove it from all renderers
+    if (removeActorFromRenderer (am_it->second, viewport))
+    {
+        // Remove the ID pair to the global actor map
+        coordinate_actor_map_.erase (am_it);
+        return (true);
+    }
     return (false);
-
-  // Remove it from all renderers
-  if (removeActorFromRenderer (am_it->second, viewport))
-  {
-    // Remove the ID pair to the global actor map
-    coordinate_actor_map_.erase (am_it);
-    return (true);
-  }
-  return (false);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 bool
 pcl::visualization::PCLVisualizer::removePointCloud (const std::string &id, int viewport)
 {
-  // Check to see if the given ID entry exists
-  CloudActorMap::iterator am_it = cloud_actor_map_->find (id);
+    // Check to see if the given ID entry exists
+    CloudActorMap::iterator am_it = cloud_actor_map_->find (id);
 
-  if (am_it == cloud_actor_map_->end ())
+    if (am_it == cloud_actor_map_->end ())
+        return (false);
+
+    // Remove it from all renderers
+    if (removeActorFromRenderer (am_it->second.actor, viewport))
+    {
+        // Remove the pointer/ID pair to the global actor map
+        cloud_actor_map_->erase (am_it);
+        return (true);
+    }
     return (false);
-
-  // Remove it from all renderers
-  if (removeActorFromRenderer (am_it->second.actor, viewport))
-  {
-    // Remove the pointer/ID pair to the global actor map
-    cloud_actor_map_->erase (am_it);
-    return (true);
-  }
-  return (false);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 bool
 pcl::visualization::PCLVisualizer::removeShape (const std::string &id, int viewport)
 {
-  // Check to see if the given ID entry exists
-  ShapeActorMap::iterator am_it = shape_actor_map_->find (id);
-  // Extra step: check if there is a cloud with the same ID
-  CloudActorMap::iterator ca_it = cloud_actor_map_->find (id);
+    // Check to see if the given ID entry exists
+    ShapeActorMap::iterator am_it = shape_actor_map_->find (id);
+    // Extra step: check if there is a cloud with the same ID
+    CloudActorMap::iterator ca_it = cloud_actor_map_->find (id);
 
-  bool shape = true;
-  // Try to find a shape first
-  if (am_it == shape_actor_map_->end ())
-  {
-    // There is no cloud or shape with this ID, so just exit
-    if (ca_it == cloud_actor_map_->end ())
-      return (false);
-    // Cloud found, set shape to false
-    shape = false;
-  }
+    bool shape = true;
+    // Try to find a shape first
+    if (am_it == shape_actor_map_->end ())
+    {
+        // There is no cloud or shape with this ID, so just exit
+        if (ca_it == cloud_actor_map_->end ())
+            return (false);
+        // Cloud found, set shape to false
+        shape = false;
+    }
 
-  // Remove the pointer/ID pair to the global actor map
-  if (shape)
-  {
-    if (removeActorFromRenderer (am_it->second, viewport))
+    // Remove the pointer/ID pair to the global actor map
+    if (shape)
     {
-      shape_actor_map_->erase (am_it);
-      return (true);
+        if (removeActorFromRenderer (am_it->second, viewport))
+        {
+            shape_actor_map_->erase (am_it);
+            return (true);
+        }
     }
-  }
-  else
-  {
-    if (removeActorFromRenderer (ca_it->second.actor, viewport))
+    else
     {
-      cloud_actor_map_->erase (ca_it);
-      return (true);
+        if (removeActorFromRenderer (ca_it->second.actor, viewport))
+        {
+            cloud_actor_map_->erase (ca_it);
+            return (true);
+        }
     }
-  }
-  return (false);
+    return (false);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 bool pcl::visualization::PCLVisualizer::removeText3D (const std::string &id, int viewport)
 {
-  // Check to see if the given ID entry exists
-  ShapeActorMap::iterator am_it = shape_actor_map_->find (id);
+    // Check to see if the given ID entry exists
+    ShapeActorMap::iterator am_it = shape_actor_map_->find (id);
 
-  if (am_it == shape_actor_map_->end ())
-  {
-    //pcl::console::print_warn (stderr, "[removeSape] Could not find any shape with id <%s>!\n", id.c_str ());
+    if (am_it == shape_actor_map_->end ())
+    {
+        //pcl::console::print_warn (stderr, "[removeSape] Could not find any shape with id <%s>!\n", id.c_str ());
+        return (false);
+    }
+
+    // Remove it from all renderers
+    if (removeActorFromRenderer (am_it->second, viewport))
+    {
+        // Remove the pointer/ID pair to the global actor map
+        shape_actor_map_->erase (am_it);
+        return (true);
+    }
     return (false);
-  }
-
-  // Remove it from all renderers
-  if (removeActorFromRenderer (am_it->second, viewport))
-  {
-    // Remove the pointer/ID pair to the global actor map
-    shape_actor_map_->erase (am_it);
-    return (true);
-  }
-  return (false);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 bool pcl::visualization::PCLVisualizer::removeAllPointClouds (int viewport)
 {
-  // Check to see if the given ID entry exists
-  CloudActorMap::iterator am_it = cloud_actor_map_->begin ();
-  while (am_it != cloud_actor_map_->end () )
-  {
-    if (removePointCloud (am_it->first, viewport))
-      am_it = cloud_actor_map_->begin ();
-    else
-      ++am_it;
-  }
-  return (true);
+    // Check to see if the given ID entry exists
+    CloudActorMap::iterator am_it = cloud_actor_map_->begin ();
+    while (am_it != cloud_actor_map_->end () )
+    {
+        if (removePointCloud (am_it->first, viewport))
+            am_it = cloud_actor_map_->begin ();
+        else
+            ++am_it;
+    }
+    return (true);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 bool
 pcl::visualization::PCLVisualizer::removeAllShapes (int viewport)
 {
-  // Check to see if the given ID entry exists
-  ShapeActorMap::iterator am_it = shape_actor_map_->begin ();
-  while (am_it != shape_actor_map_->end ())
-  {
-    if (removeShape (am_it->first, viewport))
-      am_it = shape_actor_map_->begin ();
-    else
-      ++am_it;
-  }
-  return (true);
+    // Check to see if the given ID entry exists
+    ShapeActorMap::iterator am_it = shape_actor_map_->begin ();
+    while (am_it != shape_actor_map_->end ())
+    {
+        if (removeShape (am_it->first, viewport))
+            am_it = shape_actor_map_->begin ();
+        else
+            ++am_it;
+    }
+    return (true);
 }
 
 
@@ -650,145 +526,145 @@ pcl::visualization::PCLVisualizer::removeAllShapes (int viewport)
 bool
 pcl::visualization::PCLVisualizer::removeActorFromRenderer (const vtkSmartPointer<vtkLODActor> &actor, int viewport)
 {
-  vtkLODActor* actor_to_remove = vtkLODActor::SafeDownCast (actor);
+    vtkLODActor* actor_to_remove = vtkLODActor::SafeDownCast (actor);
 
-  // Add it to all renderers
-  rens_->InitTraversal ();
-  vtkRenderer* renderer = NULL;
-  int i = 0;
-  while ((renderer = rens_->GetNextItem ()) != NULL)
-  {
-    // Should we remove the actor from all renderers?
-    if (viewport == 0)
+    // Add it to all renderers
+    rens_->InitTraversal ();
+    vtkRenderer* renderer = NULL;
+    int i = 0;
+    while ((renderer = rens_->GetNextItem ()) != NULL)
     {
-      renderer->RemoveActor (actor);
-//      renderer->Render ();
+        // Should we remove the actor from all renderers?
+        if (viewport == 0)
+        {
+            renderer->RemoveActor (actor);
+            //      renderer->Render ();
+        }
+        else if (viewport == i)               // add the actor only to the specified viewport
+        {
+            // Iterate over all actors in this renderer
+            vtkPropCollection* actors = renderer->GetViewProps ();
+            actors->InitTraversal ();
+            vtkProp* current_actor = NULL;
+            while ((current_actor = actors->GetNextProp ()) != NULL)
+            {
+                if (current_actor != actor_to_remove)
+                    continue;
+                renderer->RemoveActor (actor);
+                //        renderer->Render ();
+                // Found the correct viewport and removed the actor
+                return (true);
+            }
+        }
+        ++i;
     }
-    else if (viewport == i)               // add the actor only to the specified viewport
-    {
-      // Iterate over all actors in this renderer
-      vtkPropCollection* actors = renderer->GetViewProps ();
-      actors->InitTraversal ();
-      vtkProp* current_actor = NULL;
-      while ((current_actor = actors->GetNextProp ()) != NULL)
-      {
-        if (current_actor != actor_to_remove)
-          continue;
-        renderer->RemoveActor (actor);
-//        renderer->Render ();
-        // Found the correct viewport and removed the actor
-        return (true);
-      }
-    }
-    ++i;
-  }
-  if (viewport == 0) return (true);
-  return (false);
+    if (viewport == 0) return (true);
+    return (false);
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////
 bool
 pcl::visualization::PCLVisualizer::removeActorFromRenderer (const vtkSmartPointer<vtkActor> &actor, int viewport)
 {
-  vtkActor* actor_to_remove = vtkActor::SafeDownCast (actor);
+    vtkActor* actor_to_remove = vtkActor::SafeDownCast (actor);
 
-  // Add it to all renderers
-  rens_->InitTraversal ();
-  vtkRenderer* renderer = NULL;
-  int i = 1;
-  while ((renderer = rens_->GetNextItem ()) != NULL)
-  {
-    // Should we remove the actor from all renderers?
-    if (viewport == 0)
+    // Add it to all renderers
+    rens_->InitTraversal ();
+    vtkRenderer* renderer = NULL;
+    int i = 1;
+    while ((renderer = rens_->GetNextItem ()) != NULL)
     {
-      renderer->RemoveActor (actor);
-//      renderer->Render ();
+        // Should we remove the actor from all renderers?
+        if (viewport == 0)
+        {
+            renderer->RemoveActor (actor);
+            //      renderer->Render ();
+        }
+        else if (viewport == i)               // add the actor only to the specified viewport
+        {
+            // Iterate over all actors in this renderer
+            vtkPropCollection* actors = renderer->GetViewProps ();
+            actors->InitTraversal ();
+            vtkProp* current_actor = NULL;
+            while ((current_actor = actors->GetNextProp ()) != NULL)
+            {
+                if (current_actor != actor_to_remove)
+                    continue;
+                renderer->RemoveActor (actor);
+                //        renderer->Render ();
+                // Found the correct viewport and removed the actor
+                return (true);
+            }
+        }
+        ++i;
     }
-    else if (viewport == i)               // add the actor only to the specified viewport
-    {
-      // Iterate over all actors in this renderer
-      vtkPropCollection* actors = renderer->GetViewProps ();
-      actors->InitTraversal ();
-      vtkProp* current_actor = NULL;
-      while ((current_actor = actors->GetNextProp ()) != NULL)
-      {
-        if (current_actor != actor_to_remove)
-          continue;
-        renderer->RemoveActor (actor);
-//        renderer->Render ();
-        // Found the correct viewport and removed the actor
-        return (true);
-      }
-    }
-    ++i;
-  }
-  if (viewport == 0) return (true);
-  return (false);
+    if (viewport == 0) return (true);
+    return (false);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 void
 pcl::visualization::PCLVisualizer::addActorToRenderer (const vtkSmartPointer<vtkProp> &actor, int viewport)
 {
-  // Add it to all renderers
-  rens_->InitTraversal ();
-  vtkRenderer* renderer = NULL;
-  int i = 0;
-  while ((renderer = rens_->GetNextItem ()) != NULL)
-  {
-    // Should we add the actor to all renderers?
-    if (viewport == 0)
+    // Add it to all renderers
+    rens_->InitTraversal ();
+    vtkRenderer* renderer = NULL;
+    int i = 0;
+    while ((renderer = rens_->GetNextItem ()) != NULL)
     {
-      renderer->AddActor (actor);
-//      renderer->Render ();
+        // Should we add the actor to all renderers?
+        if (viewport == 0)
+        {
+            renderer->AddActor (actor);
+            //      renderer->Render ();
+        }
+        else if (viewport == i)               // add the actor only to the specified viewport
+        {
+            renderer->AddActor (actor);
+            //      renderer->Render ();
+        }
+        ++i;
     }
-    else if (viewport == i)               // add the actor only to the specified viewport
-    {
-      renderer->AddActor (actor);
-//      renderer->Render ();
-    }
-    ++i;
-  }
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 bool
 pcl::visualization::PCLVisualizer::removeActorFromRenderer (const vtkSmartPointer<vtkProp> &actor, int viewport)
 {
-  vtkProp* actor_to_remove = vtkProp::SafeDownCast (actor);
+    vtkProp* actor_to_remove = vtkProp::SafeDownCast (actor);
 
-  // Initialize traversal
-  rens_->InitTraversal ();
-  vtkRenderer* renderer = NULL;
-  int i = 0;
-  while ((renderer = rens_->GetNextItem ()) != NULL)
-  {
-    // Should we remove the actor from all renderers?
-    if (viewport == 0)
+    // Initialize traversal
+    rens_->InitTraversal ();
+    vtkRenderer* renderer = NULL;
+    int i = 0;
+    while ((renderer = rens_->GetNextItem ()) != NULL)
     {
-      renderer->RemoveActor (actor);
-//      renderer->Render ();
+        // Should we remove the actor from all renderers?
+        if (viewport == 0)
+        {
+            renderer->RemoveActor (actor);
+            //      renderer->Render ();
+        }
+        else if (viewport == i)               // add the actor only to the specified viewport
+        {
+            // Iterate over all actors in this renderer
+            vtkPropCollection* actors = renderer->GetViewProps ();
+            actors->InitTraversal ();
+            vtkProp* current_actor = NULL;
+            while ((current_actor = actors->GetNextProp ()) != NULL)
+            {
+                if (current_actor != actor_to_remove)
+                    continue;
+                renderer->RemoveActor (actor);
+                //        renderer->Render ();
+                // Found the correct viewport and removed the actor
+                return (true);
+            }
+        }
+        ++i;
     }
-    else if (viewport == i)               // add the actor only to the specified viewport
-    {
-      // Iterate over all actors in this renderer
-      vtkPropCollection* actors = renderer->GetViewProps ();
-      actors->InitTraversal ();
-      vtkProp* current_actor = NULL;
-      while ((current_actor = actors->GetNextProp ()) != NULL)
-      {
-        if (current_actor != actor_to_remove)
-          continue;
-        renderer->RemoveActor (actor);
-//        renderer->Render ();
-        // Found the correct viewport and removed the actor
-        return (true);
-      }
-    }
-    ++i;
-  }
-  if (viewport == 0) return (true);
-  return (false);
+    if (viewport == 0) return (true);
+    return (false);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
@@ -801,8 +677,8 @@ namespace
 int
 getDefaultScalarInterpolationForDataSet (vtkDataSet* data)
 {
-  vtkPolyData* polyData = vtkPolyData::SafeDownCast (data);
-  return (polyData && polyData->GetNumberOfCells () != polyData->GetNumberOfVerts ());
+    vtkPolyData* polyData = vtkPolyData::SafeDownCast (data);
+    return (polyData && polyData->GetNumberOfCells () != polyData->GetNumberOfVerts ());
 }
 
 }
@@ -813,72 +689,72 @@ pcl::visualization::PCLVisualizer::createActorFromVTKDataSet (const vtkSmartPoin
                                                               vtkSmartPointer<vtkLODActor> &actor,
                                                               bool use_scalars)
 {
-  // If actor is not initialized, initialize it here
-  if (!actor)
-    actor = vtkSmartPointer<vtkLODActor>::New ();
+    // If actor is not initialized, initialize it here
+    if (!actor)
+        actor = vtkSmartPointer<vtkLODActor>::New ();
 
-  if (use_vbos_)
-  {
-    vtkSmartPointer<vtkVertexBufferObjectMapper> mapper = vtkSmartPointer<vtkVertexBufferObjectMapper>::New ();
-
-    mapper->SetInput (data);
-
-    if (use_scalars)
+    if (use_vbos_)
     {
-      vtkSmartPointer<vtkDataArray> scalars = data->GetPointData ()->GetScalars ();
-      double minmax[2];
-      if (scalars)
-      {
-        scalars->GetRange (minmax);
-        mapper->SetScalarRange (minmax);
+        vtkSmartPointer<vtkVertexBufferObjectMapper> mapper = vtkSmartPointer<vtkVertexBufferObjectMapper>::New ();
 
-        mapper->SetScalarModeToUsePointData ();
-        mapper->SetInterpolateScalarsBeforeMapping (getDefaultScalarInterpolationForDataSet (data));
-        mapper->ScalarVisibilityOn ();
-      }
+        mapper->SetInput (data);
+
+        if (use_scalars)
+        {
+            vtkSmartPointer<vtkDataArray> scalars = data->GetPointData ()->GetScalars ();
+            double minmax[2];
+            if (scalars)
+            {
+                scalars->GetRange (minmax);
+                mapper->SetScalarRange (minmax);
+
+                mapper->SetScalarModeToUsePointData ();
+                mapper->SetInterpolateScalarsBeforeMapping (getDefaultScalarInterpolationForDataSet (data));
+                mapper->ScalarVisibilityOn ();
+            }
+        }
+
+        actor->SetNumberOfCloudPoints (int (std::max<vtkIdType> (1, data->GetNumberOfPoints () / 10)));
+        actor->GetProperty ()->SetInterpolationToFlat ();
+
+        /// FIXME disabling backface culling due to known VTK bug: vtkTextActors are not
+        /// shown when there is a vtkActor with backface culling on present in the scene
+        /// Please see VTK bug tracker for more details: http://www.vtk.org/Bug/view.php?id=12588
+        // actor->GetProperty ()->BackfaceCullingOn ();
+
+        actor->SetMapper (mapper);
     }
-
-    actor->SetNumberOfCloudPoints (int (std::max<vtkIdType> (1, data->GetNumberOfPoints () / 10)));
-    actor->GetProperty ()->SetInterpolationToFlat ();
-
-    /// FIXME disabling backface culling due to known VTK bug: vtkTextActors are not
-    /// shown when there is a vtkActor with backface culling on present in the scene
-    /// Please see VTK bug tracker for more details: http://www.vtk.org/Bug/view.php?id=12588
-    // actor->GetProperty ()->BackfaceCullingOn ();
-
-    actor->SetMapper (mapper);
-  }
-  else
-  {
-    vtkSmartPointer<vtkDataSetMapper> mapper = vtkSmartPointer<vtkDataSetMapper>::New ();
-    mapper->SetInput (data);
-
-    if (use_scalars)
+    else
     {
-      vtkSmartPointer<vtkDataArray> scalars = data->GetPointData ()->GetScalars ();
-      double minmax[2];
-      if (scalars)
-      {
-        scalars->GetRange (minmax);
-        mapper->SetScalarRange (minmax);
+        vtkSmartPointer<vtkDataSetMapper> mapper = vtkSmartPointer<vtkDataSetMapper>::New ();
+        mapper->SetInput (data);
 
-        mapper->SetScalarModeToUsePointData ();
-        mapper->SetInterpolateScalarsBeforeMapping (getDefaultScalarInterpolationForDataSet (data));
-        mapper->ScalarVisibilityOn ();
-      }
+        if (use_scalars)
+        {
+            vtkSmartPointer<vtkDataArray> scalars = data->GetPointData ()->GetScalars ();
+            double minmax[2];
+            if (scalars)
+            {
+                scalars->GetRange (minmax);
+                mapper->SetScalarRange (minmax);
+
+                mapper->SetScalarModeToUsePointData ();
+                mapper->SetInterpolateScalarsBeforeMapping (getDefaultScalarInterpolationForDataSet (data));
+                mapper->ScalarVisibilityOn ();
+            }
+        }
+        mapper->ImmediateModeRenderingOff ();
+
+        actor->SetNumberOfCloudPoints (int (std::max<vtkIdType> (1, data->GetNumberOfPoints () / 10)));
+        actor->GetProperty ()->SetInterpolationToFlat ();
+
+        /// FIXME disabling backface culling due to known VTK bug: vtkTextActors are not
+        /// shown when there is a vtkActor with backface culling on present in the scene
+        /// Please see VTK bug tracker for more details: http://www.vtk.org/Bug/view.php?id=12588
+        // actor->GetProperty ()->BackfaceCullingOn ();
+
+        actor->SetMapper (mapper);
     }
-    mapper->ImmediateModeRenderingOff ();
-
-    actor->SetNumberOfCloudPoints (int (std::max<vtkIdType> (1, data->GetNumberOfPoints () / 10)));
-    actor->GetProperty ()->SetInterpolationToFlat ();
-
-    /// FIXME disabling backface culling due to known VTK bug: vtkTextActors are not
-    /// shown when there is a vtkActor with backface culling on present in the scene
-    /// Please see VTK bug tracker for more details: http://www.vtk.org/Bug/view.php?id=12588
-    // actor->GetProperty ()->BackfaceCullingOn ();
-
-    actor->SetMapper (mapper);
-  }
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
@@ -887,635 +763,635 @@ pcl::visualization::PCLVisualizer::createActorFromVTKDataSet (const vtkSmartPoin
                                                               vtkSmartPointer<vtkActor> &actor,
                                                               bool use_scalars)
 {
-  // If actor is not initialized, initialize it here
-  if (!actor)
-    actor = vtkSmartPointer<vtkActor>::New ();
+    // If actor is not initialized, initialize it here
+    if (!actor)
+        actor = vtkSmartPointer<vtkActor>::New ();
 
-  if (use_vbos_)
-  {
-    vtkSmartPointer<vtkVertexBufferObjectMapper> mapper = vtkSmartPointer<vtkVertexBufferObjectMapper>::New ();
-
-    mapper->SetInput (data);
-
-    if (use_scalars)
+    if (use_vbos_)
     {
-      vtkSmartPointer<vtkDataArray> scalars = data->GetPointData ()->GetScalars ();
-      double minmax[2];
-      if (scalars)
-      {
-        scalars->GetRange (minmax);
-        mapper->SetScalarRange (minmax);
+        vtkSmartPointer<vtkVertexBufferObjectMapper> mapper = vtkSmartPointer<vtkVertexBufferObjectMapper>::New ();
 
-        mapper->SetScalarModeToUsePointData ();
-        mapper->SetInterpolateScalarsBeforeMapping (getDefaultScalarInterpolationForDataSet (data));
-        mapper->ScalarVisibilityOn ();
-      }
+        mapper->SetInput (data);
+
+        if (use_scalars)
+        {
+            vtkSmartPointer<vtkDataArray> scalars = data->GetPointData ()->GetScalars ();
+            double minmax[2];
+            if (scalars)
+            {
+                scalars->GetRange (minmax);
+                mapper->SetScalarRange (minmax);
+
+                mapper->SetScalarModeToUsePointData ();
+                mapper->SetInterpolateScalarsBeforeMapping (getDefaultScalarInterpolationForDataSet (data));
+                mapper->ScalarVisibilityOn ();
+            }
+        }
+
+        //actor->SetNumberOfCloudPoints (int (std::max<vtkIdType> (1, data->GetNumberOfPoints () / 10)));
+        actor->GetProperty ()->SetInterpolationToFlat ();
+
+        /// FIXME disabling backface culling due to known VTK bug: vtkTextActors are not
+        /// shown when there is a vtkActor with backface culling on present in the scene
+        /// Please see VTK bug tracker for more details: http://www.vtk.org/Bug/view.php?id=12588
+        // actor->GetProperty ()->BackfaceCullingOn ();
+
+        actor->SetMapper (mapper);
+    }
+    else
+    {
+        vtkSmartPointer<vtkDataSetMapper> mapper = vtkSmartPointer<vtkDataSetMapper>::New ();
+        mapper->SetInput (data);
+
+        if (use_scalars)
+        {
+            vtkSmartPointer<vtkDataArray> scalars = data->GetPointData ()->GetScalars ();
+            double minmax[2];
+            if (scalars)
+            {
+                scalars->GetRange (minmax);
+                mapper->SetScalarRange (minmax);
+
+                mapper->SetScalarModeToUsePointData ();
+                mapper->SetInterpolateScalarsBeforeMapping (getDefaultScalarInterpolationForDataSet (data));
+                mapper->ScalarVisibilityOn ();
+            }
+        }
+        mapper->ImmediateModeRenderingOff ();
+
+        //actor->SetNumberOfCloudPoints (int (std::max<vtkIdType> (1, data->GetNumberOfPoints () / 10)));
+        actor->GetProperty ()->SetInterpolationToFlat ();
+
+        /// FIXME disabling backface culling due to known VTK bug: vtkTextActors are not
+        /// shown when there is a vtkActor with backface culling on present in the scene
+        /// Please see VTK bug tracker for more details: http://www.vtk.org/Bug/view.php?id=12588
+        // actor->GetProperty ()->BackfaceCullingOn ();
+
+        actor->SetMapper (mapper);
     }
 
-    //actor->SetNumberOfCloudPoints (int (std::max<vtkIdType> (1, data->GetNumberOfPoints () / 10)));
+    //actor->SetNumberOfCloudPoints (std::max<vtkIdType> (1, data->GetNumberOfPoints () / 10));
     actor->GetProperty ()->SetInterpolationToFlat ();
-
-    /// FIXME disabling backface culling due to known VTK bug: vtkTextActors are not
-    /// shown when there is a vtkActor with backface culling on present in the scene
-    /// Please see VTK bug tracker for more details: http://www.vtk.org/Bug/view.php?id=12588
-    // actor->GetProperty ()->BackfaceCullingOn ();
-
-    actor->SetMapper (mapper);
-  }
-  else
-  {
-    vtkSmartPointer<vtkDataSetMapper> mapper = vtkSmartPointer<vtkDataSetMapper>::New ();
-    mapper->SetInput (data);
-
-    if (use_scalars)
-    {
-      vtkSmartPointer<vtkDataArray> scalars = data->GetPointData ()->GetScalars ();
-      double minmax[2];
-      if (scalars)
-      {
-        scalars->GetRange (minmax);
-        mapper->SetScalarRange (minmax);
-
-        mapper->SetScalarModeToUsePointData ();
-        mapper->SetInterpolateScalarsBeforeMapping (getDefaultScalarInterpolationForDataSet (data));
-        mapper->ScalarVisibilityOn ();
-      }
-    }
-    mapper->ImmediateModeRenderingOff ();
-
-    //actor->SetNumberOfCloudPoints (int (std::max<vtkIdType> (1, data->GetNumberOfPoints () / 10)));
-    actor->GetProperty ()->SetInterpolationToFlat ();
-
-    /// FIXME disabling backface culling due to known VTK bug: vtkTextActors are not
-    /// shown when there is a vtkActor with backface culling on present in the scene
-    /// Please see VTK bug tracker for more details: http://www.vtk.org/Bug/view.php?id=12588
-    // actor->GetProperty ()->BackfaceCullingOn ();
-
-    actor->SetMapper (mapper);
-  }
-
-  //actor->SetNumberOfCloudPoints (std::max<vtkIdType> (1, data->GetNumberOfPoints () / 10));
-  actor->GetProperty ()->SetInterpolationToFlat ();
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////
 void
 pcl::visualization::PCLVisualizer::setBackgroundColor (
-    const double &r, const double &g, const double &b, int viewport)
+        const double &r, const double &g, const double &b, int viewport)
 {
-  rens_->InitTraversal ();
-  vtkRenderer* renderer = NULL;
-  int i = 1;
-  while ((renderer = rens_->GetNextItem ()) != NULL)
-  {
-    // Should we add the actor to all renderers?
-    if (viewport == 0)
+    rens_->InitTraversal ();
+    vtkRenderer* renderer = NULL;
+    int i = 1;
+    while ((renderer = rens_->GetNextItem ()) != NULL)
     {
-      renderer->SetBackground (r, g, b);
-//      renderer->Render ();
+        // Should we add the actor to all renderers?
+        if (viewport == 0)
+        {
+            renderer->SetBackground (r, g, b);
+            //      renderer->Render ();
+        }
+        else if (viewport == i)               // add the actor only to the specified viewport
+        {
+            renderer->SetBackground (r, g, b);
+            //      renderer->Render ();
+        }
+        ++i;
     }
-    else if (viewport == i)               // add the actor only to the specified viewport
-    {
-      renderer->SetBackground (r, g, b);
-//      renderer->Render ();
-    }
-    ++i;
-  }
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 bool
 pcl::visualization::PCLVisualizer::setPointCloudRenderingProperties (
-    int property, double val1, double val2, double val3, const std::string &id, int)
+        int property, double val1, double val2, double val3, const std::string &id, int)
 {
-  // Check to see if this ID entry already exists (has it been already added to the visualizer?)
-  CloudActorMap::iterator am_it = cloud_actor_map_->find (id);
+    // Check to see if this ID entry already exists (has it been already added to the visualizer?)
+    CloudActorMap::iterator am_it = cloud_actor_map_->find (id);
 
-  if (am_it == cloud_actor_map_->end ())
-  {
-    pcl::console::print_error ("[setPointCloudRenderingProperties] Could not find any PointCloud datasets with id <%s>!\n", id.c_str ());
-    return (false);
-  }
-  // Get the actor pointer
-  vtkLODActor* actor = vtkLODActor::SafeDownCast (am_it->second.actor);
+    if (am_it == cloud_actor_map_->end ())
+    {
+        pcl::console::print_error ("[setPointCloudRenderingProperties] Could not find any PointCloud datasets with id <%s>!\n", id.c_str ());
+        return (false);
+    }
+    // Get the actor pointer
+    vtkLODActor* actor = vtkLODActor::SafeDownCast (am_it->second.actor);
 
-  switch (property)
-  {
+    switch (property)
+    {
     case PCL_VISUALIZER_COLOR:
     {
-      actor->GetProperty ()->SetColor (val1, val2, val3);
-      actor->GetMapper ()->ScalarVisibilityOff ();
-      actor->Modified ();
-      break;
+        actor->GetProperty ()->SetColor (val1, val2, val3);
+        actor->GetMapper ()->ScalarVisibilityOff ();
+        actor->Modified ();
+        break;
     }
     default:
     {
-      pcl::console::print_error ("[setPointCloudRenderingProperties] Unknown property (%d) specified!\n", property);
-      return (false);
+        pcl::console::print_error ("[setPointCloudRenderingProperties] Unknown property (%d) specified!\n", property);
+        return (false);
     }
-  }
-  return (true);
+    }
+    return (true);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 bool
 pcl::visualization::PCLVisualizer::getPointCloudRenderingProperties (int property, double &value, const std::string &id)
 {
-  // Check to see if this ID entry already exists (has it been already added to the visualizer?)
-  CloudActorMap::iterator am_it = cloud_actor_map_->find (id);
+    // Check to see if this ID entry already exists (has it been already added to the visualizer?)
+    CloudActorMap::iterator am_it = cloud_actor_map_->find (id);
 
-  if (am_it == cloud_actor_map_->end ())
-    return (false);
-  // Get the actor pointer
-  vtkLODActor* actor = vtkLODActor::SafeDownCast (am_it->second.actor);
+    if (am_it == cloud_actor_map_->end ())
+        return (false);
+    // Get the actor pointer
+    vtkLODActor* actor = vtkLODActor::SafeDownCast (am_it->second.actor);
 
-  switch (property)
-  {
+    switch (property)
+    {
     case PCL_VISUALIZER_POINT_SIZE:
     {
-      value = actor->GetProperty ()->GetPointSize ();
-      actor->Modified ();
-      break;
+        value = actor->GetProperty ()->GetPointSize ();
+        actor->Modified ();
+        break;
     }
     case PCL_VISUALIZER_OPACITY:
     {
-      value = actor->GetProperty ()->GetOpacity ();
-      actor->Modified ();
-      break;
+        value = actor->GetProperty ()->GetOpacity ();
+        actor->Modified ();
+        break;
     }
     case PCL_VISUALIZER_LINE_WIDTH:
     {
-      value = actor->GetProperty ()->GetLineWidth ();
-      actor->Modified ();
-      break;
+        value = actor->GetProperty ()->GetLineWidth ();
+        actor->Modified ();
+        break;
     }
     default:
     {
-      pcl::console::print_error ("[getPointCloudRenderingProperties] Unknown property (%d) specified!\n", property);
-      return (false);
+        pcl::console::print_error ("[getPointCloudRenderingProperties] Unknown property (%d) specified!\n", property);
+        return (false);
     }
-  }
-  return (true);
+    }
+    return (true);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 bool
 pcl::visualization::PCLVisualizer::setPointCloudRenderingProperties (
-    int property, double value, const std::string &id, int)
+        int property, double value, const std::string &id, int)
 {
-  // Check to see if this ID entry already exists (has it been already added to the visualizer?)
-  CloudActorMap::iterator am_it = cloud_actor_map_->find (id);
+    // Check to see if this ID entry already exists (has it been already added to the visualizer?)
+    CloudActorMap::iterator am_it = cloud_actor_map_->find (id);
 
-  if (am_it == cloud_actor_map_->end ())
-  {
-    pcl::console::print_error ("[setPointCloudRenderingProperties] Could not find any PointCloud datasets with id <%s>!\n", id.c_str ());
-    return (false);
-  }
-  // Get the actor pointer
-  vtkLODActor* actor = vtkLODActor::SafeDownCast (am_it->second.actor);
+    if (am_it == cloud_actor_map_->end ())
+    {
+        pcl::console::print_error ("[setPointCloudRenderingProperties] Could not find any PointCloud datasets with id <%s>!\n", id.c_str ());
+        return (false);
+    }
+    // Get the actor pointer
+    vtkLODActor* actor = vtkLODActor::SafeDownCast (am_it->second.actor);
 
-  switch (property)
-  {
+    switch (property)
+    {
     case PCL_VISUALIZER_POINT_SIZE:
     {
-      actor->GetProperty ()->SetPointSize (float (value));
-      actor->Modified ();
-      break;
+        actor->GetProperty ()->SetPointSize (float (value));
+        actor->Modified ();
+        break;
     }
     case PCL_VISUALIZER_OPACITY:
     {
-      actor->GetProperty ()->SetOpacity (value);
-      actor->Modified ();
-      break;
+        actor->GetProperty ()->SetOpacity (value);
+        actor->Modified ();
+        break;
     }
-    // Turn on/off flag to control whether data is rendered using immediate
-    // mode or note. Immediate mode rendering tends to be slower but it can
-    // handle larger datasets. The default value is immediate mode off. If you
-    // are having problems rendering a large dataset you might want to consider
-    // using immediate more rendering.
+        // Turn on/off flag to control whether data is rendered using immediate
+        // mode or note. Immediate mode rendering tends to be slower but it can
+        // handle larger datasets. The default value is immediate mode off. If you
+        // are having problems rendering a large dataset you might want to consider
+        // using immediate more rendering.
     case PCL_VISUALIZER_IMMEDIATE_RENDERING:
     {
-      actor->GetMapper ()->SetImmediateModeRendering (int (value));
-      actor->Modified ();
-      break;
+        actor->GetMapper ()->SetImmediateModeRendering (int (value));
+        actor->Modified ();
+        break;
     }
     case PCL_VISUALIZER_LINE_WIDTH:
     {
-      actor->GetProperty ()->SetLineWidth (float (value));
-      actor->Modified ();
-      break;
+        actor->GetProperty ()->SetLineWidth (float (value));
+        actor->Modified ();
+        break;
     }
     default:
     {
-      pcl::console::print_error ("[setPointCloudRenderingProperties] Unknown property (%d) specified!\n", property);
-      return (false);
+        pcl::console::print_error ("[setPointCloudRenderingProperties] Unknown property (%d) specified!\n", property);
+        return (false);
     }
-  }
-  return (true);
+    }
+    return (true);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 bool
 pcl::visualization::PCLVisualizer::setPointCloudSelected (const bool selected, const std::string &id)
 {
-   // Check to see if this ID entry already exists (has it been already added to the visualizer?)
-  CloudActorMap::iterator am_it = cloud_actor_map_->find (id);
+    // Check to see if this ID entry already exists (has it been already added to the visualizer?)
+    CloudActorMap::iterator am_it = cloud_actor_map_->find (id);
 
-  if (am_it == cloud_actor_map_->end ())
-  {
-    pcl::console::print_error ("[setPointCloudRenderingProperties] Could not find any PointCloud datasets with id <%s>!\n", id.c_str ());
-    return (false);
-  }
-  // Get the actor pointer
-  vtkLODActor* actor = vtkLODActor::SafeDownCast (am_it->second.actor);
+    if (am_it == cloud_actor_map_->end ())
+    {
+        pcl::console::print_error ("[setPointCloudRenderingProperties] Could not find any PointCloud datasets with id <%s>!\n", id.c_str ());
+        return (false);
+    }
+    // Get the actor pointer
+    vtkLODActor* actor = vtkLODActor::SafeDownCast (am_it->second.actor);
 
-  if (selected)
-  {
-    actor->GetProperty ()->EdgeVisibilityOn ();
-    actor->GetProperty ()->SetEdgeColor (1.0,0.0,0.0);
-    actor->Modified ();
-  }
-  else
-  {
-    actor->GetProperty ()->EdgeVisibilityOff ();
-    actor->Modified ();
-  }
+    if (selected)
+    {
+        actor->GetProperty ()->EdgeVisibilityOn ();
+        actor->GetProperty ()->SetEdgeColor (1.0,0.0,0.0);
+        actor->Modified ();
+    }
+    else
+    {
+        actor->GetProperty ()->EdgeVisibilityOff ();
+        actor->Modified ();
+    }
 
-  return (true);
+    return (true);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 bool
 pcl::visualization::PCLVisualizer::setShapeRenderingProperties (
-    int property, double val1, double val2, double val3, const std::string &id, int)
+        int property, double val1, double val2, double val3, const std::string &id, int)
 {
-  // Check to see if this ID entry already exists (has it been already added to the visualizer?)
-  ShapeActorMap::iterator am_it = shape_actor_map_->find (id);
+    // Check to see if this ID entry already exists (has it been already added to the visualizer?)
+    ShapeActorMap::iterator am_it = shape_actor_map_->find (id);
 
-  if (am_it == shape_actor_map_->end ())
-  {
-    pcl::console::print_error ("[setShapeRenderingProperties] Could not find any shape with id <%s>!\n", id.c_str ());
-    return (false);
-  }
-  // Get the actor pointer
-  vtkActor* actor = vtkActor::SafeDownCast (am_it->second);
+    if (am_it == shape_actor_map_->end ())
+    {
+        pcl::console::print_error ("[setShapeRenderingProperties] Could not find any shape with id <%s>!\n", id.c_str ());
+        return (false);
+    }
+    // Get the actor pointer
+    vtkActor* actor = vtkActor::SafeDownCast (am_it->second);
 
-  switch (property)
-  {
+    switch (property)
+    {
     case PCL_VISUALIZER_COLOR:
     {
-      actor->GetMapper ()->ScalarVisibilityOff ();
-      actor->GetProperty ()->SetColor (val1, val2, val3);
-      actor->GetProperty ()->SetEdgeColor (val1, val2, val3);
-      // The following 3 are set by SetColor automatically according to the VTK docs
-      //actor->GetProperty ()->SetAmbientColor  (val1, val2, val3);
-      //actor->GetProperty ()->SetDiffuseColor (val1, val2, val3);
-      //actor->GetProperty ()->SetSpecularColor (val1, val2, val3);
-      actor->GetProperty ()->SetAmbient (0.8);
-      actor->GetProperty ()->SetDiffuse (0.8);
-      actor->GetProperty ()->SetSpecular (0.8);
+        actor->GetMapper ()->ScalarVisibilityOff ();
+        actor->GetProperty ()->SetColor (val1, val2, val3);
+        actor->GetProperty ()->SetEdgeColor (val1, val2, val3);
+        // The following 3 are set by SetColor automatically according to the VTK docs
+        //actor->GetProperty ()->SetAmbientColor  (val1, val2, val3);
+        //actor->GetProperty ()->SetDiffuseColor (val1, val2, val3);
+        //actor->GetProperty ()->SetSpecularColor (val1, val2, val3);
+        actor->GetProperty ()->SetAmbient (0.8);
+        actor->GetProperty ()->SetDiffuse (0.8);
+        actor->GetProperty ()->SetSpecular (0.8);
 #if ((VTK_MAJOR_VERSION == 5) && (VTK_MINOR_VERSION >= 4))
-      actor->GetProperty ()->SetLighting (0);
+        actor->GetProperty ()->SetLighting (0);
 #endif
-      actor->Modified ();
-      break;
+        actor->Modified ();
+        break;
     }
     default:
     {
-      pcl::console::print_error ("[setShapeRenderingProperties] Unknown property (%d) specified!\n", property);
-      return (false);
+        pcl::console::print_error ("[setShapeRenderingProperties] Unknown property (%d) specified!\n", property);
+        return (false);
     }
-  }
-  return (true);
+    }
+    return (true);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 bool
 pcl::visualization::PCLVisualizer::setShapeRenderingProperties (
-    int property, double value, const std::string &id, int)
+        int property, double value, const std::string &id, int)
 {
-  // Check to see if this ID entry already exists (has it been already added to the visualizer?)
-  ShapeActorMap::iterator am_it = shape_actor_map_->find (id);
+    // Check to see if this ID entry already exists (has it been already added to the visualizer?)
+    ShapeActorMap::iterator am_it = shape_actor_map_->find (id);
 
-  if (am_it == shape_actor_map_->end ())
-  {
-    pcl::console::print_error ("[setShapeRenderingProperties] Could not find any shape with id <%s>!\n", id.c_str ());
-    return (false);
-  }
-  // Get the actor pointer
-  vtkActor* actor = vtkActor::SafeDownCast (am_it->second);
+    if (am_it == shape_actor_map_->end ())
+    {
+        pcl::console::print_error ("[setShapeRenderingProperties] Could not find any shape with id <%s>!\n", id.c_str ());
+        return (false);
+    }
+    // Get the actor pointer
+    vtkActor* actor = vtkActor::SafeDownCast (am_it->second);
 
-  switch (property)
-  {
+    switch (property)
+    {
     case PCL_VISUALIZER_POINT_SIZE:
     {
-      actor->GetProperty ()->SetPointSize (float (value));
-      actor->Modified ();
-      break;
+        actor->GetProperty ()->SetPointSize (float (value));
+        actor->Modified ();
+        break;
     }
     case PCL_VISUALIZER_OPACITY:
     {
-      actor->GetProperty ()->SetOpacity (value);
-      actor->Modified ();
-      break;
+        actor->GetProperty ()->SetOpacity (value);
+        actor->Modified ();
+        break;
     }
     case PCL_VISUALIZER_LINE_WIDTH:
     {
-      actor->GetProperty ()->SetLineWidth (float (value));
-      actor->Modified ();
-      break;
+        actor->GetProperty ()->SetLineWidth (float (value));
+        actor->Modified ();
+        break;
     }
     case PCL_VISUALIZER_FONT_SIZE:
     {
-      vtkTextActor* text_actor = vtkTextActor::SafeDownCast (am_it->second);
-      vtkSmartPointer<vtkTextProperty> tprop = text_actor->GetTextProperty ();
-      tprop->SetFontSize (int (value));
-      text_actor->Modified ();
-      break;
+        vtkTextActor* text_actor = vtkTextActor::SafeDownCast (am_it->second);
+        vtkSmartPointer<vtkTextProperty> tprop = text_actor->GetTextProperty ();
+        tprop->SetFontSize (int (value));
+        text_actor->Modified ();
+        break;
     }
     case PCL_VISUALIZER_REPRESENTATION:
     {
-      switch (int (value))
-      {
+        switch (int (value))
+        {
         case PCL_VISUALIZER_REPRESENTATION_POINTS:
         {
-          actor->GetProperty ()->SetRepresentationToPoints ();
-          break;
+            actor->GetProperty ()->SetRepresentationToPoints ();
+            break;
         }
         case PCL_VISUALIZER_REPRESENTATION_WIREFRAME:
         {
-          actor->GetProperty ()->SetRepresentationToWireframe ();
-          break;
+            actor->GetProperty ()->SetRepresentationToWireframe ();
+            break;
         }
         case PCL_VISUALIZER_REPRESENTATION_SURFACE:
         {
-          actor->GetProperty ()->SetRepresentationToSurface ();
-          break;
+            actor->GetProperty ()->SetRepresentationToSurface ();
+            break;
         }
-      }
-      actor->Modified ();
-      break;
+        }
+        actor->Modified ();
+        break;
     }
     case PCL_VISUALIZER_SHADING:
     {
-      switch (int (value))
-      {
-        case PCL_VISUALIZER_SHADING_FLAT: 
+        switch (int (value))
         {
-          actor->GetProperty ()->SetInterpolationToFlat ();
-          break;
+        case PCL_VISUALIZER_SHADING_FLAT:
+        {
+            actor->GetProperty ()->SetInterpolationToFlat ();
+            break;
         }
         case PCL_VISUALIZER_SHADING_GOURAUD:
         {
-          if (!actor->GetMapper ()->GetInput ()->GetPointData ()->GetNormals ()) 
-          {
-            PCL_INFO ("[pcl::visualization::PCLVisualizer::setShapeRenderingProperties] Normals do not exist in the dataset, but Gouraud shading was requested. Estimating normals...\n");
-            vtkSmartPointer<vtkPolyDataNormals> normals = vtkSmartPointer<vtkPolyDataNormals>::New ();
-            normals->SetInput (actor->GetMapper ()->GetInput ());
-            normals->Update ();
-            vtkDataSetMapper::SafeDownCast (actor->GetMapper ())->SetInput (normals->GetOutput ());
-          }
-          actor->GetProperty ()->SetInterpolationToGouraud ();
-          break;
+            if (!actor->GetMapper ()->GetInput ()->GetPointData ()->GetNormals ())
+            {
+                PCL_INFO ("[pcl::visualization::PCLVisualizer::setShapeRenderingProperties] Normals do not exist in the dataset, but Gouraud shading was requested. Estimating normals...\n");
+                vtkSmartPointer<vtkPolyDataNormals> normals = vtkSmartPointer<vtkPolyDataNormals>::New ();
+                normals->SetInput (actor->GetMapper ()->GetInput ());
+                normals->Update ();
+                vtkDataSetMapper::SafeDownCast (actor->GetMapper ())->SetInput (normals->GetOutput ());
+            }
+            actor->GetProperty ()->SetInterpolationToGouraud ();
+            break;
         }
         case PCL_VISUALIZER_SHADING_PHONG:
         {
-          if (!actor->GetMapper ()->GetInput ()->GetPointData ()->GetNormals ()) 
-          {
-            PCL_INFO ("[pcl::visualization::PCLVisualizer::setShapeRenderingProperties] Normals do not exist in the dataset, but Phong shading was requested. Estimating normals...\n");
-            vtkSmartPointer<vtkPolyDataNormals> normals = vtkSmartPointer<vtkPolyDataNormals>::New ();
-            normals->SetInput (actor->GetMapper ()->GetInput ());
-            normals->Update ();
-            vtkDataSetMapper::SafeDownCast (actor->GetMapper ())->SetInput (normals->GetOutput ());
-          }
-          actor->GetProperty ()->SetInterpolationToPhong ();
-          break;
+            if (!actor->GetMapper ()->GetInput ()->GetPointData ()->GetNormals ())
+            {
+                PCL_INFO ("[pcl::visualization::PCLVisualizer::setShapeRenderingProperties] Normals do not exist in the dataset, but Phong shading was requested. Estimating normals...\n");
+                vtkSmartPointer<vtkPolyDataNormals> normals = vtkSmartPointer<vtkPolyDataNormals>::New ();
+                normals->SetInput (actor->GetMapper ()->GetInput ());
+                normals->Update ();
+                vtkDataSetMapper::SafeDownCast (actor->GetMapper ())->SetInput (normals->GetOutput ());
+            }
+            actor->GetProperty ()->SetInterpolationToPhong ();
+            break;
         }
-      }
-      actor->Modified ();
-      break;
+        }
+        actor->Modified ();
+        break;
     }
     default:
     {
-      pcl::console::print_error ("[setShapeRenderingProperties] Unknown property (%d) specified!\n", property);
-      return (false);
+        pcl::console::print_error ("[setShapeRenderingProperties] Unknown property (%d) specified!\n", property);
+        return (false);
     }
-  }
-  return (true);
+    }
+    return (true);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 void
 pcl::visualization::PCLVisualizer::initCameraParameters ()
 {
-  Camera camera_temp;
-  // Set default camera parameters to something meaningful
-  camera_temp.clip[0] = 0.01;
-  camera_temp.clip[1] = 1000.01;
+    Camera camera_temp;
+    // Set default camera parameters to something meaningful
+    camera_temp.clip[0] = 0.01;
+    camera_temp.clip[1] = 1000.01;
 
-  // Look straight along the z-axis
-  camera_temp.focal[0] = 0.;
-  camera_temp.focal[1] = 0.;
-  camera_temp.focal[2] = 1.;
+    // Look straight along the z-axis
+    camera_temp.focal[0] = 0.;
+    camera_temp.focal[1] = 0.;
+    camera_temp.focal[2] = 1.;
 
-  // Position the camera at the origin
-  camera_temp.pos[0] = 0.;
-  camera_temp.pos[1] = 0.;
-  camera_temp.pos[2] = 0.;
+    // Position the camera at the origin
+    camera_temp.pos[0] = 0.;
+    camera_temp.pos[1] = 0.;
+    camera_temp.pos[2] = 0.;
 
-  // Set the up-vector of the camera to be the y-axis
-  camera_temp.view[0] = 0.;
-  camera_temp.view[1] = 1.;
-  camera_temp.view[2] = 0.;
+    // Set the up-vector of the camera to be the y-axis
+    camera_temp.view[0] = 0.;
+    camera_temp.view[1] = 1.;
+    camera_temp.view[2] = 0.;
 
-  // Set the camera field of view to about
-  camera_temp.fovy = 0.8575;
+    // Set the camera field of view to about
+    camera_temp.fovy = 0.8575;
 
-  int *scr_size = win_->GetScreenSize ();
-  camera_temp.window_size[0] = scr_size[0] / 2;
-  camera_temp.window_size[1] = scr_size[1] / 2;
+    int *scr_size = win_->GetScreenSize ();
+    camera_temp.window_size[0] = scr_size[0] / 2;
+    camera_temp.window_size[1] = scr_size[1] / 2;
 
-  setCameraParameters (camera_temp);
+    setCameraParameters (camera_temp);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 bool
 pcl::visualization::PCLVisualizer::cameraParamsSet () const
 {
-  return (camera_set_);
+    return (camera_set_);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 void
 pcl::visualization::PCLVisualizer::updateCamera ()
 {
-  PCL_WARN ("[pcl::visualization::PCLVisualizer::updateCamera()] This method was deprecated, just re-rendering all scenes now.");
-  rens_->InitTraversal ();
-  // Update the camera parameters
-  vtkRenderer* renderer = NULL;
-  while ((renderer = rens_->GetNextItem ()) != NULL)
-    renderer->Render ();
+    PCL_WARN ("[pcl::visualization::PCLVisualizer::updateCamera()] This method was deprecated, just re-rendering all scenes now.");
+    rens_->InitTraversal ();
+    // Update the camera parameters
+    vtkRenderer* renderer = NULL;
+    while ((renderer = rens_->GetNextItem ()) != NULL)
+        renderer->Render ();
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 bool
 pcl::visualization::PCLVisualizer::updateShapePose (const std::string &id, const Eigen::Affine3f& pose)
 {
-  ShapeActorMap::iterator am_it = shape_actor_map_->find (id);
+    ShapeActorMap::iterator am_it = shape_actor_map_->find (id);
 
-  vtkLODActor* actor;
+    vtkLODActor* actor;
 
-  if (am_it == shape_actor_map_->end ())
-    return (false);
-  else
-    actor = vtkLODActor::SafeDownCast (am_it->second);
+    if (am_it == shape_actor_map_->end ())
+        return (false);
+    else
+        actor = vtkLODActor::SafeDownCast (am_it->second);
 
-  vtkSmartPointer<vtkMatrix4x4> matrix = vtkSmartPointer<vtkMatrix4x4>::New ();
+    vtkSmartPointer<vtkMatrix4x4> matrix = vtkSmartPointer<vtkMatrix4x4>::New ();
 
-  convertToVtkMatrix (pose.matrix (), matrix);
+    convertToVtkMatrix (pose.matrix (), matrix);
 
-  actor->SetUserMatrix (matrix);
-  actor->Modified ();
+    actor->SetUserMatrix (matrix);
+    actor->Modified ();
 
-  return (true);
+    return (true);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 void
 pcl::visualization::PCLVisualizer::getCameras (std::vector<pcl::visualization::Camera>& cameras)
 {
-  cameras.clear ();
-  rens_->InitTraversal ();
-  vtkRenderer* renderer = NULL;
-  while ((renderer = rens_->GetNextItem ()) != NULL)
-  {
-    cameras.push_back(Camera());
-    cameras.back ().pos[0] = renderer->GetActiveCamera ()->GetPosition ()[0];
-    cameras.back ().pos[1] = renderer->GetActiveCamera ()->GetPosition ()[1];
-    cameras.back ().pos[2] = renderer->GetActiveCamera ()->GetPosition ()[2];
-    cameras.back ().focal[0] = renderer->GetActiveCamera ()->GetFocalPoint ()[0];
-    cameras.back ().focal[1] = renderer->GetActiveCamera ()->GetFocalPoint ()[1];
-    cameras.back ().focal[2] = renderer->GetActiveCamera ()->GetFocalPoint ()[2];
-    cameras.back ().clip[0] = renderer->GetActiveCamera ()->GetClippingRange ()[0];
-    cameras.back ().clip[1] = renderer->GetActiveCamera ()->GetClippingRange ()[1];
-    cameras.back ().view[0] = renderer->GetActiveCamera ()->GetViewUp ()[0];
-    cameras.back ().view[1] = renderer->GetActiveCamera ()->GetViewUp ()[1];
-    cameras.back ().view[2] = renderer->GetActiveCamera ()->GetViewUp ()[2];
-    cameras.back ().fovy = renderer->GetActiveCamera ()->GetViewAngle () / 180.0 * M_PI;
-    cameras.back ().window_size[0] = renderer->GetRenderWindow ()->GetSize ()[0];
-    cameras.back ().window_size[1] = renderer->GetRenderWindow ()->GetSize ()[1];
-    cameras.back ().window_pos[0] = 0;
-    cameras.back ().window_pos[1] = 0;
-  }
+    cameras.clear ();
+    rens_->InitTraversal ();
+    vtkRenderer* renderer = NULL;
+    while ((renderer = rens_->GetNextItem ()) != NULL)
+    {
+        cameras.push_back(Camera());
+        cameras.back ().pos[0] = renderer->GetActiveCamera ()->GetPosition ()[0];
+        cameras.back ().pos[1] = renderer->GetActiveCamera ()->GetPosition ()[1];
+        cameras.back ().pos[2] = renderer->GetActiveCamera ()->GetPosition ()[2];
+        cameras.back ().focal[0] = renderer->GetActiveCamera ()->GetFocalPoint ()[0];
+        cameras.back ().focal[1] = renderer->GetActiveCamera ()->GetFocalPoint ()[1];
+        cameras.back ().focal[2] = renderer->GetActiveCamera ()->GetFocalPoint ()[2];
+        cameras.back ().clip[0] = renderer->GetActiveCamera ()->GetClippingRange ()[0];
+        cameras.back ().clip[1] = renderer->GetActiveCamera ()->GetClippingRange ()[1];
+        cameras.back ().view[0] = renderer->GetActiveCamera ()->GetViewUp ()[0];
+        cameras.back ().view[1] = renderer->GetActiveCamera ()->GetViewUp ()[1];
+        cameras.back ().view[2] = renderer->GetActiveCamera ()->GetViewUp ()[2];
+        cameras.back ().fovy = renderer->GetActiveCamera ()->GetViewAngle () / 180.0 * M_PI;
+        cameras.back ().window_size[0] = renderer->GetRenderWindow ()->GetSize ()[0];
+        cameras.back ().window_size[1] = renderer->GetRenderWindow ()->GetSize ()[1];
+        cameras.back ().window_pos[0] = 0;
+        cameras.back ().window_pos[1] = 0;
+    }
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 Eigen::Affine3f
 pcl::visualization::PCLVisualizer::getViewerPose (int viewport)
 {
-  Eigen::Affine3f ret (Eigen::Affine3f::Identity ());
+    Eigen::Affine3f ret (Eigen::Affine3f::Identity ());
 
-  rens_->InitTraversal ();
-  vtkRenderer* renderer = NULL;
-  if (viewport == 0)
-    viewport = 1;
-  int viewport_i = 1;
-  while ((renderer = rens_->GetNextItem ()) != NULL)
-  {
-    if (viewport_i == viewport)
+    rens_->InitTraversal ();
+    vtkRenderer* renderer = NULL;
+    if (viewport == 0)
+        viewport = 1;
+    int viewport_i = 1;
+    while ((renderer = rens_->GetNextItem ()) != NULL)
     {
-      vtkCamera& camera = *renderer->GetActiveCamera ();
-      Eigen::Vector3d pos, x_axis, y_axis, z_axis;
-      camera.GetPosition (pos[0], pos[1], pos[2]);
-      camera.GetViewUp (y_axis[0], y_axis[1], y_axis[2]);
-      camera.GetFocalPoint (z_axis[0], z_axis[1], z_axis[2]);
+        if (viewport_i == viewport)
+        {
+            vtkCamera& camera = *renderer->GetActiveCamera ();
+            Eigen::Vector3d pos, x_axis, y_axis, z_axis;
+            camera.GetPosition (pos[0], pos[1], pos[2]);
+            camera.GetViewUp (y_axis[0], y_axis[1], y_axis[2]);
+            camera.GetFocalPoint (z_axis[0], z_axis[1], z_axis[2]);
 
-      z_axis = (z_axis - pos).normalized ();
-      x_axis = y_axis.cross (z_axis).normalized ();
+            z_axis = (z_axis - pos).normalized ();
+            x_axis = y_axis.cross (z_axis).normalized ();
 
-      /// TODO replace this ugly thing with matrix.block () = vector3f
-      ret (0, 0) = static_cast<float> (x_axis[0]);
-      ret (0, 1) = static_cast<float> (y_axis[0]);
-      ret (0, 2) = static_cast<float> (z_axis[0]);
-      ret (0, 3) = static_cast<float> (pos[0]);
+            /// TODO replace this ugly thing with matrix.block () = vector3f
+            ret (0, 0) = static_cast<float> (x_axis[0]);
+            ret (0, 1) = static_cast<float> (y_axis[0]);
+            ret (0, 2) = static_cast<float> (z_axis[0]);
+            ret (0, 3) = static_cast<float> (pos[0]);
 
-      ret (1, 0) = static_cast<float> (x_axis[1]);
-      ret (1, 1) = static_cast<float> (y_axis[1]);
-      ret (1, 2) = static_cast<float> (z_axis[1]);
-      ret (1, 3) = static_cast<float> (pos[1]);
+            ret (1, 0) = static_cast<float> (x_axis[1]);
+            ret (1, 1) = static_cast<float> (y_axis[1]);
+            ret (1, 2) = static_cast<float> (z_axis[1]);
+            ret (1, 3) = static_cast<float> (pos[1]);
 
-      ret (2, 0) = static_cast<float> (x_axis[2]);
-      ret (2, 1) = static_cast<float> (y_axis[2]);
-      ret (2, 2) = static_cast<float> (z_axis[2]);
-      ret (2, 3) = static_cast<float> (pos[2]);
+            ret (2, 0) = static_cast<float> (x_axis[2]);
+            ret (2, 1) = static_cast<float> (y_axis[2]);
+            ret (2, 2) = static_cast<float> (z_axis[2]);
+            ret (2, 3) = static_cast<float> (pos[2]);
 
-      return ret;
+            return ret;
+        }
+        viewport_i ++;
     }
-    viewport_i ++;
-  }
 
-  return ret;
+    return ret;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 void
 pcl::visualization::PCLVisualizer::resetCamera ()
 {
-  // Update the camera parameters
-  rens_->InitTraversal ();
-  vtkRenderer* renderer = NULL;
-  while ((renderer = rens_->GetNextItem ()) != NULL)
-    renderer->ResetCamera ();
+    // Update the camera parameters
+    rens_->InitTraversal ();
+    vtkRenderer* renderer = NULL;
+    while ((renderer = rens_->GetNextItem ()) != NULL)
+        renderer->ResetCamera ();
 }
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 void
 pcl::visualization::PCLVisualizer::setCameraPosition (
-    double pos_x, double pos_y, double pos_z,
-    double view_x, double view_y, double view_z,
-    double up_x, double up_y, double up_z,
-    int viewport)
+        double pos_x, double pos_y, double pos_z,
+        double view_x, double view_y, double view_z,
+        double up_x, double up_y, double up_z,
+        int viewport)
 {
-  rens_->InitTraversal ();
-  vtkRenderer* renderer = NULL;
-  int i = 1;
-  while ((renderer = rens_->GetNextItem ()) != NULL)
-  {
-    // Modify all renderer's cameras
-    if (viewport == 0 || viewport == i)
+    rens_->InitTraversal ();
+    vtkRenderer* renderer = NULL;
+    int i = 1;
+    while ((renderer = rens_->GetNextItem ()) != NULL)
     {
-      vtkSmartPointer<vtkCamera> cam = renderer->GetActiveCamera ();
-      cam->SetPosition (pos_x, pos_y, pos_z);
-      cam->SetFocalPoint (view_x, view_y, view_z);
-      cam->SetViewUp (up_x, up_y, up_z);
-      renderer->Render ();
+        // Modify all renderer's cameras
+        if (viewport == 0 || viewport == i)
+        {
+            vtkSmartPointer<vtkCamera> cam = renderer->GetActiveCamera ();
+            cam->SetPosition (pos_x, pos_y, pos_z);
+            cam->SetFocalPoint (view_x, view_y, view_z);
+            cam->SetViewUp (up_x, up_y, up_z);
+            renderer->Render ();
+        }
+        ++i;
     }
-    ++i;
-  }
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 void
 pcl::visualization::PCLVisualizer::setCameraPosition (
-    double pos_x, double pos_y, double pos_z,
-    double up_x, double up_y, double up_z, int viewport)
+        double pos_x, double pos_y, double pos_z,
+        double up_x, double up_y, double up_z, int viewport)
 {
-  rens_->InitTraversal ();
-  vtkRenderer* renderer = NULL;
-  int i = 1;
-  while ((renderer = rens_->GetNextItem ()) != NULL)
-  {
-    // Modify all renderer's cameras
-    if (viewport == 0 || viewport == i)
+    rens_->InitTraversal ();
+    vtkRenderer* renderer = NULL;
+    int i = 1;
+    while ((renderer = rens_->GetNextItem ()) != NULL)
     {
-      vtkSmartPointer<vtkCamera> cam = renderer->GetActiveCamera ();
-      cam->SetPosition (pos_x, pos_y, pos_z);
-      cam->SetViewUp (up_x, up_y, up_z);
-      renderer->Render ();
+        // Modify all renderer's cameras
+        if (viewport == 0 || viewport == i)
+        {
+            vtkSmartPointer<vtkCamera> cam = renderer->GetActiveCamera ();
+            cam->SetPosition (pos_x, pos_y, pos_z);
+            cam->SetViewUp (up_x, up_y, up_z);
+            renderer->Render ();
+        }
+        ++i;
     }
-    ++i;
-  }
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
@@ -1524,307 +1400,307 @@ pcl::visualization::PCLVisualizer::setCameraParameters (const Eigen::Matrix3f &i
                                                         const Eigen::Matrix4f &extrinsics,
                                                         int viewport)
 {
-  // Position = extrinsic translation
-  Eigen::Vector3f pos_vec = extrinsics.block<3, 1> (0, 3);
+    // Position = extrinsic translation
+    Eigen::Vector3f pos_vec = extrinsics.block<3, 1> (0, 3);
 
-  // Rotate the view vector
-  Eigen::Matrix3f rotation = extrinsics.block<3, 3> (0, 0);
-  Eigen::Vector3f y_axis (0.f, 1.f, 0.f);
-  Eigen::Vector3f up_vec (rotation * y_axis);
+    // Rotate the view vector
+    Eigen::Matrix3f rotation = extrinsics.block<3, 3> (0, 0);
+    Eigen::Vector3f y_axis (0.f, 1.f, 0.f);
+    Eigen::Vector3f up_vec (rotation * y_axis);
 
-  // Compute the new focal point
-  Eigen::Vector3f z_axis (0.f, 0.f, 1.f);
-  Eigen::Vector3f focal_vec = pos_vec + rotation * z_axis;
+    // Compute the new focal point
+    Eigen::Vector3f z_axis (0.f, 0.f, 1.f);
+    Eigen::Vector3f focal_vec = pos_vec + rotation * z_axis;
 
-  // Get the width and height of the image - assume the calibrated centers are at the center of the image
-  Eigen::Vector2i window_size;
-  window_size[0] = static_cast<int> (intrinsics (0, 2));
-  window_size[1] = static_cast<int> (intrinsics (1, 2));
+    // Get the width and height of the image - assume the calibrated centers are at the center of the image
+    Eigen::Vector2i window_size;
+    window_size[0] = static_cast<int> (intrinsics (0, 2));
+    window_size[1] = static_cast<int> (intrinsics (1, 2));
 
-  // Compute the vertical field of view based on the focal length and image heigh
-  double fovy = 2 * atan (window_size[1] / (2. * intrinsics (1, 1))) * 180.0 / M_PI;
+    // Compute the vertical field of view based on the focal length and image heigh
+    double fovy = 2 * atan (window_size[1] / (2. * intrinsics (1, 1))) * 180.0 / M_PI;
 
 
-  rens_->InitTraversal ();
-  vtkRenderer* renderer = NULL;
-  int i = 1;
-  while ((renderer = rens_->GetNextItem ()) != NULL)
-  {
-    // Modify all renderer's cameras
-    if (viewport == 0 || viewport == i)
+    rens_->InitTraversal ();
+    vtkRenderer* renderer = NULL;
+    int i = 1;
+    while ((renderer = rens_->GetNextItem ()) != NULL)
     {
-      vtkSmartPointer<vtkCamera> cam = renderer->GetActiveCamera ();
-      cam->SetPosition (pos_vec[0], pos_vec[1], pos_vec[2]);
-      cam->SetFocalPoint (focal_vec[0], focal_vec[1], focal_vec[2]);
-      cam->SetViewUp (up_vec[0], up_vec[1], up_vec[2]);
-      cam->SetUseHorizontalViewAngle (0);
-      cam->SetViewAngle (fovy);
-      cam->SetClippingRange (0.01, 1000.01);
-      win_->SetSize (window_size[0], window_size[1]);
+        // Modify all renderer's cameras
+        if (viewport == 0 || viewport == i)
+        {
+            vtkSmartPointer<vtkCamera> cam = renderer->GetActiveCamera ();
+            cam->SetPosition (pos_vec[0], pos_vec[1], pos_vec[2]);
+            cam->SetFocalPoint (focal_vec[0], focal_vec[1], focal_vec[2]);
+            cam->SetViewUp (up_vec[0], up_vec[1], up_vec[2]);
+            cam->SetUseHorizontalViewAngle (0);
+            cam->SetViewAngle (fovy);
+            cam->SetClippingRange (0.01, 1000.01);
+            win_->SetSize (window_size[0], window_size[1]);
 
-      renderer->Render ();
+            renderer->Render ();
+        }
     }
-  }
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 void
 pcl::visualization::PCLVisualizer::setCameraParameters (const pcl::visualization::Camera &camera, int viewport)
 {
-  rens_->InitTraversal ();
-  vtkRenderer* renderer = NULL;
-  int i = 1;
-  while ((renderer = rens_->GetNextItem ()) != NULL)
-  {
-    // Modify all renderer's cameras
-    if (viewport == 0 || viewport == i)
+    rens_->InitTraversal ();
+    vtkRenderer* renderer = NULL;
+    int i = 1;
+    while ((renderer = rens_->GetNextItem ()) != NULL)
     {
-      vtkSmartPointer<vtkCamera> cam = renderer->GetActiveCamera ();
-      cam->SetPosition (camera.pos[0], camera.pos[1], camera.pos[2]);
-      cam->SetFocalPoint (camera.focal[0], camera.focal[1], camera.focal[2]);
-      cam->SetViewUp (camera.view[0], camera.view[1], camera.view[2]);
-      cam->SetClippingRange (camera.clip);
-      cam->SetUseHorizontalViewAngle (0);
-      cam->SetViewAngle (camera.fovy * 180.0 / M_PI);
+        // Modify all renderer's cameras
+        if (viewport == 0 || viewport == i)
+        {
+            vtkSmartPointer<vtkCamera> cam = renderer->GetActiveCamera ();
+            cam->SetPosition (camera.pos[0], camera.pos[1], camera.pos[2]);
+            cam->SetFocalPoint (camera.focal[0], camera.focal[1], camera.focal[2]);
+            cam->SetViewUp (camera.view[0], camera.view[1], camera.view[2]);
+            cam->SetClippingRange (camera.clip);
+            cam->SetUseHorizontalViewAngle (0);
+            cam->SetViewAngle (camera.fovy * 180.0 / M_PI);
 
-      win_->SetSize (static_cast<int> (camera.window_size[0]),
-                     static_cast<int> (camera.window_size[1]));
+            win_->SetSize (static_cast<int> (camera.window_size[0]),
+                    static_cast<int> (camera.window_size[1]));
+        }
     }
-  }
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 void
 pcl::visualization::PCLVisualizer::setCameraClipDistances (double near, double far, int viewport)
 {
-  rens_->InitTraversal ();
-  vtkRenderer* renderer = NULL;
-  int i = 1;
-  while ((renderer = rens_->GetNextItem ()) != NULL)
-  {
-    // Modify all renderer's cameras
-    if (viewport == 0 || viewport == i)
+    rens_->InitTraversal ();
+    vtkRenderer* renderer = NULL;
+    int i = 1;
+    while ((renderer = rens_->GetNextItem ()) != NULL)
     {
-      vtkSmartPointer<vtkCamera> cam = renderer->GetActiveCamera ();
-      cam->SetClippingRange (near, far);
+        // Modify all renderer's cameras
+        if (viewport == 0 || viewport == i)
+        {
+            vtkSmartPointer<vtkCamera> cam = renderer->GetActiveCamera ();
+            cam->SetClippingRange (near, far);
+        }
     }
-  }
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 void
 pcl::visualization::PCLVisualizer::setCameraFieldOfView (double fovy, int viewport)
 {
-  rens_->InitTraversal ();
-  vtkRenderer* renderer = NULL;
-  int i = 1;
-  while ((renderer = rens_->GetNextItem ()) != NULL)
-  {
-    // Modify all renderer's cameras
-    if (viewport == 0 || viewport == i)
+    rens_->InitTraversal ();
+    vtkRenderer* renderer = NULL;
+    int i = 1;
+    while ((renderer = rens_->GetNextItem ()) != NULL)
     {
-      vtkSmartPointer<vtkCamera> cam = renderer->GetActiveCamera ();
-      cam->SetUseHorizontalViewAngle (0);
-      cam->SetViewAngle (fovy * 180.0 / M_PI);
+        // Modify all renderer's cameras
+        if (viewport == 0 || viewport == i)
+        {
+            vtkSmartPointer<vtkCamera> cam = renderer->GetActiveCamera ();
+            cam->SetUseHorizontalViewAngle (0);
+            cam->SetViewAngle (fovy * 180.0 / M_PI);
+        }
     }
-  }
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 void
 pcl::visualization::PCLVisualizer::resetCameraViewpoint (const std::string &id)
 {
-  vtkSmartPointer<vtkMatrix4x4> camera_pose;
-  static CloudActorMap::iterator it = cloud_actor_map_->find (id);
-  if (it != cloud_actor_map_->end ())
-    camera_pose = it->second.viewpoint_transformation_;
-  else
-    return;
+    vtkSmartPointer<vtkMatrix4x4> camera_pose;
+    static CloudActorMap::iterator it = cloud_actor_map_->find (id);
+    if (it != cloud_actor_map_->end ())
+        camera_pose = it->second.viewpoint_transformation_;
+    else
+        return;
 
-  // Prevent a segfault
-  if (!camera_pose)
-    return;
+    // Prevent a segfault
+    if (!camera_pose)
+        return;
 
-  // set all renderer to this viewpoint
-  rens_->InitTraversal ();
-  vtkRenderer* renderer = NULL;
-  while ((renderer = rens_->GetNextItem ()) != NULL)
-  {
-    vtkSmartPointer<vtkCamera> cam = renderer->GetActiveCamera ();
-    cam->SetPosition (camera_pose->GetElement (0, 3),
-                      camera_pose->GetElement (1, 3),
-                      camera_pose->GetElement (2, 3));
+    // set all renderer to this viewpoint
+    rens_->InitTraversal ();
+    vtkRenderer* renderer = NULL;
+    while ((renderer = rens_->GetNextItem ()) != NULL)
+    {
+        vtkSmartPointer<vtkCamera> cam = renderer->GetActiveCamera ();
+        cam->SetPosition (camera_pose->GetElement (0, 3),
+                          camera_pose->GetElement (1, 3),
+                          camera_pose->GetElement (2, 3));
 
-    cam->SetFocalPoint (camera_pose->GetElement (0, 3) - camera_pose->GetElement (0, 2),
-                        camera_pose->GetElement (1, 3) - camera_pose->GetElement (1, 2),
-                        camera_pose->GetElement (2, 3) - camera_pose->GetElement (2, 2));
+        cam->SetFocalPoint (camera_pose->GetElement (0, 3) - camera_pose->GetElement (0, 2),
+                            camera_pose->GetElement (1, 3) - camera_pose->GetElement (1, 2),
+                            camera_pose->GetElement (2, 3) - camera_pose->GetElement (2, 2));
 
-    cam->SetViewUp (camera_pose->GetElement (0, 1),
-                    camera_pose->GetElement (1, 1),
-                    camera_pose->GetElement (2, 1));
+        cam->SetViewUp (camera_pose->GetElement (0, 1),
+                        camera_pose->GetElement (1, 1),
+                        camera_pose->GetElement (2, 1));
 
-    renderer->SetActiveCamera (cam);
-    renderer->ResetCameraClippingRange ();
-    renderer->Render ();
-  }
+        renderer->SetActiveCamera (cam);
+        renderer->ResetCameraClippingRange ();
+        renderer->Render ();
+    }
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////
 bool
 pcl::visualization::PCLVisualizer::getCameraParameters (int argc, char **argv)
 {
-  Camera camera_temp;
-  for (int i = 1; i < argc; i++)
-  {
-    if ((strcmp (argv[i], "-cam") == 0) && (++i < argc))
+    Camera camera_temp;
+    for (int i = 1; i < argc; i++)
     {
-      std::ifstream fs;
-      std::string camfile = std::string (argv[i]);
-      std::string line;
-
-      std::vector<std::string> camera;
-      if (camfile.find (".cam") == std::string::npos)
-      {
-        // Assume we have clip/focal/pos/view
-        boost::split (camera, argv[i], boost::is_any_of ("/"), boost::token_compress_on);
-      }
-      else
-      {
-        // Assume that if we don't have clip/focal/pos/view, a filename.cam was given as a parameter
-        fs.open (camfile.c_str ());
-        while (!fs.eof ())
+        if ((strcmp (argv[i], "-cam") == 0) && (++i < argc))
         {
-          getline (fs, line);
-          if (line == "")
-            continue;
+            std::ifstream fs;
+            std::string camfile = std::string (argv[i]);
+            std::string line;
 
-          boost::split (camera, line, boost::is_any_of ("/"), boost::token_compress_on);
-          break;
+            std::vector<std::string> camera;
+            if (camfile.find (".cam") == std::string::npos)
+            {
+                // Assume we have clip/focal/pos/view
+                boost::split (camera, argv[i], boost::is_any_of ("/"), boost::token_compress_on);
+            }
+            else
+            {
+                // Assume that if we don't have clip/focal/pos/view, a filename.cam was given as a parameter
+                fs.open (camfile.c_str ());
+                while (!fs.eof ())
+                {
+                    getline (fs, line);
+                    if (line == "")
+                        continue;
+
+                    boost::split (camera, line, boost::is_any_of ("/"), boost::token_compress_on);
+                    break;
+                }
+                fs.close ();
+            }
+
+            // look for '/' as a separator
+            if (camera.size () != 7)
+            {
+                pcl::console::print_error ("[PCLVisualizer::getCameraParameters] Camera parameters given, but with an invalid number of options (%lu vs 7)!\n", static_cast<unsigned long> (camera.size ()));
+                return (false);
+            }
+
+            std::string clip_str  = camera.at (0);
+            std::string focal_str = camera.at (1);
+            std::string pos_str   = camera.at (2);
+            std::string view_str  = camera.at (3);
+            std::string fovy_str  = camera.at (4);
+            std::string win_size_str = camera.at (5);
+            std::string win_pos_str  = camera.at (6);
+
+            // Get each camera setting separately and parse for ','
+            std::vector<std::string> clip_st;
+            boost::split (clip_st, clip_str, boost::is_any_of (","), boost::token_compress_on);
+            if (clip_st.size () != 2)
+            {
+                pcl::console::print_error ("[PCLVisualizer::getCameraParameters] Invalid parameters given for camera clipping angle!\n");
+                return (false);
+            }
+            camera_temp.clip[0] = atof (clip_st.at (0).c_str ());
+            camera_temp.clip[1] = atof (clip_st.at (1).c_str ());
+
+            std::vector<std::string> focal_st;
+            boost::split (focal_st, focal_str, boost::is_any_of (","), boost::token_compress_on);
+            if (focal_st.size () != 3)
+            {
+                pcl::console::print_error ("[PCLVisualizer::getCameraParameters] Invalid parameters given for camera focal point!\n");
+                return (false);
+            }
+            camera_temp.focal[0] = atof (focal_st.at (0).c_str ());
+            camera_temp.focal[1] = atof (focal_st.at (1).c_str ());
+            camera_temp.focal[2] = atof (focal_st.at (2).c_str ());
+
+            std::vector<std::string> pos_st;
+            boost::split (pos_st, pos_str, boost::is_any_of (","), boost::token_compress_on);
+            if (pos_st.size () != 3)
+            {
+                pcl::console::print_error ("[PCLVisualizer::getCameraParameters] Invalid parameters given for camera position!\n");
+                return (false);
+            }
+            camera_temp.pos[0] = atof (pos_st.at (0).c_str ());
+            camera_temp.pos[1] = atof (pos_st.at (1).c_str ());
+            camera_temp.pos[2] = atof (pos_st.at (2).c_str ());
+
+            std::vector<std::string> view_st;
+            boost::split (view_st, view_str, boost::is_any_of (","), boost::token_compress_on);
+            if (view_st.size () != 3)
+            {
+                pcl::console::print_error ("[PCLVisualizer::getCameraParameters] Invalid parameters given for camera viewup!\n");
+                return (false);
+            }
+            camera_temp.view[0] = atof (view_st.at (0).c_str ());
+            camera_temp.view[1] = atof (view_st.at (1).c_str ());
+            camera_temp.view[2] = atof (view_st.at (2).c_str ());
+
+            std::vector<std::string> fovy_size_st;
+            boost::split (fovy_size_st, fovy_str, boost::is_any_of (","), boost::token_compress_on);
+            if (fovy_size_st.size () != 1)
+            {
+                pcl::console::print_error ("[PCLVisualizer::getCameraParameters] Invalid parameters given for field of view angle!\n");
+                return (false);
+            }
+            camera_temp.fovy = atof (fovy_size_st.at (0).c_str ());
+
+            std::vector<std::string> win_size_st;
+            boost::split (win_size_st, win_size_str, boost::is_any_of (","), boost::token_compress_on);
+            if (win_size_st.size () != 2)
+            {
+                pcl::console::print_error ("[PCLVisualizer::getCameraParameters] Invalid parameters given for window size!\n");
+                return (false);
+            }
+            camera_temp.window_size[0] = atof (win_size_st.at (0).c_str ());
+            camera_temp.window_size[1] = atof (win_size_st.at (1).c_str ());
+
+            std::vector<std::string> win_pos_st;
+            boost::split (win_pos_st, win_pos_str, boost::is_any_of (","), boost::token_compress_on);
+            if (win_pos_st.size () != 2)
+            {
+                pcl::console::print_error ("[PCLVisualizer::getCameraParameters] Invalid parameters given for window position!\n");
+                return (false);
+            }
+            camera_temp.window_pos[0] = atof (win_pos_st.at (0).c_str ());
+            camera_temp.window_pos[1] = atof (win_pos_st.at (1).c_str ());
+
+            setCameraParameters (camera_temp);
+
+            return (true);
         }
-        fs.close ();
-      }
-
-      // look for '/' as a separator
-      if (camera.size () != 7)
-      {
-        pcl::console::print_error ("[PCLVisualizer::getCameraParameters] Camera parameters given, but with an invalid number of options (%lu vs 7)!\n", static_cast<unsigned long> (camera.size ()));
-        return (false);
-      }
-
-      std::string clip_str  = camera.at (0);
-      std::string focal_str = camera.at (1);
-      std::string pos_str   = camera.at (2);
-      std::string view_str  = camera.at (3);
-      std::string fovy_str  = camera.at (4);
-      std::string win_size_str = camera.at (5);
-      std::string win_pos_str  = camera.at (6);
-
-      // Get each camera setting separately and parse for ','
-      std::vector<std::string> clip_st;
-      boost::split (clip_st, clip_str, boost::is_any_of (","), boost::token_compress_on);
-      if (clip_st.size () != 2)
-      {
-        pcl::console::print_error ("[PCLVisualizer::getCameraParameters] Invalid parameters given for camera clipping angle!\n");
-        return (false);
-      }
-      camera_temp.clip[0] = atof (clip_st.at (0).c_str ());
-      camera_temp.clip[1] = atof (clip_st.at (1).c_str ());
-
-      std::vector<std::string> focal_st;
-      boost::split (focal_st, focal_str, boost::is_any_of (","), boost::token_compress_on);
-      if (focal_st.size () != 3)
-      {
-        pcl::console::print_error ("[PCLVisualizer::getCameraParameters] Invalid parameters given for camera focal point!\n");
-        return (false);
-      }
-      camera_temp.focal[0] = atof (focal_st.at (0).c_str ());
-      camera_temp.focal[1] = atof (focal_st.at (1).c_str ());
-      camera_temp.focal[2] = atof (focal_st.at (2).c_str ());
-
-      std::vector<std::string> pos_st;
-      boost::split (pos_st, pos_str, boost::is_any_of (","), boost::token_compress_on);
-      if (pos_st.size () != 3)
-      {
-        pcl::console::print_error ("[PCLVisualizer::getCameraParameters] Invalid parameters given for camera position!\n");
-        return (false);
-      }
-      camera_temp.pos[0] = atof (pos_st.at (0).c_str ());
-      camera_temp.pos[1] = atof (pos_st.at (1).c_str ());
-      camera_temp.pos[2] = atof (pos_st.at (2).c_str ());
-
-      std::vector<std::string> view_st;
-      boost::split (view_st, view_str, boost::is_any_of (","), boost::token_compress_on);
-      if (view_st.size () != 3)
-      {
-        pcl::console::print_error ("[PCLVisualizer::getCameraParameters] Invalid parameters given for camera viewup!\n");
-        return (false);
-      }
-      camera_temp.view[0] = atof (view_st.at (0).c_str ());
-      camera_temp.view[1] = atof (view_st.at (1).c_str ());
-      camera_temp.view[2] = atof (view_st.at (2).c_str ());
-
-      std::vector<std::string> fovy_size_st;
-      boost::split (fovy_size_st, fovy_str, boost::is_any_of (","), boost::token_compress_on);
-      if (fovy_size_st.size () != 1)
-      {
-        pcl::console::print_error ("[PCLVisualizer::getCameraParameters] Invalid parameters given for field of view angle!\n");
-        return (false);
-      }
-      camera_temp.fovy = atof (fovy_size_st.at (0).c_str ());
-
-      std::vector<std::string> win_size_st;
-      boost::split (win_size_st, win_size_str, boost::is_any_of (","), boost::token_compress_on);
-      if (win_size_st.size () != 2)
-      {
-        pcl::console::print_error ("[PCLVisualizer::getCameraParameters] Invalid parameters given for window size!\n");
-        return (false);
-      }
-      camera_temp.window_size[0] = atof (win_size_st.at (0).c_str ());
-      camera_temp.window_size[1] = atof (win_size_st.at (1).c_str ());
-
-      std::vector<std::string> win_pos_st;
-      boost::split (win_pos_st, win_pos_str, boost::is_any_of (","), boost::token_compress_on);
-      if (win_pos_st.size () != 2)
-      {
-        pcl::console::print_error ("[PCLVisualizer::getCameraParameters] Invalid parameters given for window position!\n");
-        return (false);
-      }
-      camera_temp.window_pos[0] = atof (win_pos_st.at (0).c_str ());
-      camera_temp.window_pos[1] = atof (win_pos_st.at (1).c_str ());
-
-      setCameraParameters (camera_temp);
-
-      return (true);
     }
-  }
-  return (false);
+    return (false);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////
 bool
 pcl::visualization::PCLVisualizer::addCylinder (const pcl::ModelCoefficients &coefficients,
-                                               const std::string &id, int viewport)
+                                                const std::string &id, int viewport)
 {
-  // Check to see if this ID entry already exists (has it been already added to the visualizer?)
-  ShapeActorMap::iterator am_it = shape_actor_map_->find (id);
-  if (am_it != shape_actor_map_->end ())
-  {
-    pcl::console::print_warn (stderr, "[addCylinder] A shape with id <%s> already exists! Please choose a different id and retry.\n", id.c_str ());
-    return (false);
-  }
+    // Check to see if this ID entry already exists (has it been already added to the visualizer?)
+    ShapeActorMap::iterator am_it = shape_actor_map_->find (id);
+    if (am_it != shape_actor_map_->end ())
+    {
+        pcl::console::print_warn (stderr, "[addCylinder] A shape with id <%s> already exists! Please choose a different id and retry.\n", id.c_str ());
+        return (false);
+    }
 
-  vtkSmartPointer<vtkDataSet> data = createCylinder (coefficients);
+    vtkSmartPointer<vtkDataSet> data = createCylinder (coefficients);
 
-  // Create an Actor
-  vtkSmartPointer<vtkLODActor> actor;
-  createActorFromVTKDataSet (data, actor);
-  actor->GetProperty ()->SetRepresentationToWireframe ();
-  actor->GetProperty ()->SetLighting (false);
-  addActorToRenderer (actor, viewport);
+    // Create an Actor
+    vtkSmartPointer<vtkLODActor> actor;
+    createActorFromVTKDataSet (data, actor);
+    actor->GetProperty ()->SetRepresentationToWireframe ();
+    actor->GetProperty ()->SetLighting (false);
+    addActorToRenderer (actor, viewport);
 
-  // Save the pointer/ID pair to the global actor map
-  (*shape_actor_map_)[id] = actor;
-  return (true);
+    // Save the pointer/ID pair to the global actor map
+    (*shape_actor_map_)[id] = actor;
+    return (true);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////
@@ -1832,55 +1708,55 @@ bool
 pcl::visualization::PCLVisualizer::addCube (const pcl::ModelCoefficients &coefficients,
                                             const std::string &id, int viewport)
 {
-  // Check to see if this ID entry already exists (has it been already added to the visualizer?)
-  ShapeActorMap::iterator am_it = shape_actor_map_->find (id);
-  if (am_it != shape_actor_map_->end ())
-  {
-    pcl::console::print_warn (stderr, "[addCube] A shape with id <%s> already exists! Please choose a different id and retry.\n", id.c_str ());
-    return (false);
-  }
+    // Check to see if this ID entry already exists (has it been already added to the visualizer?)
+    ShapeActorMap::iterator am_it = shape_actor_map_->find (id);
+    if (am_it != shape_actor_map_->end ())
+    {
+        pcl::console::print_warn (stderr, "[addCube] A shape with id <%s> already exists! Please choose a different id and retry.\n", id.c_str ());
+        return (false);
+    }
 
-  vtkSmartPointer<vtkDataSet> data = createCube (coefficients);
+    vtkSmartPointer<vtkDataSet> data = createCube (coefficients);
 
-  // Create an Actor
-  vtkSmartPointer<vtkLODActor> actor;
-  createActorFromVTKDataSet (data, actor);
-  actor->GetProperty ()->SetRepresentationToWireframe ();
-  actor->GetProperty ()->SetLighting (false);
-  addActorToRenderer (actor, viewport);
+    // Create an Actor
+    vtkSmartPointer<vtkLODActor> actor;
+    createActorFromVTKDataSet (data, actor);
+    actor->GetProperty ()->SetRepresentationToWireframe ();
+    actor->GetProperty ()->SetLighting (false);
+    addActorToRenderer (actor, viewport);
 
-  // Save the pointer/ID pair to the global actor map
-  (*shape_actor_map_)[id] = actor;
-  return (true);
+    // Save the pointer/ID pair to the global actor map
+    (*shape_actor_map_)[id] = actor;
+    return (true);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////
 bool
 pcl::visualization::PCLVisualizer::addCube (
-  const Eigen::Vector3f &translation, const Eigen::Quaternionf &rotation,
-  double width, double height, double depth,
-  const std::string &id, int viewport)
+        const Eigen::Vector3f &translation, const Eigen::Quaternionf &rotation,
+        double width, double height, double depth,
+        const std::string &id, int viewport)
 {
-  // Check to see if this ID entry already exists (has it been already added to the visualizer?)
-  ShapeActorMap::iterator am_it = shape_actor_map_->find (id);
-  if (am_it != shape_actor_map_->end ())
-  {
-    pcl::console::print_warn (stderr, "[addCube] A shape with id <%s> already exists! Please choose a different id and retry.\n", id.c_str ());
-    return (false);
-  }
+    // Check to see if this ID entry already exists (has it been already added to the visualizer?)
+    ShapeActorMap::iterator am_it = shape_actor_map_->find (id);
+    if (am_it != shape_actor_map_->end ())
+    {
+        pcl::console::print_warn (stderr, "[addCube] A shape with id <%s> already exists! Please choose a different id and retry.\n", id.c_str ());
+        return (false);
+    }
 
-  vtkSmartPointer<vtkDataSet> data = createCube (translation, rotation, width, height, depth);
+    vtkSmartPointer<vtkDataSet> data = createCube (translation, rotation, width, height, depth);
 
-  // Create an Actor
-  vtkSmartPointer<vtkLODActor> actor;
-  createActorFromVTKDataSet (data, actor);
-  actor->GetProperty ()->SetRepresentationToWireframe ();
-  actor->GetProperty ()->SetLighting (false);
-  addActorToRenderer (actor, viewport);
+    // Create an Actor
+    vtkSmartPointer<vtkLODActor> actor;
+    createActorFromVTKDataSet (data, actor);
+    actor->GetProperty ()->SetRepresentationToWireframe ();
+    actor->GetProperty ()->SetLighting (false);
+    addActorToRenderer (actor, viewport);
 
-  // Save the pointer/ID pair to the global actor map
-  (*shape_actor_map_)[id] = actor;
-  return (true);
+    // Save the pointer/ID pair to the global actor map
+    (*shape_actor_map_)[id] = actor;
+    return (true);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////
@@ -1891,197 +1767,197 @@ pcl::visualization::PCLVisualizer::addCube (float x_min, float x_max,
                                             double r, double g, double b,
                                             const std::string &id, int viewport)
 {
-  // Check to see if this ID entry already exists (has it been already added to the visualizer?)
-  ShapeActorMap::iterator am_it = shape_actor_map_->find (id);
-  if (am_it != shape_actor_map_->end ())
-  {
-    pcl::console::print_warn (stderr, "[addCube] A shape with id <%s> already exists! Please choose a different id and retry.\n", id.c_str ());
-    return (false);
-  }
+    // Check to see if this ID entry already exists (has it been already added to the visualizer?)
+    ShapeActorMap::iterator am_it = shape_actor_map_->find (id);
+    if (am_it != shape_actor_map_->end ())
+    {
+        pcl::console::print_warn (stderr, "[addCube] A shape with id <%s> already exists! Please choose a different id and retry.\n", id.c_str ());
+        return (false);
+    }
 
-  vtkSmartPointer<vtkDataSet> data = createCube (x_min, x_max, y_min, y_max, z_min, z_max);
+    vtkSmartPointer<vtkDataSet> data = createCube (x_min, x_max, y_min, y_max, z_min, z_max);
 
-  // Create an Actor
-  vtkSmartPointer<vtkActor> actor;
-  createActorFromVTKDataSet (data, actor);
-  actor->GetProperty ()->SetRepresentationToWireframe ();
-  actor->GetProperty ()->SetLighting (false);
-  actor->GetProperty ()->SetColor (r,g,b);
-  addActorToRenderer (actor, viewport);
+    // Create an Actor
+    vtkSmartPointer<vtkActor> actor;
+    createActorFromVTKDataSet (data, actor);
+    actor->GetProperty ()->SetRepresentationToWireframe ();
+    actor->GetProperty ()->SetLighting (false);
+    actor->GetProperty ()->SetColor (r,g,b);
+    addActorToRenderer (actor, viewport);
 
-  // Save the pointer/ID pair to the global actor map
-  (*shape_actor_map_)[id] = actor;
-  return (true);
+    // Save the pointer/ID pair to the global actor map
+    (*shape_actor_map_)[id] = actor;
+    return (true);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////
 bool
 pcl::visualization::PCLVisualizer::addSphere (const pcl::ModelCoefficients &coefficients,
-                                             const std::string &id, int viewport)
+                                              const std::string &id, int viewport)
 {
-  // Check to see if this ID entry already exists (has it been already added to the visualizer?)
-  ShapeActorMap::iterator am_it = shape_actor_map_->find (id);
-  if (am_it != shape_actor_map_->end ())
-  {
-    pcl::console::print_warn (stderr, "[addSphere] A shape with id <%s> already exists! Please choose a different id and retry.\n", id.c_str ());
-    return (false);
-  }
+    // Check to see if this ID entry already exists (has it been already added to the visualizer?)
+    ShapeActorMap::iterator am_it = shape_actor_map_->find (id);
+    if (am_it != shape_actor_map_->end ())
+    {
+        pcl::console::print_warn (stderr, "[addSphere] A shape with id <%s> already exists! Please choose a different id and retry.\n", id.c_str ());
+        return (false);
+    }
 
-  vtkSmartPointer<vtkDataSet> data = createSphere (coefficients);
+    vtkSmartPointer<vtkDataSet> data = createSphere (coefficients);
 
-  // Create an Actor
-  vtkSmartPointer<vtkLODActor> actor;
-  createActorFromVTKDataSet (data, actor);
-  actor->GetProperty ()->SetRepresentationToWireframe ();
-  actor->GetProperty ()->SetLighting (false);
-  addActorToRenderer (actor, viewport);
+    // Create an Actor
+    vtkSmartPointer<vtkLODActor> actor;
+    createActorFromVTKDataSet (data, actor);
+    actor->GetProperty ()->SetRepresentationToWireframe ();
+    actor->GetProperty ()->SetLighting (false);
+    addActorToRenderer (actor, viewport);
 
-  // Save the pointer/ID pair to the global actor map
-  (*shape_actor_map_)[id] = actor;
-  return (true);
+    // Save the pointer/ID pair to the global actor map
+    (*shape_actor_map_)[id] = actor;
+    return (true);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////
 bool
 pcl::visualization::PCLVisualizer::addModelFromPolyData (
-    vtkSmartPointer<vtkPolyData> polydata, const std::string & id, int viewport)
+        vtkSmartPointer<vtkPolyData> polydata, const std::string & id, int viewport)
 {
-  ShapeActorMap::iterator am_it = shape_actor_map_->find (id);
-  if (am_it != shape_actor_map_->end ())
-  {
-    pcl::console::print_warn (stderr,
-                                "[addModelFromPolyData] A shape with id <%s> already exists! Please choose a different id and retry.\n",
-                                id.c_str ());
-    return (false);
-  }
+    ShapeActorMap::iterator am_it = shape_actor_map_->find (id);
+    if (am_it != shape_actor_map_->end ())
+    {
+        pcl::console::print_warn (stderr,
+                                  "[addModelFromPolyData] A shape with id <%s> already exists! Please choose a different id and retry.\n",
+                                  id.c_str ());
+        return (false);
+    }
 
-  vtkSmartPointer<vtkLODActor> actor;
-  createActorFromVTKDataSet (polydata, actor);
-  actor->GetProperty ()->SetRepresentationToWireframe ();
-  addActorToRenderer (actor, viewport);
+    vtkSmartPointer<vtkLODActor> actor;
+    createActorFromVTKDataSet (polydata, actor);
+    actor->GetProperty ()->SetRepresentationToWireframe ();
+    addActorToRenderer (actor, viewport);
 
-  // Save the pointer/ID pair to the global actor map
-  (*shape_actor_map_)[id] = actor;
-  return (true);
+    // Save the pointer/ID pair to the global actor map
+    (*shape_actor_map_)[id] = actor;
+    return (true);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////
 bool
 pcl::visualization::PCLVisualizer::addModelFromPolyData (
-    vtkSmartPointer<vtkPolyData> polydata, vtkSmartPointer<vtkTransform> transform, const std::string & id, int viewport)
+        vtkSmartPointer<vtkPolyData> polydata, vtkSmartPointer<vtkTransform> transform, const std::string & id, int viewport)
 {
-  ShapeActorMap::iterator am_it = shape_actor_map_->find (id);
-  if (am_it != shape_actor_map_->end ())
-  {
-    pcl::console::print_warn (stderr,
-                                "[addModelFromPolyData] A shape with id <%s> already exists! Please choose a different id and retry.\n",
-                                id.c_str ());
-    return (false);
-  }
+    ShapeActorMap::iterator am_it = shape_actor_map_->find (id);
+    if (am_it != shape_actor_map_->end ())
+    {
+        pcl::console::print_warn (stderr,
+                                  "[addModelFromPolyData] A shape with id <%s> already exists! Please choose a different id and retry.\n",
+                                  id.c_str ());
+        return (false);
+    }
 
-  vtkSmartPointer <vtkTransformFilter> trans_filter = vtkSmartPointer<vtkTransformFilter>::New ();
-  trans_filter->SetTransform (transform);
-  trans_filter->SetInput (polydata);
-  trans_filter->Update();
+    vtkSmartPointer <vtkTransformFilter> trans_filter = vtkSmartPointer<vtkTransformFilter>::New ();
+    trans_filter->SetTransform (transform);
+    trans_filter->SetInput (polydata);
+    trans_filter->Update();
 
-  // Create an Actor
-  vtkSmartPointer <vtkLODActor> actor;
-  createActorFromVTKDataSet (trans_filter->GetOutput (), actor);
-  actor->GetProperty ()->SetRepresentationToWireframe ();
-  addActorToRenderer (actor, viewport);
+    // Create an Actor
+    vtkSmartPointer <vtkLODActor> actor;
+    createActorFromVTKDataSet (trans_filter->GetOutput (), actor);
+    actor->GetProperty ()->SetRepresentationToWireframe ();
+    addActorToRenderer (actor, viewport);
 
-  // Save the pointer/ID pair to the global actor map
-  (*shape_actor_map_)[id] = actor;
-  return (true);
+    // Save the pointer/ID pair to the global actor map
+    (*shape_actor_map_)[id] = actor;
+    return (true);
 }
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////
 bool
 pcl::visualization::PCLVisualizer::addModelFromPLYFile (const std::string &filename,
-                                                       const std::string &id, int viewport)
+                                                        const std::string &id, int viewport)
 {
-  ShapeActorMap::iterator am_it = shape_actor_map_->find (id);
-  if (am_it != shape_actor_map_->end ())
-  {
-    pcl::console::print_warn (stderr,
-                                "[addModelFromPLYFile] A shape with id <%s> already exists! Please choose a different id and retry.\n",
-                                id.c_str ());
-    return (false);
-  }
+    ShapeActorMap::iterator am_it = shape_actor_map_->find (id);
+    if (am_it != shape_actor_map_->end ())
+    {
+        pcl::console::print_warn (stderr,
+                                  "[addModelFromPLYFile] A shape with id <%s> already exists! Please choose a different id and retry.\n",
+                                  id.c_str ());
+        return (false);
+    }
 
-  vtkSmartPointer<vtkPLYReader> reader = vtkSmartPointer<vtkPLYReader>::New ();
-  reader->SetFileName (filename.c_str ());
+    vtkSmartPointer<vtkPLYReader> reader = vtkSmartPointer<vtkPLYReader>::New ();
+    reader->SetFileName (filename.c_str ());
 
-  // Create an Actor
-  vtkSmartPointer<vtkLODActor> actor;
-  createActorFromVTKDataSet (reader->GetOutput (), actor);
-  actor->GetProperty ()->SetRepresentationToWireframe ();
-  addActorToRenderer (actor, viewport);
+    // Create an Actor
+    vtkSmartPointer<vtkLODActor> actor;
+    createActorFromVTKDataSet (reader->GetOutput (), actor);
+    actor->GetProperty ()->SetRepresentationToWireframe ();
+    addActorToRenderer (actor, viewport);
 
-  // Save the pointer/ID pair to the global actor map
-  (*shape_actor_map_)[id] = actor;
-  return (true);
+    // Save the pointer/ID pair to the global actor map
+    (*shape_actor_map_)[id] = actor;
+    return (true);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////
 bool
 pcl::visualization::PCLVisualizer::addModelFromPLYFile (const std::string &filename,
-                                                       vtkSmartPointer<vtkTransform> transform, const std::string &id,
-                                                       int viewport)
+                                                        vtkSmartPointer<vtkTransform> transform, const std::string &id,
+                                                        int viewport)
 {
-  ShapeActorMap::iterator am_it = shape_actor_map_->find (id);
-  if (am_it != shape_actor_map_->end ())
-  {
-    pcl::console::print_warn (stderr,
-                                "[addModelFromPLYFile] A shape with id <%s> already exists! Please choose a different id and retry.\n",
-                                id.c_str ());
-    return (false);
-  }
+    ShapeActorMap::iterator am_it = shape_actor_map_->find (id);
+    if (am_it != shape_actor_map_->end ())
+    {
+        pcl::console::print_warn (stderr,
+                                  "[addModelFromPLYFile] A shape with id <%s> already exists! Please choose a different id and retry.\n",
+                                  id.c_str ());
+        return (false);
+    }
 
-  vtkSmartPointer <vtkPLYReader > reader = vtkSmartPointer<vtkPLYReader>::New ();
-  reader->SetFileName (filename.c_str ());
+    vtkSmartPointer <vtkPLYReader > reader = vtkSmartPointer<vtkPLYReader>::New ();
+    reader->SetFileName (filename.c_str ());
 
-  //create transformation filter
-  vtkSmartPointer <vtkTransformFilter> trans_filter = vtkSmartPointer<vtkTransformFilter>::New ();
-  trans_filter->SetTransform (transform);
-  trans_filter->SetInputConnection (reader->GetOutputPort ());
+    //create transformation filter
+    vtkSmartPointer <vtkTransformFilter> trans_filter = vtkSmartPointer<vtkTransformFilter>::New ();
+    trans_filter->SetTransform (transform);
+    trans_filter->SetInputConnection (reader->GetOutputPort ());
 
-  // Create an Actor
-  vtkSmartPointer <vtkLODActor> actor;
-  createActorFromVTKDataSet (trans_filter->GetOutput (), actor);
-  actor->GetProperty ()->SetRepresentationToWireframe ();
-  addActorToRenderer (actor, viewport);
+    // Create an Actor
+    vtkSmartPointer <vtkLODActor> actor;
+    createActorFromVTKDataSet (trans_filter->GetOutput (), actor);
+    actor->GetProperty ()->SetRepresentationToWireframe ();
+    addActorToRenderer (actor, viewport);
 
-  // Save the pointer/ID pair to the global actor map
-  (*shape_actor_map_)[id] = actor;
-  return (true);
+    // Save the pointer/ID pair to the global actor map
+    (*shape_actor_map_)[id] = actor;
+    return (true);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 bool
 pcl::visualization::PCLVisualizer::addLine (const pcl::ModelCoefficients &coefficients, const std::string &id, int viewport)
 {
-  // Check to see if this ID entry already exists (has it been already added to the visualizer?)
-  ShapeActorMap::iterator am_it = shape_actor_map_->find (id);
-  if (am_it != shape_actor_map_->end ())
-  {
-    pcl::console::print_warn (stderr, "[addLine] A shape with id <%s> already exists! Please choose a different id and retry.\n", id.c_str ());
-    return (false);
-  }
+    // Check to see if this ID entry already exists (has it been already added to the visualizer?)
+    ShapeActorMap::iterator am_it = shape_actor_map_->find (id);
+    if (am_it != shape_actor_map_->end ())
+    {
+        pcl::console::print_warn (stderr, "[addLine] A shape with id <%s> already exists! Please choose a different id and retry.\n", id.c_str ());
+        return (false);
+    }
 
-  vtkSmartPointer<vtkDataSet> data = createLine (coefficients);
+    vtkSmartPointer<vtkDataSet> data = createLine (coefficients);
 
-  // Create an Actor
-  vtkSmartPointer<vtkLODActor> actor;
-  createActorFromVTKDataSet (data, actor);
-  actor->GetProperty ()->SetRepresentationToWireframe ();
-  actor->GetProperty ()->SetLighting (false);
-  addActorToRenderer (actor, viewport);
+    // Create an Actor
+    vtkSmartPointer<vtkLODActor> actor;
+    createActorFromVTKDataSet (data, actor);
+    actor->GetProperty ()->SetRepresentationToWireframe ();
+    actor->GetProperty ()->SetLighting (false);
+    addActorToRenderer (actor, viewport);
 
-  // Save the pointer/ID pair to the global actor map
-  (*shape_actor_map_)[id] = actor;
-  return (true);
+    // Save the pointer/ID pair to the global actor map
+    (*shape_actor_map_)[id] = actor;
+    return (true);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////
@@ -2091,398 +1967,398 @@ pcl::visualization::PCLVisualizer::addLine (const pcl::ModelCoefficients &coeffi
   * \param viewport (optional) the id of the new viewport (default: 0)
   */
 bool
-  pcl::visualization::PCLVisualizer::addPlane (const pcl::ModelCoefficients &coefficients, const std::string &id, int viewport)
+pcl::visualization::PCLVisualizer::addPlane (const pcl::ModelCoefficients &coefficients, const std::string &id, int viewport)
 {
-  // Check to see if this ID entry already exists (has it been already added to the visualizer?)
-  ShapeActorMap::iterator am_it = shape_actor_map_->find (id);
-  if (am_it != shape_actor_map_->end ())
-  {
-    pcl::console::print_warn (stderr, "[addPlane] A shape with id <%s> already exists! Please choose a different id and retry.\n", id.c_str ());
-    return (false);
-  }
+    // Check to see if this ID entry already exists (has it been already added to the visualizer?)
+    ShapeActorMap::iterator am_it = shape_actor_map_->find (id);
+    if (am_it != shape_actor_map_->end ())
+    {
+        pcl::console::print_warn (stderr, "[addPlane] A shape with id <%s> already exists! Please choose a different id and retry.\n", id.c_str ());
+        return (false);
+    }
 
-  vtkSmartPointer<vtkDataSet> data = createPlane (coefficients);
+    vtkSmartPointer<vtkDataSet> data = createPlane (coefficients);
 
-  // Create an Actor
-  vtkSmartPointer<vtkLODActor> actor;
-  createActorFromVTKDataSet (data, actor);
-//  actor->GetProperty ()->SetRepresentationToWireframe ();
-  actor->GetProperty ()->SetRepresentationToSurface ();
-  actor->GetProperty ()->SetLighting (false);
-  addActorToRenderer (actor, viewport);
+    // Create an Actor
+    vtkSmartPointer<vtkLODActor> actor;
+    createActorFromVTKDataSet (data, actor);
+    //  actor->GetProperty ()->SetRepresentationToWireframe ();
+    actor->GetProperty ()->SetRepresentationToSurface ();
+    actor->GetProperty ()->SetLighting (false);
+    addActorToRenderer (actor, viewport);
 
-  // Save the pointer/ID pair to the global actor map
-  (*shape_actor_map_)[id] = actor;
-  return (true);
+    // Save the pointer/ID pair to the global actor map
+    (*shape_actor_map_)[id] = actor;
+    return (true);
 }
 
 bool
-  pcl::visualization::PCLVisualizer::addPlane (const pcl::ModelCoefficients &coefficients, double x, double y, double z, const std::string &id, int viewport)
+pcl::visualization::PCLVisualizer::addPlane (const pcl::ModelCoefficients &coefficients, double x, double y, double z, const std::string &id, int viewport)
 {
-  // Check to see if this ID entry already exists (has it been already added to the visualizer?)
-  ShapeActorMap::iterator am_it = shape_actor_map_->find (id);
-  if (am_it != shape_actor_map_->end ())
-  {
-    pcl::console::print_warn (stderr, "[addPlane] A shape with id <%s> already exists! Please choose a different id and retry.\n", id.c_str ());
-    return (false);
-  }
+    // Check to see if this ID entry already exists (has it been already added to the visualizer?)
+    ShapeActorMap::iterator am_it = shape_actor_map_->find (id);
+    if (am_it != shape_actor_map_->end ())
+    {
+        pcl::console::print_warn (stderr, "[addPlane] A shape with id <%s> already exists! Please choose a different id and retry.\n", id.c_str ());
+        return (false);
+    }
 
-  vtkSmartPointer<vtkDataSet> data = createPlane (coefficients, x, y, z);
+    vtkSmartPointer<vtkDataSet> data = createPlane (coefficients, x, y, z);
 
-  // Create an Actor
-  vtkSmartPointer<vtkLODActor> actor;
-  createActorFromVTKDataSet (data, actor);
-  actor->GetProperty ()->SetRepresentationToWireframe ();
-  actor->GetProperty ()->SetLighting (false);
-  addActorToRenderer (actor, viewport);
+    // Create an Actor
+    vtkSmartPointer<vtkLODActor> actor;
+    createActorFromVTKDataSet (data, actor);
+    actor->GetProperty ()->SetRepresentationToWireframe ();
+    actor->GetProperty ()->SetLighting (false);
+    addActorToRenderer (actor, viewport);
 
-  // Save the pointer/ID pair to the global actor map
-  (*shape_actor_map_)[id] = actor;
-  return (true);
+    // Save the pointer/ID pair to the global actor map
+    (*shape_actor_map_)[id] = actor;
+    return (true);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 bool
 pcl::visualization::PCLVisualizer::addCircle (const pcl::ModelCoefficients &coefficients, const std::string &id, int viewport)
 {
-  // Check to see if this ID entry already exists (has it been already added to the visualizer?)
-  ShapeActorMap::iterator am_it = shape_actor_map_->find (id);
-  if (am_it != shape_actor_map_->end ())
-  {
-    pcl::console::print_warn (stderr, "[addCircle] A shape with id <%s> already exists! Please choose a different id and retry.\n", id.c_str ());
-    return (false);
-  }
+    // Check to see if this ID entry already exists (has it been already added to the visualizer?)
+    ShapeActorMap::iterator am_it = shape_actor_map_->find (id);
+    if (am_it != shape_actor_map_->end ())
+    {
+        pcl::console::print_warn (stderr, "[addCircle] A shape with id <%s> already exists! Please choose a different id and retry.\n", id.c_str ());
+        return (false);
+    }
 
-  vtkSmartPointer<vtkDataSet> data = create2DCircle (coefficients);
+    vtkSmartPointer<vtkDataSet> data = create2DCircle (coefficients);
 
-  // Create an Actor
-  vtkSmartPointer<vtkLODActor> actor;
-  createActorFromVTKDataSet (data, actor);
-  actor->GetProperty ()->SetRepresentationToWireframe ();
-  actor->GetProperty ()->SetLighting (false);
-  addActorToRenderer (actor, viewport);
+    // Create an Actor
+    vtkSmartPointer<vtkLODActor> actor;
+    createActorFromVTKDataSet (data, actor);
+    actor->GetProperty ()->SetRepresentationToWireframe ();
+    actor->GetProperty ()->SetLighting (false);
+    addActorToRenderer (actor, viewport);
 
-  // Save the pointer/ID pair to the global actor map
-  (*shape_actor_map_)[id] = actor;
-  return (true);
+    // Save the pointer/ID pair to the global actor map
+    (*shape_actor_map_)[id] = actor;
+    return (true);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 bool
 pcl::visualization::PCLVisualizer::addCone (const pcl::ModelCoefficients &coefficients, const std::string &id, int viewport)
 {
-  // Check to see if this ID entry already exists (has it been already added to the visualizer?)
-  ShapeActorMap::iterator am_it = shape_actor_map_->find (id);
-  if (am_it != shape_actor_map_->end ())
-  {
-    pcl::console::print_warn (stderr, "[addCone] A shape with id <%s> already exists! Please choose a different id and retry.\n", id.c_str ());
-    return (false);
-  }
+    // Check to see if this ID entry already exists (has it been already added to the visualizer?)
+    ShapeActorMap::iterator am_it = shape_actor_map_->find (id);
+    if (am_it != shape_actor_map_->end ())
+    {
+        pcl::console::print_warn (stderr, "[addCone] A shape with id <%s> already exists! Please choose a different id and retry.\n", id.c_str ());
+        return (false);
+    }
 
-  vtkSmartPointer<vtkDataSet> data = createCone (coefficients);
+    vtkSmartPointer<vtkDataSet> data = createCone (coefficients);
 
-  // Create an Actor
-  vtkSmartPointer<vtkLODActor> actor;
-  createActorFromVTKDataSet (data, actor);
-  actor->GetProperty ()->SetRepresentationToWireframe ();
-  actor->GetProperty ()->SetLighting (false);
-  addActorToRenderer (actor, viewport);
+    // Create an Actor
+    vtkSmartPointer<vtkLODActor> actor;
+    createActorFromVTKDataSet (data, actor);
+    actor->GetProperty ()->SetRepresentationToWireframe ();
+    actor->GetProperty ()->SetLighting (false);
+    addActorToRenderer (actor, viewport);
 
-  // Save the pointer/ID pair to the global actor map
-  (*shape_actor_map_)[id] = actor;
-  return (true);
+    // Save the pointer/ID pair to the global actor map
+    (*shape_actor_map_)[id] = actor;
+    return (true);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 void
 pcl::visualization::PCLVisualizer::createViewPort (double xmin, double ymin, double xmax, double ymax, int &viewport)
 {
-  // Create a new renderer
-  vtkSmartPointer<vtkRenderer> ren = vtkSmartPointer<vtkRenderer>::New ();
-  ren->SetViewport (xmin, ymin, xmax, ymax);
+    // Create a new renderer
+    vtkSmartPointer<vtkRenderer> ren = vtkSmartPointer<vtkRenderer>::New ();
+    ren->SetViewport (xmin, ymin, xmax, ymax);
 
-  if (rens_->GetNumberOfItems () > 0)
-    ren->SetActiveCamera (rens_->GetFirstRenderer ()->GetActiveCamera ());
-  ren->ResetCamera ();
+    if (rens_->GetNumberOfItems () > 0)
+        ren->SetActiveCamera (rens_->GetFirstRenderer ()->GetActiveCamera ());
+    ren->ResetCamera ();
 
-  // Add it to the list of renderers
-  rens_->AddItem (ren);
+    // Add it to the list of renderers
+    rens_->AddItem (ren);
 
-  if (rens_->GetNumberOfItems () <= 1)          // If only one renderer
-    viewport = 0;                               // set viewport to 'all'
-  else
-    viewport = rens_->GetNumberOfItems () - 1;
+    if (rens_->GetNumberOfItems () <= 1)          // If only one renderer
+        viewport = 0;                               // set viewport to 'all'
+    else
+        viewport = rens_->GetNumberOfItems () - 1;
 
-  win_->AddRenderer (ren);
-  win_->Modified ();
+    win_->AddRenderer (ren);
+    win_->Modified ();
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////
 void
 pcl::visualization::PCLVisualizer::createViewPortCamera (const int viewport)
 {
-  vtkSmartPointer<vtkCamera> cam = vtkSmartPointer<vtkCamera>::New ();
-  rens_->InitTraversal ();
-  vtkRenderer* renderer = NULL;
-  int i = 0;
-  while ((renderer = rens_->GetNextItem ()) != NULL)
-  {
-    if (viewport == 0)
-      continue;
-    else if (viewport == i)
+    vtkSmartPointer<vtkCamera> cam = vtkSmartPointer<vtkCamera>::New ();
+    rens_->InitTraversal ();
+    vtkRenderer* renderer = NULL;
+    int i = 0;
+    while ((renderer = rens_->GetNextItem ()) != NULL)
     {
-      renderer->SetActiveCamera (cam);
-      renderer->ResetCamera ();
+        if (viewport == 0)
+            continue;
+        else if (viewport == i)
+        {
+            renderer->SetActiveCamera (cam);
+            renderer->ResetCamera ();
+        }
+        ++i;
     }
-    ++i;
-  }
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 bool
 pcl::visualization::PCLVisualizer::addText (const std::string &text, int xpos, int ypos, const std::string &id, int viewport)
 {
-  std::string tid;
-  if (id.empty ())
-    tid = text;
-  else
-    tid = id;
+    std::string tid;
+    if (id.empty ())
+        tid = text;
+    else
+        tid = id;
 
-  // Check to see if this ID entry already exists (has it been already added to the visualizer?)
-  ShapeActorMap::iterator am_it = shape_actor_map_->find (tid);
-  if (am_it != shape_actor_map_->end ())
-  {
-    pcl::console::print_warn (stderr, "[addText] A text with id <%s> already exists! Please choose a different id and retry.\n", tid.c_str ());
-    return (false);
-  }
+    // Check to see if this ID entry already exists (has it been already added to the visualizer?)
+    ShapeActorMap::iterator am_it = shape_actor_map_->find (tid);
+    if (am_it != shape_actor_map_->end ())
+    {
+        pcl::console::print_warn (stderr, "[addText] A text with id <%s> already exists! Please choose a different id and retry.\n", tid.c_str ());
+        return (false);
+    }
 
-  // Create an Actor
-  vtkSmartPointer<vtkTextActor> actor = vtkSmartPointer<vtkTextActor>::New ();
-  actor->SetPosition (xpos, ypos);
-  actor->SetInput (text.c_str ());
+    // Create an Actor
+    vtkSmartPointer<vtkTextActor> actor = vtkSmartPointer<vtkTextActor>::New ();
+    actor->SetPosition (xpos, ypos);
+    actor->SetInput (text.c_str ());
 
-  vtkSmartPointer<vtkTextProperty> tprop = actor->GetTextProperty ();
-  tprop->SetFontSize (10);
-  tprop->SetFontFamilyToArial ();
-  tprop->SetJustificationToLeft ();
-  tprop->BoldOn ();
-  tprop->SetColor (1, 1, 1);
-  addActorToRenderer (actor, viewport);
+    vtkSmartPointer<vtkTextProperty> tprop = actor->GetTextProperty ();
+    tprop->SetFontSize (10);
+    tprop->SetFontFamilyToArial ();
+    tprop->SetJustificationToLeft ();
+    tprop->BoldOn ();
+    tprop->SetColor (1, 1, 1);
+    addActorToRenderer (actor, viewport);
 
-  // Save the pointer/ID pair to the global actor map
-  (*shape_actor_map_)[tid] = actor;
-  return (true);
+    // Save the pointer/ID pair to the global actor map
+    (*shape_actor_map_)[tid] = actor;
+    return (true);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 bool
 pcl::visualization::PCLVisualizer::addText (const std::string &text, int xpos, int ypos, double r, double g, double b, const std::string &id, int viewport)
 {
-  std::string tid;
-  if (id.empty ())
-    tid = text;
-  else
-    tid = id;
+    std::string tid;
+    if (id.empty ())
+        tid = text;
+    else
+        tid = id;
 
-  if (shape_actor_map_->find (tid) != shape_actor_map_->end ())
-  {
-    pcl::console::print_warn (stderr, "[addText] A text with id <%s> already exists! Please choose a different id and retry.\n", tid.c_str ());
-    return (false);
-  }
+    if (shape_actor_map_->find (tid) != shape_actor_map_->end ())
+    {
+        pcl::console::print_warn (stderr, "[addText] A text with id <%s> already exists! Please choose a different id and retry.\n", tid.c_str ());
+        return (false);
+    }
 
-  // Create an Actor
-  vtkSmartPointer<vtkTextActor> actor = vtkSmartPointer<vtkTextActor>::New ();
-  actor->SetPosition (xpos, ypos);
-  actor->SetInput (text.c_str ());
+    // Create an Actor
+    vtkSmartPointer<vtkTextActor> actor = vtkSmartPointer<vtkTextActor>::New ();
+    actor->SetPosition (xpos, ypos);
+    actor->SetInput (text.c_str ());
 
-  vtkSmartPointer<vtkTextProperty> tprop = actor->GetTextProperty ();
-  tprop->SetFontSize (10);
-  tprop->SetFontFamilyToArial ();
-  tprop->SetJustificationToLeft ();
-  tprop->BoldOn ();
-  tprop->SetColor (r, g, b);
-  addActorToRenderer (actor, viewport);
+    vtkSmartPointer<vtkTextProperty> tprop = actor->GetTextProperty ();
+    tprop->SetFontSize (10);
+    tprop->SetFontFamilyToArial ();
+    tprop->SetJustificationToLeft ();
+    tprop->BoldOn ();
+    tprop->SetColor (r, g, b);
+    addActorToRenderer (actor, viewport);
 
-  // Save the pointer/ID pair to the global actor map
-  (*shape_actor_map_)[tid] = actor;
-  return (true);
+    // Save the pointer/ID pair to the global actor map
+    (*shape_actor_map_)[tid] = actor;
+    return (true);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 bool
 pcl::visualization::PCLVisualizer::addText (const std::string &text, int xpos, int ypos, int fontsize, double r, double g, double b, const std::string &id, int viewport)
 {
-  std::string tid;
-  if (id.empty ())
-    tid = text;
-  else
-    tid = id;
+    std::string tid;
+    if (id.empty ())
+        tid = text;
+    else
+        tid = id;
 
-  // Check to see if this ID entry already exists (has it been already added to the visualizer?)
-  ShapeActorMap::iterator am_it = shape_actor_map_->find (tid);
-  if (am_it != shape_actor_map_->end ())
-  {
-    pcl::console::print_warn (stderr, "[addText] A text with id <%s> already exists! Please choose a different id and retry.\n", tid.c_str ());
-    return (false);
-  }
+    // Check to see if this ID entry already exists (has it been already added to the visualizer?)
+    ShapeActorMap::iterator am_it = shape_actor_map_->find (tid);
+    if (am_it != shape_actor_map_->end ())
+    {
+        pcl::console::print_warn (stderr, "[addText] A text with id <%s> already exists! Please choose a different id and retry.\n", tid.c_str ());
+        return (false);
+    }
 
-  // Create an Actor
-  vtkSmartPointer<vtkTextActor> actor = vtkSmartPointer<vtkTextActor>::New ();
-  actor->SetPosition (xpos, ypos);
-  actor->SetInput (text.c_str ());
+    // Create an Actor
+    vtkSmartPointer<vtkTextActor> actor = vtkSmartPointer<vtkTextActor>::New ();
+    actor->SetPosition (xpos, ypos);
+    actor->SetInput (text.c_str ());
 
-  vtkSmartPointer<vtkTextProperty> tprop = actor->GetTextProperty ();
-  tprop->SetFontSize (fontsize);
-  tprop->SetFontFamilyToArial ();
-  tprop->SetJustificationToLeft ();
-  tprop->BoldOn ();
-  tprop->SetColor (r, g, b);
-  addActorToRenderer (actor, viewport);
+    vtkSmartPointer<vtkTextProperty> tprop = actor->GetTextProperty ();
+    tprop->SetFontSize (fontsize);
+    tprop->SetFontFamilyToArial ();
+    tprop->SetJustificationToLeft ();
+    tprop->BoldOn ();
+    tprop->SetColor (r, g, b);
+    addActorToRenderer (actor, viewport);
 
-  // Save the pointer/ID pair to the global actor map
-  (*shape_actor_map_)[tid] = actor;
-  return (true);
+    // Save the pointer/ID pair to the global actor map
+    (*shape_actor_map_)[tid] = actor;
+    return (true);
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////
 bool
 pcl::visualization::PCLVisualizer::updateText (const std::string &text, int xpos, int ypos, const std::string &id)
 {
-  std::string tid;
-  if (id.empty ())
-    tid = text;
-  else
-    tid = id;
+    std::string tid;
+    if (id.empty ())
+        tid = text;
+    else
+        tid = id;
 
-  // Check to see if this ID entry already exists (has it been already added to the visualizer?)
-  ShapeActorMap::iterator am_it = shape_actor_map_->find (tid);
-  if (am_it == shape_actor_map_->end ())
-    return (false);
+    // Check to see if this ID entry already exists (has it been already added to the visualizer?)
+    ShapeActorMap::iterator am_it = shape_actor_map_->find (tid);
+    if (am_it == shape_actor_map_->end ())
+        return (false);
 
-  // Retrieve the Actor
-  vtkTextActor* actor = vtkTextActor::SafeDownCast (am_it->second);
-  actor->SetPosition (xpos, ypos);
-  actor->SetInput (text.c_str ());
+    // Retrieve the Actor
+    vtkTextActor* actor = vtkTextActor::SafeDownCast (am_it->second);
+    actor->SetPosition (xpos, ypos);
+    actor->SetInput (text.c_str ());
 
-  actor->Modified ();
+    actor->Modified ();
 
-  return (true);
+    return (true);
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////
 bool
 pcl::visualization::PCLVisualizer::updateText (const std::string &text, int xpos, int ypos, double r, double g, double b, const std::string &id)
 {
-  std::string tid;
-  if (id.empty ())
-    tid = text;
-  else
-    tid = id;
+    std::string tid;
+    if (id.empty ())
+        tid = text;
+    else
+        tid = id;
 
-  // Check to see if this ID entry already exists (has it been already added to the visualizer?)
-  ShapeActorMap::iterator am_it = shape_actor_map_->find (tid);
-  if (am_it == shape_actor_map_->end ())
-    return (false);
+    // Check to see if this ID entry already exists (has it been already added to the visualizer?)
+    ShapeActorMap::iterator am_it = shape_actor_map_->find (tid);
+    if (am_it == shape_actor_map_->end ())
+        return (false);
 
-  // Create the Actor
-  vtkTextActor* actor = vtkTextActor::SafeDownCast (am_it->second);
-  actor->SetPosition (xpos, ypos);
-  actor->SetInput (text.c_str ());
+    // Create the Actor
+    vtkTextActor* actor = vtkTextActor::SafeDownCast (am_it->second);
+    actor->SetPosition (xpos, ypos);
+    actor->SetInput (text.c_str ());
 
-  vtkSmartPointer<vtkTextProperty> tprop = actor->GetTextProperty ();
-  tprop->SetColor (r, g, b);
-  actor->Modified ();
+    vtkSmartPointer<vtkTextProperty> tprop = actor->GetTextProperty ();
+    tprop->SetColor (r, g, b);
+    actor->Modified ();
 
-  return (true);
+    return (true);
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////
 bool
 pcl::visualization::PCLVisualizer::updateText (const std::string &text, int xpos, int ypos, int fontsize, double r, double g, double b, const std::string &id)
 {
-  std::string tid;
-  if (id.empty ())
-    tid = text;
-  else
-    tid = id;
+    std::string tid;
+    if (id.empty ())
+        tid = text;
+    else
+        tid = id;
 
-  // Check to see if this ID entry already exists (has it been already added to the visualizer?)
-  ShapeActorMap::iterator am_it = shape_actor_map_->find (tid);
-  if (am_it == shape_actor_map_->end ())
-    return (false);
+    // Check to see if this ID entry already exists (has it been already added to the visualizer?)
+    ShapeActorMap::iterator am_it = shape_actor_map_->find (tid);
+    if (am_it == shape_actor_map_->end ())
+        return (false);
 
-  // Retrieve the Actor
-  vtkTextActor *actor = vtkTextActor::SafeDownCast (am_it->second);
+    // Retrieve the Actor
+    vtkTextActor *actor = vtkTextActor::SafeDownCast (am_it->second);
 
-  actor->SetPosition (xpos, ypos);
-  actor->SetInput (text.c_str ());
+    actor->SetPosition (xpos, ypos);
+    actor->SetInput (text.c_str ());
 
-  vtkTextProperty* tprop = actor->GetTextProperty ();
-  tprop->SetFontSize (fontsize);
-  tprop->SetColor (r, g, b);
+    vtkTextProperty* tprop = actor->GetTextProperty ();
+    tprop->SetFontSize (fontsize);
+    tprop->SetColor (r, g, b);
 
-  actor->Modified ();
+    actor->Modified ();
 
-  return (true);
+    return (true);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 bool
 pcl::visualization::PCLVisualizer::updateColorHandlerIndex (const std::string &id, int index)
 {
-  CloudActorMap::iterator am_it = cloud_actor_map_->find (id);
-  if (am_it == cloud_actor_map_->end ())
-  {
-    pcl::console::print_warn (stderr, "[updateColorHandlerIndex] PointCloud with id <%s> doesn't exist!\n", id.c_str ());
-    return (false);
-  }
+    CloudActorMap::iterator am_it = cloud_actor_map_->find (id);
+    if (am_it == cloud_actor_map_->end ())
+    {
+        pcl::console::print_warn (stderr, "[updateColorHandlerIndex] PointCloud with id <%s> doesn't exist!\n", id.c_str ());
+        return (false);
+    }
 
-  int color_handler_size = int (am_it->second.color_handlers.size ());
-  if (index >= color_handler_size)
-  {
-    pcl::console::print_warn (stderr, "[updateColorHandlerIndex] Invalid index <%d> given! Maximum range is: 0-%lu.\n", index, static_cast<unsigned long> (am_it->second.color_handlers.size ()));
-    return (false);
-  }
-  // Get the handler
-  PointCloudColorHandler<sensor_msgs::PointCloud2>::ConstPtr color_handler = am_it->second.color_handlers[index];
+    int color_handler_size = int (am_it->second.color_handlers.size ());
+    if (index >= color_handler_size)
+    {
+        pcl::console::print_warn (stderr, "[updateColorHandlerIndex] Invalid index <%d> given! Maximum range is: 0-%lu.\n", index, static_cast<unsigned long> (am_it->second.color_handlers.size ()));
+        return (false);
+    }
+    // Get the handler
+    PointCloudColorHandler<sensor_msgs::PointCloud2>::ConstPtr color_handler = am_it->second.color_handlers[index];
 
-  vtkSmartPointer<vtkDataArray> scalars;
-  color_handler->getColor (scalars);
-  double minmax[2];
-  scalars->GetRange (minmax);
-  // Update the data
-  vtkPolyData *data = static_cast<vtkPolyData*>(am_it->second.actor->GetMapper ()->GetInput ());
-  data->GetPointData ()->SetScalars (scalars);
-  data->Update ();
-  // Modify the mapper
-  if (use_vbos_)
-  {
-    vtkVertexBufferObjectMapper* mapper = static_cast<vtkVertexBufferObjectMapper*>(am_it->second.actor->GetMapper ());
-    mapper->SetScalarRange (minmax);
-    mapper->SetScalarModeToUsePointData ();
-    mapper->SetInput (data);
-    // Modify the actor
-    am_it->second.actor->SetMapper (mapper);
-    am_it->second.actor->Modified ();
-    am_it->second.color_handler_index_ = index;
+    vtkSmartPointer<vtkDataArray> scalars;
+    color_handler->getColor (scalars);
+    double minmax[2];
+    scalars->GetRange (minmax);
+    // Update the data
+    vtkPolyData *data = static_cast<vtkPolyData*>(am_it->second.actor->GetMapper ()->GetInput ());
+    data->GetPointData ()->SetScalars (scalars);
+    data->Update ();
+    // Modify the mapper
+    if (use_vbos_)
+    {
+        vtkVertexBufferObjectMapper* mapper = static_cast<vtkVertexBufferObjectMapper*>(am_it->second.actor->GetMapper ());
+        mapper->SetScalarRange (minmax);
+        mapper->SetScalarModeToUsePointData ();
+        mapper->SetInput (data);
+        // Modify the actor
+        am_it->second.actor->SetMapper (mapper);
+        am_it->second.actor->Modified ();
+        am_it->second.color_handler_index_ = index;
 
-    //style_->setCloudActorMap (cloud_actor_map_);
-  }
-  else
-  {
-    vtkPolyDataMapper* mapper = static_cast<vtkPolyDataMapper*>(am_it->second.actor->GetMapper ());
-    mapper->SetScalarRange (minmax);
-    mapper->SetScalarModeToUsePointData ();
-    mapper->SetInput (data);
-    // Modify the actor
-    am_it->second.actor->SetMapper (mapper);
-    am_it->second.actor->Modified ();
-    am_it->second.color_handler_index_ = index;
+        //style_->setCloudActorMap (cloud_actor_map_);
+    }
+    else
+    {
+        vtkPolyDataMapper* mapper = static_cast<vtkPolyDataMapper*>(am_it->second.actor->GetMapper ());
+        mapper->SetScalarRange (minmax);
+        mapper->SetScalarModeToUsePointData ();
+        mapper->SetInput (data);
+        // Modify the actor
+        am_it->second.actor->SetMapper (mapper);
+        am_it->second.actor->Modified ();
+        am_it->second.color_handler_index_ = index;
 
-    //style_->setCloudActorMap (cloud_actor_map_);
-  }
+        //style_->setCloudActorMap (cloud_actor_map_);
+    }
 
-  return (true);
+    return (true);
 }
 
 
@@ -2493,340 +2369,340 @@ pcl::visualization::PCLVisualizer::addPolygonMesh (const pcl::PolygonMesh &poly_
                                                    const std::string &id,
                                                    int viewport)
 {
-  CloudActorMap::iterator am_it = cloud_actor_map_->find (id);
-  if (am_it != cloud_actor_map_->end ())
-  {
-    pcl::console::print_warn (stderr,
-                                "[addPolygonMesh] A shape with id <%s> already exists! Please choose a different id and retry.\n",
-                                id.c_str ());
-    return (false);
-  }
-
-  // Create points from polyMesh.cloud
-  vtkSmartPointer<vtkPoints> poly_points = vtkSmartPointer<vtkPoints>::New ();
-  pcl::PointCloud<pcl::PointXYZ>::Ptr point_cloud (new pcl::PointCloud<pcl::PointXYZ> ());
-  pcl::fromROSMsg (poly_mesh.cloud, *point_cloud);
-  poly_points->SetNumberOfPoints (point_cloud->points.size ());
-
-  size_t i;
-  for (i = 0; i < point_cloud->points.size (); ++i)
-    poly_points->InsertPoint (i, point_cloud->points[i].x, point_cloud->points[i].y, point_cloud->points[i].z);
-
-  bool has_color = false;
-  vtkSmartPointer<vtkUnsignedCharArray> colors = vtkSmartPointer<vtkUnsignedCharArray>::New ();
-  if (pcl::getFieldIndex(poly_mesh.cloud, "rgb") != -1)
-  {
-    has_color = true;
-    colors->SetNumberOfComponents (3);
-    colors->SetName ("Colors");
-    pcl::PointCloud<pcl::PointXYZRGB> cloud;
-    pcl::fromROSMsg(poly_mesh.cloud, cloud);
-    for (i = 0; i < cloud.points.size (); ++i)
+    CloudActorMap::iterator am_it = cloud_actor_map_->find (id);
+    if (am_it != cloud_actor_map_->end ())
     {
-      const unsigned char color[3] = {cloud.points[i].r, cloud.points[i].g, cloud.points[i].b};
-      colors->InsertNextTupleValue(color);
-    }
-  }
-  if (pcl::getFieldIndex(poly_mesh.cloud, "rgba") != -1)
-  {
-    has_color = true;
-    colors->SetNumberOfComponents (3);
-    colors->SetName ("Colors");
-    pcl::PointCloud<pcl::PointXYZRGBA> cloud;
-    pcl::fromROSMsg(poly_mesh.cloud, cloud);
-    for (i = 0; i < cloud.points.size (); ++i)
-    {
-      const unsigned char color[3] = {cloud.points[i].r, cloud.points[i].g, cloud.points[i].b};
-      colors->InsertNextTupleValue(color);
-    }
-  }
-
-  vtkSmartPointer<vtkLODActor> actor;
-  if (poly_mesh.polygons.size() > 1)
-  {
-    //create polys from polyMesh.polygons
-    vtkSmartPointer<vtkCellArray> cell_array = vtkSmartPointer<vtkCellArray>::New ();
-
-    for (i = 0; i < poly_mesh.polygons.size (); i++)
-    {
-      size_t n_points (poly_mesh.polygons[i].vertices.size ());
-      cell_array->InsertNextCell (int (n_points));
-      for (size_t j = 0; j < n_points; j++)
-        cell_array->InsertCellPoint (poly_mesh.polygons[i].vertices[j]);
+        pcl::console::print_warn (stderr,
+                                  "[addPolygonMesh] A shape with id <%s> already exists! Please choose a different id and retry.\n",
+                                  id.c_str ());
+        return (false);
     }
 
-    vtkSmartPointer<vtkPolyData> polydata = vtkSmartPointer<vtkPolyData>::New();
-//    polydata->SetStrips (cell_array);
-    polydata->SetPolys (cell_array);
-    polydata->SetPoints (poly_points);
+    // Create points from polyMesh.cloud
+    vtkSmartPointer<vtkPoints> poly_points = vtkSmartPointer<vtkPoints>::New ();
+    pcl::PointCloud<pcl::PointXYZ>::Ptr point_cloud (new pcl::PointCloud<pcl::PointXYZ> ());
+    pcl::fromROSMsg (poly_mesh.cloud, *point_cloud);
+    poly_points->SetNumberOfPoints (point_cloud->points.size ());
 
-    if (has_color)
-      polydata->GetPointData()->SetScalars(colors);
+    size_t i;
+    for (i = 0; i < point_cloud->points.size (); ++i)
+        poly_points->InsertPoint (i, point_cloud->points[i].x, point_cloud->points[i].y, point_cloud->points[i].z);
 
-    createActorFromVTKDataSet (polydata, actor);
-  }
-  else if (poly_mesh.polygons.size() == 1)
-  {
-    vtkSmartPointer<vtkPolygon> polygon = vtkSmartPointer<vtkPolygon>::New ();
-    size_t n_points = poly_mesh.polygons[0].vertices.size ();
-    polygon->GetPointIds ()->SetNumberOfIds (n_points - 1);
+    bool has_color = false;
+    vtkSmartPointer<vtkUnsignedCharArray> colors = vtkSmartPointer<vtkUnsignedCharArray>::New ();
+    if (pcl::getFieldIndex(poly_mesh.cloud, "rgb") != -1)
+    {
+        has_color = true;
+        colors->SetNumberOfComponents (3);
+        colors->SetName ("Colors");
+        pcl::PointCloud<pcl::PointXYZRGB> cloud;
+        pcl::fromROSMsg(poly_mesh.cloud, cloud);
+        for (i = 0; i < cloud.points.size (); ++i)
+        {
+            const unsigned char color[3] = {cloud.points[i].r, cloud.points[i].g, cloud.points[i].b};
+            colors->InsertNextTupleValue(color);
+        }
+    }
+    if (pcl::getFieldIndex(poly_mesh.cloud, "rgba") != -1)
+    {
+        has_color = true;
+        colors->SetNumberOfComponents (3);
+        colors->SetName ("Colors");
+        pcl::PointCloud<pcl::PointXYZRGBA> cloud;
+        pcl::fromROSMsg(poly_mesh.cloud, cloud);
+        for (i = 0; i < cloud.points.size (); ++i)
+        {
+            const unsigned char color[3] = {cloud.points[i].r, cloud.points[i].g, cloud.points[i].b};
+            colors->InsertNextTupleValue(color);
+        }
+    }
 
-    for (size_t j=0; j < (n_points - 1); j++)
-      polygon->GetPointIds ()->SetId (j, poly_mesh.polygons[0].vertices[j]);
+    vtkSmartPointer<vtkLODActor> actor;
+    if (poly_mesh.polygons.size() > 1)
+    {
+        //create polys from polyMesh.polygons
+        vtkSmartPointer<vtkCellArray> cell_array = vtkSmartPointer<vtkCellArray>::New ();
 
-    vtkSmartPointer<vtkUnstructuredGrid> poly_grid = vtkSmartPointer<vtkUnstructuredGrid>::New ();
-    poly_grid->Allocate (1, 1);
-    poly_grid->InsertNextCell (polygon->GetCellType (), polygon->GetPointIds ());
-    poly_grid->SetPoints (poly_points);
-    poly_grid->Update ();
+        for (i = 0; i < poly_mesh.polygons.size (); i++)
+        {
+            size_t n_points (poly_mesh.polygons[i].vertices.size ());
+            cell_array->InsertNextCell (int (n_points));
+            for (size_t j = 0; j < n_points; j++)
+                cell_array->InsertCellPoint (poly_mesh.polygons[i].vertices[j]);
+        }
 
-    createActorFromVTKDataSet (poly_grid, actor);
-    actor->GetProperty ()->SetRepresentationToWireframe ();
-  }
-  else
-  {
-    PCL_ERROR("PCLVisualizer::addPolygonMesh: No polygons\n");
-    return false;
-  }
+        vtkSmartPointer<vtkPolyData> polydata = vtkSmartPointer<vtkPolyData>::New();
+        //    polydata->SetStrips (cell_array);
+        polydata->SetPolys (cell_array);
+        polydata->SetPoints (poly_points);
 
-  actor->GetProperty ()->SetRepresentationToSurface ();
-  addActorToRenderer (actor, viewport);
+        if (has_color)
+            polydata->GetPointData()->SetScalars(colors);
 
-  // Save the pointer/ID pair to the global actor map
-  (*cloud_actor_map_)[id].actor = actor;
+        createActorFromVTKDataSet (polydata, actor);
+    }
+    else if (poly_mesh.polygons.size() == 1)
+    {
+        vtkSmartPointer<vtkPolygon> polygon = vtkSmartPointer<vtkPolygon>::New ();
+        size_t n_points = poly_mesh.polygons[0].vertices.size ();
+        polygon->GetPointIds ()->SetNumberOfIds (n_points - 1);
 
-  // Save the viewpoint transformation matrix to the global actor map
-  vtkSmartPointer<vtkMatrix4x4> transformation = vtkSmartPointer<vtkMatrix4x4>::New ();
-  convertToVtkMatrix (point_cloud->sensor_origin_, point_cloud->sensor_orientation_, transformation);
-  (*cloud_actor_map_)[id].viewpoint_transformation_ = transformation;
+        for (size_t j=0; j < (n_points - 1); j++)
+            polygon->GetPointIds ()->SetId (j, poly_mesh.polygons[0].vertices[j]);
 
-  return (true);
+        vtkSmartPointer<vtkUnstructuredGrid> poly_grid = vtkSmartPointer<vtkUnstructuredGrid>::New ();
+        poly_grid->Allocate (1, 1);
+        poly_grid->InsertNextCell (polygon->GetCellType (), polygon->GetPointIds ());
+        poly_grid->SetPoints (poly_points);
+        poly_grid->Update ();
+
+        createActorFromVTKDataSet (poly_grid, actor);
+        actor->GetProperty ()->SetRepresentationToWireframe ();
+    }
+    else
+    {
+        PCL_ERROR("PCLVisualizer::addPolygonMesh: No polygons\n");
+        return false;
+    }
+
+    actor->GetProperty ()->SetRepresentationToSurface ();
+    addActorToRenderer (actor, viewport);
+
+    // Save the pointer/ID pair to the global actor map
+    (*cloud_actor_map_)[id].actor = actor;
+
+    // Save the viewpoint transformation matrix to the global actor map
+    vtkSmartPointer<vtkMatrix4x4> transformation = vtkSmartPointer<vtkMatrix4x4>::New ();
+    convertToVtkMatrix (point_cloud->sensor_origin_, point_cloud->sensor_orientation_, transformation);
+    (*cloud_actor_map_)[id].viewpoint_transformation_ = transformation;
+
+    return (true);
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////
 bool
 pcl::visualization::PCLVisualizer::updatePolygonMesh (
-    const pcl::PolygonMesh &poly_mesh,
-    const std::string &id)
+        const pcl::PolygonMesh &poly_mesh,
+        const std::string &id)
 {
 
-  if (poly_mesh.polygons.empty())
-  {
-    pcl::console::print_error ("[updatePolygonMesh] No vertices given!\n");
-    return (false);
-  }
-
-  // Check to see if this ID entry already exists (has it been already added to the visualizer?)
-  CloudActorMap::iterator am_it = cloud_actor_map_->find (id);
-  if (am_it == cloud_actor_map_->end ())
-    return (false);
-
-  // Create points from polyMesh.cloud
-  pcl::PointCloud<pcl::PointXYZ>::Ptr cloud (new pcl::PointCloud<pcl::PointXYZ> ());
-  pcl::fromROSMsg (poly_mesh.cloud, *cloud);
-
-  std::vector<pcl::Vertices> verts(poly_mesh.polygons); // copy vector
-
-  // Get the current poly data
-  vtkSmartPointer<vtkPolyData> polydata = static_cast<vtkPolyDataMapper*>(am_it->second.actor->GetMapper ())->GetInput ();
-  if (!polydata)
-    return (false);
-  vtkSmartPointer<vtkCellArray> cells = polydata->GetStrips ();
-  if (!cells)
-    return (false);
-  vtkSmartPointer<vtkPoints> points   = polydata->GetPoints ();
-  // Copy the new point array in
-  vtkIdType nr_points = cloud->points.size ();
-  points->SetNumberOfPoints (nr_points);
-
-  // Get a pointer to the beginning of the data array
-  float *data = static_cast<vtkFloatArray*> (points->GetData ())->GetPointer (0);
-
-  int ptr = 0;
-  std::vector<int> lookup;
-  // If the dataset is dense (no NaNs)
-  if (cloud->is_dense)
-  {
-    for (vtkIdType i = 0; i < nr_points; ++i, ptr += 3)
-      memcpy (&data[ptr], &cloud->points[i].x, sizeof (float) * 3);
-  }
-  else
-  {
-    lookup.resize (nr_points);
-    vtkIdType j = 0;    // true point index
-    for (vtkIdType i = 0; i < nr_points; ++i)
+    if (poly_mesh.polygons.empty())
     {
-      // Check if the point is invalid
-      if (!isFinite (cloud->points[i]))
-        continue;
-
-      lookup [i] = static_cast<int> (j);
-      memcpy (&data[ptr], &cloud->points[i].x, sizeof (float) * 3);
-      j++;
-      ptr += 3;
+        pcl::console::print_error ("[updatePolygonMesh] No vertices given!\n");
+        return (false);
     }
-    nr_points = j;
+
+    // Check to see if this ID entry already exists (has it been already added to the visualizer?)
+    CloudActorMap::iterator am_it = cloud_actor_map_->find (id);
+    if (am_it == cloud_actor_map_->end ())
+        return (false);
+
+    // Create points from polyMesh.cloud
+    pcl::PointCloud<pcl::PointXYZ>::Ptr cloud (new pcl::PointCloud<pcl::PointXYZ> ());
+    pcl::fromROSMsg (poly_mesh.cloud, *cloud);
+
+    std::vector<pcl::Vertices> verts(poly_mesh.polygons); // copy vector
+
+    // Get the current poly data
+    vtkSmartPointer<vtkPolyData> polydata = static_cast<vtkPolyDataMapper*>(am_it->second.actor->GetMapper ())->GetInput ();
+    if (!polydata)
+        return (false);
+    vtkSmartPointer<vtkCellArray> cells = polydata->GetStrips ();
+    if (!cells)
+        return (false);
+    vtkSmartPointer<vtkPoints> points   = polydata->GetPoints ();
+    // Copy the new point array in
+    vtkIdType nr_points = cloud->points.size ();
     points->SetNumberOfPoints (nr_points);
-  }
 
-  // Get the maximum size of a polygon
-  int max_size_of_polygon = -1;
-  for (size_t i = 0; i < verts.size (); ++i)
-    if (max_size_of_polygon < static_cast<int> (verts[i].vertices.size ()))
-      max_size_of_polygon = static_cast<int> (verts[i].vertices.size ());
+    // Get a pointer to the beginning of the data array
+    float *data = static_cast<vtkFloatArray*> (points->GetData ())->GetPointer (0);
 
-  // Update the cells
-  cells = vtkSmartPointer<vtkCellArray>::New ();
-  vtkIdType *cell = cells->WritePointer (verts.size (), verts.size () * (max_size_of_polygon + 1));
-  int idx = 0;
-  if (lookup.size () > 0)
-  {
-    for (size_t i = 0; i < verts.size (); ++i, ++idx)
+    int ptr = 0;
+    std::vector<int> lookup;
+    // If the dataset is dense (no NaNs)
+    if (cloud->is_dense)
     {
-      size_t n_points = verts[i].vertices.size ();
-      *cell++ = n_points;
-      for (size_t j = 0; j < n_points; j++, cell++, ++idx)
-        *cell = lookup[verts[i].vertices[j]];
+        for (vtkIdType i = 0; i < nr_points; ++i, ptr += 3)
+            memcpy (&data[ptr], &cloud->points[i].x, sizeof (float) * 3);
     }
-  }
-  else
-  {
-    for (size_t i = 0; i < verts.size (); ++i, ++idx)
+    else
     {
-      size_t n_points = verts[i].vertices.size ();
-      *cell++ = n_points;
-      for (size_t j = 0; j < n_points; j++, cell++, ++idx)
-        *cell = verts[i].vertices[j];
-    }
-  }
-  cells->GetData ()->SetNumberOfValues (idx);
-  cells->Squeeze ();
-  // Set the the vertices
-  polydata->SetStrips (cells);
-  polydata->Update ();
+        lookup.resize (nr_points);
+        vtkIdType j = 0;    // true point index
+        for (vtkIdType i = 0; i < nr_points; ++i)
+        {
+            // Check if the point is invalid
+            if (!isFinite (cloud->points[i]))
+                continue;
 
-  return (true);
+            lookup [i] = static_cast<int> (j);
+            memcpy (&data[ptr], &cloud->points[i].x, sizeof (float) * 3);
+            j++;
+            ptr += 3;
+        }
+        nr_points = j;
+        points->SetNumberOfPoints (nr_points);
+    }
+
+    // Get the maximum size of a polygon
+    int max_size_of_polygon = -1;
+    for (size_t i = 0; i < verts.size (); ++i)
+        if (max_size_of_polygon < static_cast<int> (verts[i].vertices.size ()))
+            max_size_of_polygon = static_cast<int> (verts[i].vertices.size ());
+
+    // Update the cells
+    cells = vtkSmartPointer<vtkCellArray>::New ();
+    vtkIdType *cell = cells->WritePointer (verts.size (), verts.size () * (max_size_of_polygon + 1));
+    int idx = 0;
+    if (lookup.size () > 0)
+    {
+        for (size_t i = 0; i < verts.size (); ++i, ++idx)
+        {
+            size_t n_points = verts[i].vertices.size ();
+            *cell++ = n_points;
+            for (size_t j = 0; j < n_points; j++, cell++, ++idx)
+                *cell = lookup[verts[i].vertices[j]];
+        }
+    }
+    else
+    {
+        for (size_t i = 0; i < verts.size (); ++i, ++idx)
+        {
+            size_t n_points = verts[i].vertices.size ();
+            *cell++ = n_points;
+            for (size_t j = 0; j < n_points; j++, cell++, ++idx)
+                *cell = verts[i].vertices[j];
+        }
+    }
+    cells->GetData ()->SetNumberOfValues (idx);
+    cells->Squeeze ();
+    // Set the the vertices
+    polydata->SetStrips (cells);
+    polydata->Update ();
+
+    return (true);
 }
 
 
 ///////////////////////////////////////////////////////////////////////////////////
 bool
 pcl::visualization::PCLVisualizer::addPolylineFromPolygonMesh (
-    const pcl::PolygonMesh &polymesh, const std::string &id, int viewport)
+        const pcl::PolygonMesh &polymesh, const std::string &id, int viewport)
 {
-  ShapeActorMap::iterator am_it = shape_actor_map_->find (id);
-  if (am_it != shape_actor_map_->end ())
-  {
-    pcl::console::print_warn (stderr,
-                                "[addPolylineFromPolygonMesh] A shape with id <%s> already exists! Please choose a different id and retry.\n",
-                                id.c_str ());
-    return (false);
-  }
-
-  // Create points from polyMesh.cloud
-  vtkSmartPointer<vtkPoints> poly_points = vtkSmartPointer<vtkPoints>::New ();
-  pcl::PointCloud<pcl::PointXYZ> point_cloud;
-  pcl::fromROSMsg (polymesh.cloud, point_cloud);
-  poly_points->SetNumberOfPoints (point_cloud.points.size ());
-
-  size_t i;
-  for (i = 0; i < point_cloud.points.size (); ++i)
-    poly_points->InsertPoint (i, point_cloud.points[i].x, point_cloud.points[i].y, point_cloud.points[i].z);
-
-  // Create a cell array to store the lines in and add the lines to it
-  vtkSmartPointer <vtkCellArray> cells = vtkSmartPointer<vtkCellArray>::New ();
-  vtkSmartPointer <vtkPolyData> polyData;
-  allocVtkPolyData (polyData);
-
-  for (i = 0; i < polymesh.polygons.size (); i++)
-  {
-    vtkSmartPointer<vtkPolyLine> polyLine = vtkSmartPointer<vtkPolyLine>::New();
-    polyLine->GetPointIds()->SetNumberOfIds(polymesh.polygons[i].vertices.size());
-    for(unsigned int k = 0; k < polymesh.polygons[i].vertices.size(); k++)
+    ShapeActorMap::iterator am_it = shape_actor_map_->find (id);
+    if (am_it != shape_actor_map_->end ())
     {
-      polyLine->GetPointIds()->SetId(k,polymesh.polygons[i].vertices[k]);
+        pcl::console::print_warn (stderr,
+                                  "[addPolylineFromPolygonMesh] A shape with id <%s> already exists! Please choose a different id and retry.\n",
+                                  id.c_str ());
+        return (false);
     }
 
-    cells->InsertNextCell (polyLine);
-  }
+    // Create points from polyMesh.cloud
+    vtkSmartPointer<vtkPoints> poly_points = vtkSmartPointer<vtkPoints>::New ();
+    pcl::PointCloud<pcl::PointXYZ> point_cloud;
+    pcl::fromROSMsg (polymesh.cloud, point_cloud);
+    poly_points->SetNumberOfPoints (point_cloud.points.size ());
 
-  // Add the points to the dataset
-  polyData->SetPoints (poly_points);
+    size_t i;
+    for (i = 0; i < point_cloud.points.size (); ++i)
+        poly_points->InsertPoint (i, point_cloud.points[i].x, point_cloud.points[i].y, point_cloud.points[i].z);
 
-  // Add the lines to the dataset
-  polyData->SetLines (cells);
+    // Create a cell array to store the lines in and add the lines to it
+    vtkSmartPointer <vtkCellArray> cells = vtkSmartPointer<vtkCellArray>::New ();
+    vtkSmartPointer <vtkPolyData> polyData;
+    allocVtkPolyData (polyData);
 
-  // Setup actor and mapper
-  vtkSmartPointer < vtkPolyDataMapper > mapper = vtkSmartPointer<vtkPolyDataMapper>::New ();
-  mapper->SetInput (polyData);
+    for (i = 0; i < polymesh.polygons.size (); i++)
+    {
+        vtkSmartPointer<vtkPolyLine> polyLine = vtkSmartPointer<vtkPolyLine>::New();
+        polyLine->GetPointIds()->SetNumberOfIds(polymesh.polygons[i].vertices.size());
+        for(unsigned int k = 0; k < polymesh.polygons[i].vertices.size(); k++)
+        {
+            polyLine->GetPointIds()->SetId(k,polymesh.polygons[i].vertices[k]);
+        }
 
-  vtkSmartPointer < vtkActor > actor = vtkSmartPointer<vtkActor>::New ();
-  actor->SetMapper (mapper);
+        cells->InsertNextCell (polyLine);
+    }
+
+    // Add the points to the dataset
+    polyData->SetPoints (poly_points);
+
+    // Add the lines to the dataset
+    polyData->SetLines (cells);
+
+    // Setup actor and mapper
+    vtkSmartPointer < vtkPolyDataMapper > mapper = vtkSmartPointer<vtkPolyDataMapper>::New ();
+    mapper->SetInput (polyData);
+
+    vtkSmartPointer < vtkActor > actor = vtkSmartPointer<vtkActor>::New ();
+    actor->SetMapper (mapper);
 
 
-  addActorToRenderer (actor, viewport);
+    addActorToRenderer (actor, viewport);
 
-  // Save the pointer/ID pair to the global actor map
-  (*shape_actor_map_)[id] = actor;
+    // Save the pointer/ID pair to the global actor map
+    (*shape_actor_map_)[id] = actor;
 
-  return (true);
+    return (true);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////
 void
 pcl::visualization::PCLVisualizer::setRepresentationToSurfaceForAllActors ()
 {
-  ShapeActorMap::iterator am_it;
-  rens_->InitTraversal ();
-  vtkRenderer* renderer = NULL;
-  while ((renderer = rens_->GetNextItem ()) != NULL)
-  {
-    vtkActorCollection * actors = renderer->GetActors ();
-    actors->InitTraversal ();
-    vtkActor * actor;
-    while ((actor = actors->GetNextActor ()) != NULL)
+    ShapeActorMap::iterator am_it;
+    rens_->InitTraversal ();
+    vtkRenderer* renderer = NULL;
+    while ((renderer = rens_->GetNextItem ()) != NULL)
     {
-      actor->GetProperty ()->SetRepresentationToSurface ();
+        vtkActorCollection * actors = renderer->GetActors ();
+        actors->InitTraversal ();
+        vtkActor * actor;
+        while ((actor = actors->GetNextActor ()) != NULL)
+        {
+            actor->GetProperty ()->SetRepresentationToSurface ();
+        }
     }
-  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////////
 void
 pcl::visualization::PCLVisualizer::setRepresentationToPointsForAllActors ()
 {
-  ShapeActorMap::iterator am_it;
-  rens_->InitTraversal ();
-  vtkRenderer* renderer = NULL;
-  while ((renderer = rens_->GetNextItem ()) != NULL)
-  {
-    vtkActorCollection * actors = renderer->GetActors ();
-    actors->InitTraversal ();
-    vtkActor * actor;
-    while ((actor = actors->GetNextActor ()) != NULL)
+    ShapeActorMap::iterator am_it;
+    rens_->InitTraversal ();
+    vtkRenderer* renderer = NULL;
+    while ((renderer = rens_->GetNextItem ()) != NULL)
     {
-      actor->GetProperty ()->SetRepresentationToPoints ();
+        vtkActorCollection * actors = renderer->GetActors ();
+        actors->InitTraversal ();
+        vtkActor * actor;
+        while ((actor = actors->GetNextActor ()) != NULL)
+        {
+            actor->GetProperty ()->SetRepresentationToPoints ();
+        }
     }
-  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////////
 void
 pcl::visualization::PCLVisualizer::setRepresentationToWireframeForAllActors ()
 {
-  ShapeActorMap::iterator am_it;
-  rens_->InitTraversal ();
-  vtkRenderer* renderer = NULL;
-  while ((renderer = rens_->GetNextItem ()) != NULL)
-  {
-    vtkActorCollection * actors = renderer->GetActors ();
-    actors->InitTraversal ();
-    vtkActor * actor;
-    while ((actor = actors->GetNextActor ()) != NULL)
+    ShapeActorMap::iterator am_it;
+    rens_->InitTraversal ();
+    vtkRenderer* renderer = NULL;
+    while ((renderer = rens_->GetNextItem ()) != NULL)
     {
-      actor->GetProperty ()->SetRepresentationToWireframe ();
+        vtkActorCollection * actors = renderer->GetActors ();
+        actors->InitTraversal ();
+        vtkActor * actor;
+        while ((actor = actors->GetNextActor ()) != NULL)
+        {
+            actor->GetProperty ()->SetRepresentationToWireframe ();
+        }
     }
-  }
 }
 
 
@@ -2834,81 +2710,7 @@ pcl::visualization::PCLVisualizer::setRepresentationToWireframeForAllActors ()
 void
 pcl::visualization::PCLVisualizer::setShowFPS (bool show_fps)
 {
-  update_fps_->actor->SetVisibility (show_fps);
-}
-
-///////////////////////////////////////////////////////////////////////////////////
-void
-pcl::visualization::PCLVisualizer::renderView (int xres, int yres, pcl::PointCloud<pcl::PointXYZ>::Ptr &cloud)
-{
-  if (rens_->GetNumberOfItems () > 1)
-  {
-    PCL_WARN("[renderView] Method will render only the first viewport\n");
-    return;
-  }
-
-  win_->SetSize (xres, yres);
-  win_->Render ();
-
-  float dwidth = 2.0f / float (xres),
-        dheight = 2.0f / float (yres);
-
-  cloud->points.resize (xres * yres);
-  cloud->width = xres;
-  cloud->height = yres;
-
-  float *depth = new float[xres * yres];
-  win_->GetZbufferData (0, 0, xres - 1, yres - 1, &(depth[0]));
-
-  // Transform cloud to give camera coordinates instead of world coordinates!
-  vtkRenderer *ren = rens_->GetFirstRenderer ();
-  vtkCamera *camera = ren->GetActiveCamera ();
-  vtkSmartPointer<vtkMatrix4x4> composite_projection_transform = camera->GetCompositeProjectionTransformMatrix (ren->GetTiledAspectRatio (), 0, 1);
-  vtkSmartPointer<vtkMatrix4x4> view_transform = camera->GetViewTransformMatrix ();
-
-  Eigen::Matrix4f mat1, mat2;
-  for (int i = 0; i < 4; ++i)
-    for (int j = 0; j < 4; ++j)
-    {
-      mat1 (i, j) = static_cast<float> (composite_projection_transform->Element[i][j]);
-      mat2 (i, j) = static_cast<float> (view_transform->Element[i][j]); 
-    }
-
-  mat1 = mat1.inverse ();
-
-  int ptr = 0;
-  for (int y = 0; y < yres; ++y)
-  {
-    for (int x = 0; x < xres; ++x, ++ptr)
-    {
-      pcl::PointXYZ &pt = (*cloud)[ptr];
-
-      if (depth[ptr] == 1.0)
-      {
-        pt.x = pt.y = pt.z = std::numeric_limits<float>::quiet_NaN ();
-        continue;
-      }
-
-      Eigen::Vector4f world_coords (dwidth  * float (x) - 1.0f, 
-                                    dheight * float (y) - 1.0f,
-                                    depth[ptr],
-                                    1.0f);
-      world_coords = mat1 * world_coords;
-
-      float w3 = 1.0f / world_coords[3];
-      world_coords[0] *= w3;
-      // vtk view coordinate system is different than the standard camera coordinates (z forward, y down, x right), thus, the fliping in y and z
-      world_coords[1] *= -w3;
-      world_coords[2] *= -w3;
-
-      world_coords = mat2 * world_coords;
-      pt.x = static_cast<float> (world_coords[0]);
-      pt.y = static_cast<float> (world_coords[1]);
-      pt.z = static_cast<float> (world_coords[2]);
-    }
-  }
-
-  delete[] depth;
+    update_fps_->actor->SetVisibility (show_fps);
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////
@@ -2917,117 +2719,117 @@ pcl::visualization::PCLVisualizer::updateCells (vtkSmartPointer<vtkIdTypeArray> 
                                                 vtkSmartPointer<vtkIdTypeArray> &initcells,
                                                 vtkIdType nr_points)
 {
-  // If no init cells and cells has not been initialized...
-  if (!cells)
-    cells = vtkSmartPointer<vtkIdTypeArray>::New ();
+    // If no init cells and cells has not been initialized...
+    if (!cells)
+        cells = vtkSmartPointer<vtkIdTypeArray>::New ();
 
-  // If we have less values then we need to recreate the array
-  if (cells->GetNumberOfTuples () < nr_points)
-  {
-    cells = vtkSmartPointer<vtkIdTypeArray>::New ();
-
-    // If init cells is given, and there's enough data in it, use it
-    if (initcells && initcells->GetNumberOfTuples () >= nr_points)
+    // If we have less values then we need to recreate the array
+    if (cells->GetNumberOfTuples () < nr_points)
     {
-      cells->DeepCopy (initcells);
-      cells->SetNumberOfComponents (2);
-      cells->SetNumberOfTuples (nr_points);
+        cells = vtkSmartPointer<vtkIdTypeArray>::New ();
+
+        // If init cells is given, and there's enough data in it, use it
+        if (initcells && initcells->GetNumberOfTuples () >= nr_points)
+        {
+            cells->DeepCopy (initcells);
+            cells->SetNumberOfComponents (2);
+            cells->SetNumberOfTuples (nr_points);
+        }
+        else
+        {
+            // If the number of tuples is still too small, we need to recreate the array
+            cells->SetNumberOfComponents (2);
+            cells->SetNumberOfTuples (nr_points);
+            vtkIdType *cell = cells->GetPointer (0);
+            // Fill it with 1s
+            std::fill_n (cell, nr_points * 2, 1);
+            cell++;
+            for (vtkIdType i = 0; i < nr_points; ++i, cell += 2)
+                *cell = i;
+            // Save the results in initcells
+            initcells = vtkSmartPointer<vtkIdTypeArray>::New ();
+            initcells->DeepCopy (cells);
+        }
     }
     else
     {
-      // If the number of tuples is still too small, we need to recreate the array
-      cells->SetNumberOfComponents (2);
-      cells->SetNumberOfTuples (nr_points);
-      vtkIdType *cell = cells->GetPointer (0);
-      // Fill it with 1s
-      std::fill_n (cell, nr_points * 2, 1);
-      cell++;
-      for (vtkIdType i = 0; i < nr_points; ++i, cell += 2)
-        *cell = i;
-      // Save the results in initcells
-      initcells = vtkSmartPointer<vtkIdTypeArray>::New ();
-      initcells->DeepCopy (cells);
+        // The assumption here is that the current set of cells has more data than needed
+        cells->SetNumberOfComponents (2);
+        cells->SetNumberOfTuples (nr_points);
     }
-  }
-  else
-  {
-    // The assumption here is that the current set of cells has more data than needed
-    cells->SetNumberOfComponents (2);
-    cells->SetNumberOfTuples (nr_points);
-  }
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////
 void
 pcl::visualization::PCLVisualizer::allocVtkPolyData (vtkSmartPointer<vtkAppendPolyData> &polydata)
 {
-  polydata = vtkSmartPointer<vtkAppendPolyData>::New ();
+    polydata = vtkSmartPointer<vtkAppendPolyData>::New ();
 }
 //////////////////////////////////////////////////////////////////////////////////////////////
 void
 pcl::visualization::PCLVisualizer::allocVtkPolyData (vtkSmartPointer<vtkPolyData> &polydata)
 {
-  polydata = vtkSmartPointer<vtkPolyData>::New ();
+    polydata = vtkSmartPointer<vtkPolyData>::New ();
 }
 //////////////////////////////////////////////////////////////////////////////////////////////
 void
 pcl::visualization::PCLVisualizer::allocVtkUnstructuredGrid (vtkSmartPointer<vtkUnstructuredGrid> &polydata)
 {
-  polydata = vtkSmartPointer<vtkUnstructuredGrid>::New ();
+    polydata = vtkSmartPointer<vtkUnstructuredGrid>::New ();
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////
 void
 pcl::visualization::PCLVisualizer::getTransformationMatrix (
-    const Eigen::Vector4f &origin,
-    const Eigen::Quaternion<float> &orientation,
-    Eigen::Matrix4f &transformation)
+        const Eigen::Vector4f &origin,
+        const Eigen::Quaternion<float> &orientation,
+        Eigen::Matrix4f &transformation)
 {
-  transformation.setIdentity ();
-  transformation.block<3,3>(0,0) = orientation.toRotationMatrix ();
-  transformation.block<3,1>(0,3) = origin.head (3);
+    transformation.setIdentity ();
+    transformation.block<3,3>(0,0) = orientation.toRotationMatrix ();
+    transformation.block<3,1>(0,3) = origin.head (3);
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////
 void
 pcl::visualization::PCLVisualizer::convertToVtkMatrix (
-    const Eigen::Vector4f &origin,
-    const Eigen::Quaternion<float> &orientation,
-    vtkSmartPointer<vtkMatrix4x4> &vtk_matrix)
+        const Eigen::Vector4f &origin,
+        const Eigen::Quaternion<float> &orientation,
+        vtkSmartPointer<vtkMatrix4x4> &vtk_matrix)
 {
-  // set rotation
-  Eigen::Matrix3f rot = orientation.toRotationMatrix ();
-  for (int i = 0; i < 3; i++)
-    for (int k = 0; k < 3; k++)
-      vtk_matrix->SetElement (i, k, rot (i, k));
+    // set rotation
+    Eigen::Matrix3f rot = orientation.toRotationMatrix ();
+    for (int i = 0; i < 3; i++)
+        for (int k = 0; k < 3; k++)
+            vtk_matrix->SetElement (i, k, rot (i, k));
 
-  // set translation
-  vtk_matrix->SetElement (0, 3, origin (0));
-  vtk_matrix->SetElement (1, 3, origin (1));
-  vtk_matrix->SetElement (2, 3, origin (2));
-  vtk_matrix->SetElement (3, 3, 1.0f);
+    // set translation
+    vtk_matrix->SetElement (0, 3, origin (0));
+    vtk_matrix->SetElement (1, 3, origin (1));
+    vtk_matrix->SetElement (2, 3, origin (2));
+    vtk_matrix->SetElement (3, 3, 1.0f);
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////
 void
 pcl::visualization::PCLVisualizer::convertToVtkMatrix (
-    const Eigen::Matrix4f &m,
-    vtkSmartPointer<vtkMatrix4x4> &vtk_matrix)
+        const Eigen::Matrix4f &m,
+        vtkSmartPointer<vtkMatrix4x4> &vtk_matrix)
 {
-  for (int i = 0; i < 4; i++)
-    for (int k = 0; k < 4; k++)
-      vtk_matrix->SetElement (i, k, m (i, k));
+    for (int i = 0; i < 4; i++)
+        for (int k = 0; k < 4; k++)
+            vtk_matrix->SetElement (i, k, m (i, k));
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////
 void
 pcl::visualization::PCLVisualizer::convertToEigenMatrix (
-    const vtkSmartPointer<vtkMatrix4x4> &vtk_matrix,
-    Eigen::Matrix4f &m)
+        const vtkSmartPointer<vtkMatrix4x4> &vtk_matrix,
+        Eigen::Matrix4f &m)
 {
-  for (int i = 0; i < 4; i++)
-    for (int k = 0; k < 4; k++)
-      m (i,k) = static_cast<float> (vtk_matrix->GetElement (i, k));
+    for (int i = 0; i < 4; i++)
+        for (int k = 0; k < 4; k++)
+            m (i,k) = static_cast<float> (vtk_matrix->GetElement (i, k));
 }
 
 
@@ -3036,11 +2838,11 @@ pcl::visualization::PCLVisualizer::convertToEigenMatrix (
 /////////////////////////////////////////////////////////////////////////////////////////////
 void
 pcl::visualization::PCLVisualizer::FPSCallback::Execute (
-    vtkObject* caller, unsigned long, void*)
+        vtkObject* caller, unsigned long, void*)
 {
-  vtkRenderer *ren = reinterpret_cast<vtkRenderer *> (caller);
-  float fps = 1.0f / static_cast<float> (ren->GetLastRenderTimeInSeconds ());
-  char buf[128];
-  sprintf (buf, "%.1f FPS", fps);
-  actor->SetInput (buf);
+    vtkRenderer *ren = reinterpret_cast<vtkRenderer *> (caller);
+    float fps = 1.0f / static_cast<float> (ren->GetLastRenderTimeInSeconds ());
+    char buf[128];
+    sprintf (buf, "%.1f FPS", fps);
+    actor->SetInput (buf);
 }
