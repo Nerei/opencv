@@ -23,10 +23,7 @@ template <typename PointT> bool
 pcl::visualization::PCLVisualizer::addPointCloud (const typename pcl::PointCloud<PointT>::ConstPtr &cloud,
   const PointCloudGeometryHandler<PointT> &geometry_handler, const std::string &id, int viewport)
 {
-  // Check to see if this ID entry already exists (has it been already added to the visualizer?)
-  CloudActorMap::iterator am_it = cloud_actor_map_->find (id);
-
-  if (am_it != cloud_actor_map_->end ())
+  if (cloud_actor_map_->find (id) != cloud_actor_map_->end ())
   {
     PCL_WARN ("[addPointCloud] A PointCloud with id <%s> already exists! Please choose a different id and retry.\n", id.c_str ());
     return (false);
@@ -54,10 +51,8 @@ pcl::visualization::PCLVisualizer::addPointCloud (const typename pcl::PointCloud
 
 //////////////////////////////////////////////////////////////////////////////////////////////
 template <typename PointT> bool
-pcl::visualization::PCLVisualizer::addPointCloud (
-  const typename pcl::PointCloud<PointT>::ConstPtr &cloud,
-  const PointCloudColorHandler<PointT> &color_handler,
-  const PointCloudGeometryHandler<PointT> &geometry_handler,
+pcl::visualization::PCLVisualizer::addPointCloud (const typename pcl::PointCloud<PointT>::ConstPtr &cloud,
+  const PointCloudColorHandler<PointT> &color_handler, const PointCloudGeometryHandler<PointT> &geometry_handler,
   const std::string &id, int viewport)
 {
   if (cloud_actor_map_->find (id) != cloud_actor_map_->end ())
@@ -70,10 +65,8 @@ pcl::visualization::PCLVisualizer::addPointCloud (
 
 //////////////////////////////////////////////////////////////////////////////////////////////
 template <typename PointT> void
-pcl::visualization::PCLVisualizer::convertPointCloudToVTKPolyData (
-  const typename pcl::PointCloud<PointT>::ConstPtr &cloud,
-  vtkSmartPointer<vtkPolyData> &polydata,
-  vtkSmartPointer<vtkIdTypeArray> &initcells)
+pcl::visualization::PCLVisualizer::convertPointCloudToVTKPolyData (const typename pcl::PointCloud<PointT>::ConstPtr &cloud,
+  vtkSmartPointer<vtkPolyData> &polydata, vtkSmartPointer<vtkIdTypeArray> &initcells)
 {
   vtkSmartPointer<vtkCellArray> vertices;
   if (!polydata)
@@ -533,16 +526,8 @@ pcl::visualization::PCLVisualizer::updateSphere (const PointT &center, double ra
 }
 
 //////////////////////////////////////////////////
-template <typename PointT> bool
-pcl::visualization::PCLVisualizer::addText3D (
-  const std::string &text,
-  const PointT& position,
-  double textScale,
-  double r,
-  double g,
-  double b,
-  const std::string &id,
-  int viewport)
+inline bool pcl::visualization::PCLVisualizer::addText3D (const std::string &text, const PointXYZ& position,
+  double textScale, double r, double g, double b, const std::string &id, int viewport)
 {
   std::string tid;
   if (id.empty ())

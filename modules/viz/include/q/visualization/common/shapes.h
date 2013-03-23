@@ -42,7 +42,7 @@
 #include <q/ModelCoefficients.h>
 #include <pcl/point_cloud.h>
 #include <q/visualization/vtk.h>
-#include <q/visualization/eigen.h>
+#include <pcl/common/eigen.h>
 #include <q/planar_polygon.h>
 
 #include <opencv2/core/cvdef.h>

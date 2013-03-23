@@ -43,7 +43,7 @@
 
 #include <opencv2/core/cvdef.h>
 #include <pcl/point_types.h>
-#include <q/visualization/eigen.h>
+//#include <q/visualization/eigen.h>
 #include <vtkMatrix4x4.h>
 
 namespace pcl

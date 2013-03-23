@@ -36,6 +36,9 @@ macro(find_vtk)
   endif()
 endmacro()
 
+link_directories("d:/SVN/pcl_3rdparty/boost_1_51_0/stage/lib/")
+
+
 macro(find_pcl)
   find_package(PCL REQUIRED COMPONENTS common io ) #kdtree #search #visualization #geometry
   if(PCL_FOUND)
@@ -106,6 +109,8 @@ endif()
 
 
 add_definitions(-DHAVE_VTK)
+
+message(STATUS ${PCL_LIBRARIES})
 
 include_directories(src)
 set(the_description "Viz")

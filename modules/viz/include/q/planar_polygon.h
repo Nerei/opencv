@@ -41,7 +41,7 @@
 #define PCL_GEOMETRY_PLANAR_POLYGON_H_
 
 
-#include <q/common/eigen.h>
+#include <pcl/common/eigen.h>
 #include <pcl/point_cloud.h>
 #include <q/ModelCoefficients.h>
 

@@ -42,14 +42,40 @@
 
 #include "test_precomp.hpp"
 #include <opencv2/viz.hpp>
-//#include <q/visualization/window.h>
+#include <q/visualization/window.h>
+#include <pcl/io/ply_io.h>
+#include <pcl/io/pcd_io.h>
+#include <opencv2/core.hpp>
+
+#include <fstream>
+#include <string>
+
+pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_load()
+{
+    pcl::PointCloud<pcl::PointXYZ>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZ>);
+    std::ifstream ifs("d:/cloud_dragon.ply");
+
+    std::string str;
+    for(size_t i = 0; i < 11; ++i)
+        std::getline(ifs, str);
+
+    for(size_t i = 0; i < 20000; ++i)
+    {
+        pcl::PointXYZ p;
+        ifs >> p.x >> p.y >> p.z;
+        cloud->push_back(p);
+    }
+    return cloud;
+}
+
 
 TEST(Viz_viz3d, accuracy)
 {
     //cv::Window wnd("wind");
     //wnd.spin();
 
-
     pcl::visualization::PCLVisualizer v;
+
+    //v.addPointCloud<pcl::PointXYZ>(cloud_load());
     v.spin();
 }

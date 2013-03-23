@@ -1,5 +1,5 @@
 /*=========================================================================
-  
+
   Program:   Visualization Toolkit
   Module:    vtkVertexBufferObject.cxx
 
@@ -102,10 +102,10 @@ bool vtkVertexBufferObject::IsSupported(vtkRenderWindow* win)
   if (renWin)
     {
     vtkOpenGLExtensionManager* mgr = renWin->GetExtensionManager();
-    
+
     bool vbo=mgr->ExtensionSupported("GL_VERSION_1_5") ||
       mgr->ExtensionSupported("GL_ARB_vertex_buffer_object");
-    
+
     return vbo;
     }
   return false;
@@ -118,7 +118,7 @@ bool vtkVertexBufferObject::LoadRequiredExtensions(
   bool gl15 = mgr->ExtensionSupported("GL_VERSION_1_5")==1;
 
   bool vbo = gl15 || mgr->ExtensionSupported("GL_ARB_vertex_buffer_object");
-  
+
 //  const char *glVendor(reinterpret_cast<const char *>(glGetString(GL_VENDOR)));
 
 //  // Get available gpu memory
@@ -153,9 +153,9 @@ void vtkVertexBufferObject::SetContext(vtkRenderWindow* renWin)
     {
     return;
     }
-  
-  this->DestroyBuffer(); 
-  
+
+  this->DestroyBuffer();
+
   vtkOpenGLRenderWindow* openGLRenWin = vtkOpenGLRenderWindow::SafeDownCast(renWin);
   this->Context = openGLRenWin;
   if (openGLRenWin)
@@ -166,7 +166,7 @@ void vtkVertexBufferObject::SetContext(vtkRenderWindow* renWin)
       vtkErrorMacro("Required OpenGL extensions not supported by the context.");
       }
     }
-  
+
   this->Modified();
 }
 
@@ -218,7 +218,7 @@ void vtkVertexBufferObject::Bind()
     }
 
   this->CreateBuffer();
-  
+
   vtkgl::BindBuffer(static_cast<GLenum>(this->BufferTarget), this->Handle);
 
   if(this->AttributeIndex >= 0){
