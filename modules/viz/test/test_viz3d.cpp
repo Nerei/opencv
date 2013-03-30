@@ -101,12 +101,13 @@ TEST(Viz_viz3d, accuracy)
 
     //v.updatePointCloud<pcl::PointXYZ>(cloud, hander);
 
-    channels[0] *= 20;
+    channels[0] *= 7;
     cv::merge(channels, data);
     colors.setTo(cv::Scalar(255, 0, 0));
 
     std::cout << "aaa" << std::endl;
 
+    v.addSphere(pcl::PointXYZ(0, 0, 0), 0.3, 0, 0, 1);
     v.updatePointCloud(data, colors);
     v.spin();
 }

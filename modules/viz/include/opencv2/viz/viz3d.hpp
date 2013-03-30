@@ -18,8 +18,8 @@
 #include <q/visualization/keyboard_event.h>
 #include <q/visualization/mouse_event.h>
 #include <q/visualization/point_picking_event.h>
-#include <q/visualization/point_cloud_geometry_handlers.h>
-#include <q/visualization/point_cloud_color_handlers.h>
+//#include <q/visualization/point_cloud_geometry_handlers.h>
+//#include <q/visualization/point_cloud_color_handlers.h>
 #include <q/visualization/common/actor_map.h>
 
 // VTK includes
@@ -299,8 +299,6 @@ namespace pcl
           * \param[in] id the point cloud object id (default: cloud)
           * \param[in] viewport the view port where the Point Cloud should be added (default: all)
           */
-        template <typename PointNT> bool
-        addPointCloudNormals (const typename pcl::PointCloud<PointNT>::ConstPtr &cloud, int level = 100, float scale = 0.02f, const std::string &id = "cloud", int viewport = 0);
 
         /** \brief Add the estimated surface normals of a Point Cloud to screen.
           * \param[in] cloud the input point cloud dataset containing the XYZ data
@@ -316,87 +314,9 @@ namespace pcl
                               int level = 100, float scale = 0.02f,
                               const std::string &id = "cloud", int viewport = 0);
 
-        /** \brief Add a Point Cloud (templated) to screen.
-          * \param[in] cloud the input point cloud dataset
-          * \param[in] id the point cloud object id (default: cloud)
-          * \param viewport the view port where the Point Cloud should be added (default: all)
-          */
-        template <typename PointT> bool
-        addPointCloud (const typename pcl::PointCloud<PointT>::ConstPtr &cloud,
-                       const std::string &id = "cloud", int viewport = 0);
-
-        /** \brief Updates the XYZ data for an existing cloud object id on screen.
-          * \param[in] cloud the input point cloud dataset
-          * \param[in] id the point cloud object id to update (default: cloud)
-          * \return false if no cloud with the specified ID was found
-          */
-        template <typename PointT> bool
-        updatePointCloud (const typename pcl::PointCloud<PointT>::ConstPtr &cloud,
-                          const std::string &id = "cloud");
-
-         /** \brief Updates the XYZ data for an existing cloud object id on screen.
-           * \param[in] cloud the input point cloud dataset
-           * \param[in] geometry_handler the geometry handler to use
-           * \param[in] id the point cloud object id to update (default: cloud)
-           * \return false if no cloud with the specified ID was found
-           */
-        template <typename PointT> bool
-        updatePointCloud (const typename pcl::PointCloud<PointT>::ConstPtr &cloud,
-                          const PointCloudGeometryHandler<PointT> &geometry_handler,
-                          const std::string &id = "cloud");
-
-         /** \brief Updates the XYZ data for an existing cloud object id on screen.
-           * \param[in] cloud the input point cloud dataset
-           * \param[in] color_handler the color handler to use
-           * \param[in] id the point cloud object id to update (default: cloud)
-           * \return false if no cloud with the specified ID was found
-           */
-        template <typename PointT> bool
-        updatePointCloud (const typename pcl::PointCloud<PointT>::ConstPtr &cloud,
-                          const PointCloudColorHandler<PointT> &color_handler,
-                          const std::string &id = "cloud");
 
         void addPointCloud(const cv::Mat& cloud, const cv::Mat& colors, const std::string& id = "cloud", const cv::Mat& mask = cv::Mat(), int viewport = 0);
         bool updatePointCloud (const cv::Mat& cloud, const cv::Mat& colors, const std::string& id = "cloud", const cv::Mat& mask = cv::Mat());
-
-
-        /** \brief Add a Point Cloud (templated) to screen.
-          * \param[in] cloud the input point cloud dataset
-          * \param[in] geometry_handler use a geometry handler object to extract the XYZ data
-          * \param[in] id the point cloud object id (default: cloud)
-          * \param[in] viewport the view port where the Point Cloud should be added (default: all)
-          */
-        template <typename PointT> bool
-        addPointCloud (const typename pcl::PointCloud<PointT>::ConstPtr &cloud,
-                       const PointCloudGeometryHandler<PointT> &geometry_handler,
-                       const std::string &id = "cloud", int viewport = 0);
-
-
-
-        /** \brief Add a Point Cloud (templated) to screen.
-          * \param[in] cloud the input point cloud dataset
-          * \param[in] color_handler a specific PointCloud visualizer handler for colors
-          * \param[in] id the point cloud object id (default: cloud)
-          * \param[in] viewport the view port where the Point Cloud should be added (default: all)
-          */
-        template <typename PointT> bool
-        addPointCloud (const typename pcl::PointCloud<PointT>::ConstPtr &cloud,
-                       const PointCloudColorHandler<PointT> &color_handler,
-                       const std::string &id = "cloud", int viewport = 0);
-
-
-        /** \brief Add a Point Cloud (templated) to screen.
-          * \param[in] cloud the input point cloud dataset
-          * \param[in] color_handler a specific PointCloud visualizer handler for colors
-          * \param[in] geometry_handler use a geometry handler object to extract the XYZ data
-          * \param[in] id the point cloud object id (default: cloud)
-          * \param[in] viewport the view port where the Point Cloud should be added (default: all)
-          */
-        template <typename PointT> bool
-        addPointCloud (const typename pcl::PointCloud<PointT>::ConstPtr &cloud,
-                       const PointCloudColorHandler<PointT> &color_handler,
-                       const PointCloudGeometryHandler<PointT> &geometry_handler,
-                       const std::string &id = "cloud", int viewport = 0);
 
 
         /** \brief Add a PolygonMesh object to screen
@@ -671,39 +591,8 @@ namespace pcl
                       double r_text, double g_text, double b_text, const std::string &id = "arrow", int viewport = 0);
 
 
-        /** \brief Add a sphere shape from a point and a radius
-          * \param[in] center the center of the sphere
-          * \param[in] radius the radius of the sphere
-          * \param[in] id the sphere id/name (default: "sphere")
-          * \param[in] viewport (optional) the id of the new viewport (default: 0)
-          */
-        template <typename PointT> bool
-        addSphere (const PointT &center, double radius, const std::string &id = "sphere", int viewport = 0);
-
-        /** \brief Add a sphere shape from a point and a radius
-          * \param[in] center the center of the sphere
-          * \param[in] radius the radius of the sphere
-          * \param[in] r the red channel of the color that the sphere should be rendered with
-          * \param[in] g the green channel of the color that the sphere should be rendered with
-          * \param[in] b the blue channel of the color that the sphere should be rendered with
-          * \param[in] id the sphere id/name (default: "sphere")
-          * \param[in] viewport (optional) the id of the new viewport (default: 0)
-          */
-        template <typename PointT> bool
-        addSphere (const PointT &center, double radius, double r, double g, double b,
-                   const std::string &id = "sphere", int viewport = 0);
-
-        /** \brief Update an existing sphere shape from a point and a radius
-          * \param[in] center the center of the sphere
-          * \param[in] radius the radius of the sphere
-          * \param[in] r the red channel of the color that the sphere should be rendered with
-          * \param[in] g the green channel of the color that the sphere should be rendered with
-          * \param[in] b the blue channel of the color that the sphere should be rendered with
-          * \param[in] id the sphere id/name (default: "sphere")
-          */
-        template <typename PointT> bool
-        updateSphere (const PointT &center, double radius, double r, double g, double b,
-                      const std::string &id = "sphere");
+        bool addSphere (const PointXYZ &center, double radius, double r, double g, double b, const std::string &id = "sphere", int viewport = 0);
+        bool updateSphere (const PointXYZ &center, double radius, double r, double g, double b, const std::string &id = "sphere");
 
          /** \brief Add a vtkPolydata as a mesh
           * \param[in] polydata vtkPolyData
@@ -1217,27 +1106,27 @@ namespace pcl
                                    vtkSmartPointer<vtkLODActor> &actor,
                                    bool use_scalars = true);
 
-        /** \brief Converts a PCL templated PointCloud object to a vtk polydata object.
-          * \param[in] cloud the input PCL PointCloud dataset
-          * \param[out] polydata the resultant polydata containing the cloud
-          * \param[out] initcells a list of cell indices used for the conversion. This can be set once and then passed
-          * around to speed up the conversion.
-          */
-        template <typename PointT> void
-        convertPointCloudToVTKPolyData (const typename pcl::PointCloud<PointT>::ConstPtr &cloud,
-                                        vtkSmartPointer<vtkPolyData> &polydata,
-                                        vtkSmartPointer<vtkIdTypeArray> &initcells);
+//        /** \brief Converts a PCL templated PointCloud object to a vtk polydata object.
+//          * \param[in] cloud the input PCL PointCloud dataset
+//          * \param[out] polydata the resultant polydata containing the cloud
+//          * \param[out] initcells a list of cell indices used for the conversion. This can be set once and then passed
+//          * around to speed up the conversion.
+//          */
+//        template <typename PointT> void
+//        convertPointCloudToVTKPolyData (const typename pcl::PointCloud<PointT>::ConstPtr &cloud,
+//                                        vtkSmartPointer<vtkPolyData> &polydata,
+//                                        vtkSmartPointer<vtkIdTypeArray> &initcells);
 
-        /** \brief Converts a PCL templated PointCloud object to a vtk polydata object.
-          * \param[in] geometry_handler the geometry handler object used to extract the XYZ data
-          * \param[out] polydata the resultant polydata containing the cloud
-          * \param[out] initcells a list of cell indices used for the conversion. This can be set once and then passed
-          * around to speed up the conversion.
-          */
-        template <typename PointT> void
-        convertPointCloudToVTKPolyData (const PointCloudGeometryHandler<PointT> &geometry_handler,
-                                        vtkSmartPointer<vtkPolyData> &polydata,
-                                        vtkSmartPointer<vtkIdTypeArray> &initcells);
+//        /** \brief Converts a PCL templated PointCloud object to a vtk polydata object.
+//          * \param[in] geometry_handler the geometry handler object used to extract the XYZ data
+//          * \param[out] polydata the resultant polydata containing the cloud
+//          * \param[out] initcells a list of cell indices used for the conversion. This can be set once and then passed
+//          * around to speed up the conversion.
+//          */
+//        template <typename PointT> void
+//        convertPointCloudToVTKPolyData (const PointCloudGeometryHandler<PointT> &geometry_handler,
+//                                        vtkSmartPointer<vtkPolyData> &polydata,
+//                                        vtkSmartPointer<vtkIdTypeArray> &initcells);
 
         /** \brief Updates a set of cells (vtkIdTypeArray) if the number of points in a cloud changes
           * \param[out] cells the vtkIdTypeArray object (set of cells) to update
