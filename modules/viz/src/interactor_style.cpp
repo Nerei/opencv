@@ -1,5 +1,4 @@
 #include <list>
-#include <q/visualization/common/io.h>
 #include <q/visualization/interactor_style.h>
 #include <vtkPolyData.h>
 #include <vtkMapper.h>

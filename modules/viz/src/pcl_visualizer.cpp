@@ -2022,7 +2022,8 @@ pcl::visualization::PCLVisualizer::updateText (const std::string &text, int xpos
 {
     std::string tid = id.empty() ? text : id;
 
-    if (shape_actor_map_->find (tid) == shape_actor_map_->end ())
+    ShapeActorMap::iterator am_it = shape_actor_map_->find (tid);
+    if (am_it == shape_actor_map_->end ())
         return false;
 
     // Retrieve the Actor
