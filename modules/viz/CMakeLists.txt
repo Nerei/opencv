@@ -112,6 +112,9 @@ add_definitions(-DHAVE_VTK)
 
 message(STATUS ${PCL_LIBRARIES})
 
+set(BUILD_opencv_viz_INIT OFF)
+
+
 include_directories(src)
 set(the_description "Viz")
 ocv_define_module(viz opencv_core ${PCL_LIBRARIES})

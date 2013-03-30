@@ -46,6 +46,8 @@
 #include <pcl/io/ply_io.h>
 #include <pcl/io/pcd_io.h>
 #include <opencv2/core.hpp>
+#include <opencv2/core.hpp>
+#include <opencv2/imgproc.hpp>
 
 #include <fstream>
 #include <string>
@@ -78,6 +80,18 @@ TEST(Viz_viz3d, accuracy)
 
     v.addCoordinateSystem(1.0, Eigen::Affine3f::Identity());
 
-    v.addPointCloud<pcl::PointXYZ>(cloud_load());
+    pcl::PointCloud<pcl::PointXYZ>::Ptr cloud = cloud_load();
+
+    cv::Mat data(1, cloud->size(), CV_32FC4, (void*)&cloud->points[0]);
+
+    std::vector<cv::Mat> channels;
+    cv::split(data, channels);
+    channels.resize(3);
+    cv::merge(channels, data);
+
+    cv::Mat colors(data.size(), CV_8UC3, cv::Scalar::all(255));
+    v.addPointCloud(data, colors);
+
+    //v.addPointCloud<pcl::PointXYZ>(cloud);
     v.spin();
 }

@@ -356,6 +356,11 @@ namespace pcl
                           const PointCloudColorHandler<PointT> &color_handler,
                           const std::string &id = "cloud");
 
+        void addPointCloud(const cv::Mat& cloud, const cv::Mat& colors, const std::string& id = "cloud", const cv::Mat& mask = cv::Mat(), int viewport = 0);
+
+
+
+
         /** \brief Add a Point Cloud (templated) to screen.
           * \param[in] cloud the input point cloud dataset
           * \param[in] geometry_handler use a geometry handler object to extract the XYZ data
