@@ -290,24 +290,7 @@ namespace pcl
         bool addText3D (const std::string &text, const PointXYZ &position, double textScale = 1.0,
                    double r = 1.0, double g = 1.0, double b = 1.0, const std::string &id = "", int viewport = 0);
 
-
         bool addPointCloudNormals (const cv::Mat &cloud, const cv::Mat& normals, int level = 100, float scale = 0.02f, const std::string &id = "cloud", int viewport = 0);
-
-        /** \brief Add the estimated surface normals of a Point Cloud to screen.
-          * \param[in] cloud the input point cloud dataset containing the XYZ data
-          * \param[in] normals the input point cloud dataset containing the normal data
-          * \param[in] level display only every level'th point (default: 100)
-          * \param[in] scale the normal arrow scale (default: 0.02m)
-          * \param[in] id the point cloud object id (default: cloud)
-          * \param[in] viewport the view port where the Point Cloud should be added (default: all)
-          */
-        template <typename PointT, typename PointNT> bool
-        addPointCloudNormals (const typename pcl::PointCloud<PointT>::ConstPtr &cloud,
-                              const typename pcl::PointCloud<PointNT>::ConstPtr &normals,
-                              int level = 100, float scale = 0.02f,
-                              const std::string &id = "cloud", int viewport = 0);
-
-
         void addPointCloud(const cv::Mat& cloud, const cv::Mat& colors, const std::string& id = "cloud", const cv::Mat& mask = cv::Mat(), int viewport = 0);
         bool updatePointCloud (const cv::Mat& cloud, const cv::Mat& colors, const std::string& id = "cloud", const cv::Mat& mask = cv::Mat());
 

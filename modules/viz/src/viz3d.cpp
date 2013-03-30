@@ -275,3 +275,94 @@ bool pcl::visualization::PCLVisualizer::updatePointCloud (const cv::Mat& cloud, 
 
 
 
+bool pcl::visualization::PCLVisualizer::addPointCloudNormals (const cv::Mat &cloud, const cv::Mat& normals, int level, float scale, const std::string &id, int viewport)
+{
+    CV_Assert(cloud.size() == normals.size() && cloud.type() == CV_32FC3 && normals.type() == CV_32FC3);
+
+  if (cloud_actor_map_->find (id) != cloud_actor_map_->end ())
+    return (false);
+
+  vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
+  vtkSmartPointer<vtkCellArray> lines = vtkSmartPointer<vtkCellArray>::New();
+
+  points->SetDataTypeToFloat ();
+  vtkSmartPointer<vtkFloatArray> data = vtkSmartPointer<vtkFloatArray>::New ();
+  data->SetNumberOfComponents (3);
+
+  vtkIdType nr_normals = 0;
+  float* pts = 0;
+
+  // If the cloud is organized, then distribute the normal step in both directions
+  if (cloud.cols > 1 && cloud.rows > 1)
+  {
+    vtkIdType point_step = static_cast<vtkIdType> (sqrt (double (level)));
+    nr_normals = (static_cast<vtkIdType> ((cloud.cols - 1)/ point_step) + 1) *
+                 (static_cast<vtkIdType> ((cloud.rows - 1) / point_step) + 1);
+    pts = new float[2 * nr_normals * 3];
+
+    vtkIdType cell_count = 0;
+    for (vtkIdType y = 0; y < cloud.rows; y += point_step)
+      for (vtkIdType x = 0; x < cloud.cols; x += point_step)
+      {
+        cv::Point3f p = cloud.at<cv::Point3f>(y, x);
+        cv::Point3f n = normals.at<cv::Point3f>(y, x) * scale;
+
+        pts[2 * cell_count * 3 + 0] = p.x;
+        pts[2 * cell_count * 3 + 1] = p.y;
+        pts[2 * cell_count * 3 + 2] = p.z;
+        pts[2 * cell_count * 3 + 3] = p.x + n.x;
+        pts[2 * cell_count * 3 + 4] = p.y + n.y;
+        pts[2 * cell_count * 3 + 5] = p.z + n.z;
+
+        lines->InsertNextCell (2);
+        lines->InsertCellPoint (2 * cell_count);
+        lines->InsertCellPoint (2 * cell_count + 1);
+        cell_count++;
+    }
+  }
+  else
+  {
+    nr_normals = (cloud.size().area() - 1) / level + 1 ;
+    pts = new float[2 * nr_normals * 3];
+
+    for (vtkIdType i = 0, j = 0; j < nr_normals; j++, i = j * level)
+    {
+      cv::Point3f p = cloud.ptr<cv::Point3f>()[i];
+      cv::Point3f n = normals.ptr<cv::Point3f>()[i] * scale;
+
+      pts[2 * j * 3 + 0] = p.x;
+      pts[2 * j * 3 + 1] = p.y;
+      pts[2 * j * 3 + 2] = p.z;
+      pts[2 * j * 3 + 3] = p.x + n.x;
+      pts[2 * j * 3 + 4] = p.y + n.y;
+      pts[2 * j * 3 + 5] = p.z + n.z;
+
+      lines->InsertNextCell (2);
+      lines->InsertCellPoint (2 * j);
+      lines->InsertCellPoint (2 * j + 1);
+    }
+  }
+
+  data->SetArray (&pts[0], 2 * nr_normals * 3, 0);
+  points->SetData (data);
+
+  vtkSmartPointer<vtkPolyData> polyData = vtkSmartPointer<vtkPolyData>::New();
+  polyData->SetPoints (points);
+  polyData->SetLines (lines);
+
+  vtkSmartPointer<vtkDataSetMapper> mapper = vtkSmartPointer<vtkDataSetMapper>::New ();
+  mapper->SetInput (polyData);
+  mapper->SetColorModeToMapScalars();
+  mapper->SetScalarModeToUsePointData();
+
+  // create actor
+  vtkSmartPointer<vtkLODActor> actor = vtkSmartPointer<vtkLODActor>::New ();
+  actor->SetMapper (mapper);
+
+  // Add it to all renderers
+  addActorToRenderer (actor, viewport);
+
+  // Save the pointer/ID pair to the global actor map
+  (*cloud_actor_map_)[id].actor = actor;
+  return (true);
+}
