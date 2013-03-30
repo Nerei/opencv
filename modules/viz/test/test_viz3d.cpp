@@ -92,6 +92,10 @@ TEST(Viz_viz3d, accuracy)
     v.addPointCloud(data, colors);
 
 
+    cv::Mat normals(data.size(), CV_32FC3, cv::Scalar(0, 10, 0));
+
+    v.addPointCloudNormals(data, normals, 100, 0.02, "n");
+
     //pcl::visualization::PointCloudColorHandlerRandom<pcl::PointXYZ> hander;
     //v.addPointCloud<pcl::PointXYZ>(cloud, hander);
     //v.addPointCloud<pcl::PointXYZ>(cloud);

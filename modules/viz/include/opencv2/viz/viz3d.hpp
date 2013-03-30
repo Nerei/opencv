@@ -18,8 +18,6 @@
 #include <q/visualization/keyboard_event.h>
 #include <q/visualization/mouse_event.h>
 #include <q/visualization/point_picking_event.h>
-//#include <q/visualization/point_cloud_geometry_handlers.h>
-//#include <q/visualization/point_cloud_color_handlers.h>
 #include <q/visualization/common/actor_map.h>
 
 // VTK includes
@@ -292,13 +290,8 @@ namespace pcl
         bool addText3D (const std::string &text, const PointXYZ &position, double textScale = 1.0,
                    double r = 1.0, double g = 1.0, double b = 1.0, const std::string &id = "", int viewport = 0);
 
-        /** \brief Add the estimated surface normals of a Point Cloud to screen.
-          * \param[in] cloud the input point cloud dataset containing XYZ data and normals
-          * \param[in] level display only every level'th point (default: 100)
-          * \param[in] scale the normal arrow scale (default: 0.02m)
-          * \param[in] id the point cloud object id (default: cloud)
-          * \param[in] viewport the view port where the Point Cloud should be added (default: all)
-          */
+
+        bool addPointCloudNormals (const cv::Mat &cloud, const cv::Mat& normals, int level = 100, float scale = 0.02f, const std::string &id = "cloud", int viewport = 0);
 
         /** \brief Add the estimated surface normals of a Point Cloud to screen.
           * \param[in] cloud the input point cloud dataset containing the XYZ data
@@ -599,8 +592,7 @@ namespace pcl
           * \param[in] id the model id/name (default: "PolyData")
           * \param[in] viewport (optional) the id of the new viewport (default: 0)
           */
-        bool
-        addModelFromPolyData (vtkSmartPointer<vtkPolyData> polydata, const std::string & id = "PolyData", int viewport = 0);
+        bool addModelFromPolyData (vtkSmartPointer<vtkPolyData> polydata, const std::string & id = "PolyData", int viewport = 0);
 
         /** \brief Add a vtkPolydata as a mesh
           * \param[in] polydata vtkPolyData
@@ -616,8 +608,7 @@ namespace pcl
           * \param[in] id the model id/name (default: "PLYModel")
           * \param[in] viewport (optional) the id of the new viewport (default: 0)
           */
-        bool
-        addModelFromPLYFile (const std::string &filename, const std::string &id = "PLYModel", int viewport = 0);
+        bool addModelFromPLYFile (const std::string &filename, const std::string &id = "PLYModel", int viewport = 0);
 
         /** \brief Add a PLYmodel as a mesh and applies given transformation
           * \param[in] filename of the ply file
@@ -625,8 +616,7 @@ namespace pcl
           * \param[in] id the model id/name (default: "PLYModel")
           * \param[in] viewport (optional) the id of the new viewport (default: 0)
           */
-        bool
-        addModelFromPLYFile (const std::string &filename, vtkSmartPointer<vtkTransform> transform, const std::string &id = "PLYModel", int viewport = 0);
+        bool addModelFromPLYFile (const std::string &filename, vtkSmartPointer<vtkTransform> transform, const std::string &id = "PLYModel", int viewport = 0);
 
         /** \brief Add a cylinder from a set of given model coefficients
           * \param[in] coefficients the model coefficients (point_on_axis, axis_direction, radius)
@@ -654,8 +644,7 @@ namespace pcl
           * addCylinder (cylinder_coeff);
           * \endcode
           */
-        bool
-        addCylinder (const pcl::ModelCoefficients &coefficients, const std::string &id = "cylinder", int viewport = 0);
+        bool addCylinder (const pcl::ModelCoefficients &coefficients, const std::string &id = "cylinder", int viewport = 0);
 
         /** \brief Add a sphere from a set of given model coefficients
           * \param[in] coefficients the model coefficients (sphere center, radius)
@@ -748,30 +737,21 @@ namespace pcl
           * vtkSmartPointer<vtkDataSet> data = pcl::visualization::create2DCircle (circle_coeff, z);
           * \endcode
            */
-        bool
-        addCircle (const pcl::ModelCoefficients &coefficients,
-                   const std::string &id = "circle",
-                   int viewport = 0);
+        bool addCircle (const pcl::ModelCoefficients &coefficients, const std::string &id = "circle", int viewport = 0);
 
         /** \brief Add a cone from a set of given model coefficients
           * \param[in] coefficients the model coefficients (point_on_axis, axis_direction, radiu)
           * \param[in] id the cone id/name (default: "cone")
           * \param[in] viewport (optional) the id of the new viewport (default: 0)
           */
-        bool
-        addCone (const pcl::ModelCoefficients &coefficients,
-                 const std::string &id = "cone",
-                 int viewport = 0);
+        bool addCone (const pcl::ModelCoefficients &coefficients, const std::string &id = "cone", int viewport = 0);
 
         /** \brief Add a cube from a set of given model coefficients
           * \param[in] coefficients the model coefficients (Tx, Ty, Tz, Qx, Qy, Qz, Qw, width, height, depth)
           * \param[in] id the cube id/name (default: "cube")
           * \param[in] viewport (optional) the id of the new viewport (default: 0)
           */
-        bool
-        addCube (const pcl::ModelCoefficients &coefficients,
-                 const std::string &id = "cube",
-                 int viewport = 0);
+        bool addCube (const pcl::ModelCoefficients &coefficients, const std::string &id = "cube", int viewport = 0);
 
         /** \brief Add a cube from a set of given model coefficients
           * \param[in] translation a translation to apply to the cube from 0,0,0
@@ -1106,27 +1086,6 @@ namespace pcl
                                    vtkSmartPointer<vtkLODActor> &actor,
                                    bool use_scalars = true);
 
-//        /** \brief Converts a PCL templated PointCloud object to a vtk polydata object.
-//          * \param[in] cloud the input PCL PointCloud dataset
-//          * \param[out] polydata the resultant polydata containing the cloud
-//          * \param[out] initcells a list of cell indices used for the conversion. This can be set once and then passed
-//          * around to speed up the conversion.
-//          */
-//        template <typename PointT> void
-//        convertPointCloudToVTKPolyData (const typename pcl::PointCloud<PointT>::ConstPtr &cloud,
-//                                        vtkSmartPointer<vtkPolyData> &polydata,
-//                                        vtkSmartPointer<vtkIdTypeArray> &initcells);
-
-//        /** \brief Converts a PCL templated PointCloud object to a vtk polydata object.
-//          * \param[in] geometry_handler the geometry handler object used to extract the XYZ data
-//          * \param[out] polydata the resultant polydata containing the cloud
-//          * \param[out] initcells a list of cell indices used for the conversion. This can be set once and then passed
-//          * around to speed up the conversion.
-//          */
-//        template <typename PointT> void
-//        convertPointCloudToVTKPolyData (const PointCloudGeometryHandler<PointT> &geometry_handler,
-//                                        vtkSmartPointer<vtkPolyData> &polydata,
-//                                        vtkSmartPointer<vtkIdTypeArray> &initcells);
 
         /** \brief Updates a set of cells (vtkIdTypeArray) if the number of points in a cloud changes
           * \param[out] cells the vtkIdTypeArray object (set of cells) to update
@@ -1138,19 +1097,6 @@ namespace pcl
           */
         void updateCells (vtkSmartPointer<vtkIdTypeArray> &cells, vtkSmartPointer<vtkIdTypeArray> &initcells, vtkIdType nr_points);
 
-        /** \brief Internal function which converts the information present in the geometric
-          * and color handlers into VTK PolyData+Scalars, constructs a vtkActor object, and adds
-          * all the required information to the internal cloud_actor_map_ object.
-          * \param[in] geometry_handler the geometric handler that contains the XYZ data
-          * \param[in] color_handler the color handler that contains the "RGB" (scalar) data
-          * \param[in] id the point cloud object id
-          * \param[in] viewport the view port where the Point Cloud should be added
-          * \param[in] sensor_origin the origin of the cloud data in global coordinates (defaults to 0,0,0)
-          * \param[in] sensor_orientation the orientation of the cloud data in global coordinates (defaults to 1,0,0,0)
-          */
-        template <typename PointT> bool
-        fromHandlersToScreen (const PointCloudGeometryHandler<PointT> &geometry_handler, const PointCloudColorHandler<PointT> &color_handler,
-                              const std::string &id, int viewport);
 
         /** \brief Allocate a new polydata smartpointer. Internal
           * \param[out] polydata the resultant poly data
