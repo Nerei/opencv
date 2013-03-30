@@ -357,8 +357,7 @@ namespace pcl
                           const std::string &id = "cloud");
 
         void addPointCloud(const cv::Mat& cloud, const cv::Mat& colors, const std::string& id = "cloud", const cv::Mat& mask = cv::Mat(), int viewport = 0);
-
-
+        bool updatePointCloud (const cv::Mat& cloud, const cv::Mat& colors, const std::string& id = "cloud", const cv::Mat& mask = cv::Mat());
 
 
         /** \brief Add a Point Cloud (templated) to screen.

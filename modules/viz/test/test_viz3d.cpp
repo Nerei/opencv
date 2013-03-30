@@ -70,7 +70,6 @@ pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_load()
     return cloud;
 }
 
-
 TEST(Viz_viz3d, accuracy)
 {
     //cv::Window wnd("wind");
@@ -89,9 +88,25 @@ TEST(Viz_viz3d, accuracy)
     channels.resize(3);
     cv::merge(channels, data);
 
-    cv::Mat colors(data.size(), CV_8UC3, cv::Scalar::all(255));
+    cv::Mat colors(data.size(), CV_8UC3, cv::Scalar(0, 255, 0));
     v.addPointCloud(data, colors);
 
+
+    //pcl::visualization::PointCloudColorHandlerRandom<pcl::PointXYZ> hander;
+    //v.addPointCloud<pcl::PointXYZ>(cloud, hander);
     //v.addPointCloud<pcl::PointXYZ>(cloud);
+
+    v.spinOnce(1000, true);
+
+
+    //v.updatePointCloud<pcl::PointXYZ>(cloud, hander);
+
+    channels[0] *= 20;
+    cv::merge(channels, data);
+    colors.setTo(cv::Scalar(255, 0, 0));
+
+    std::cout << "aaa" << std::endl;
+
+    v.updatePointCloud(data, colors);
     v.spin();
 }
