@@ -40,7 +40,7 @@ link_directories("d:/SVN/pcl_3rdparty/boost_1_51_0/stage/lib/")
 
 
 macro(find_pcl)
-  find_package(PCL REQUIRED COMPONENTS common io ) #kdtree #search #visualization #geometry
+  find_package(PCL REQUIRED COMPONENTS common)
   if(PCL_FOUND)
     set(HAVE_PCL ON)
     include_directories(SYSTEM ${PCL_INCLUDE_DIRS})

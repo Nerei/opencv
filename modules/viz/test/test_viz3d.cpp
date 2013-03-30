@@ -42,10 +42,6 @@
 
 #include "test_precomp.hpp"
 #include <opencv2/viz.hpp>
-#include <q/visualization/window.h>
-#include <pcl/io/ply_io.h>
-#include <pcl/io/pcd_io.h>
-#include <opencv2/core.hpp>
 #include <opencv2/core.hpp>
 #include <opencv2/imgproc.hpp>
 
@@ -95,6 +91,11 @@ TEST(Viz_viz3d, accuracy)
     cv::Mat normals(data.size(), CV_32FC3, cv::Scalar(0, 10, 0));
 
     v.addPointCloudNormals(data, normals, 100, 0.02, "n");
+
+    pcl::ModelCoefficients mc;
+    mc.values.resize(4);
+    mc.values[0] = mc.values[1] = mc.values[2] = mc.values[3] = 1;
+    v.addPlane(mc);
 
     //pcl::visualization::PointCloudColorHandlerRandom<pcl::PointXYZ> hander;
     //v.addPointCloud<pcl::PointXYZ>(cloud, hander);
