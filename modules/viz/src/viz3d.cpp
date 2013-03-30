@@ -14,6 +14,9 @@ void pcl::visualization::PCLVisualizer::setWindowName (const std::string &name)
     win_->SetWindowName (name.c_str ());
 }
 
+void pcl::visualization::PCLVisualizer::setPosition (int x, int y) { win_->SetPosition (x, y); }
+void pcl::visualization::PCLVisualizer::setSize (int xw, int yw) { win_->SetSize (xw, yw); }
+
 void pcl::visualization::PCLVisualizer::addPointCloud(const cv::Mat& cloud, const cv::Mat& colors, const std::string& id, const cv::Mat& mask, int viewport)
 {
     CV_Assert(cloud.type() == CV_32FC3 && colors.type() == CV_8UC3 && colors.size() == cloud.size());

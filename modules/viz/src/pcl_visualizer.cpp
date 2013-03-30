@@ -1986,13 +1986,9 @@ pcl::visualization::PCLVisualizer::createViewPortCamera (const int viewport)
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 bool
-pcl::visualization::PCLVisualizer::addText (const std::string &text, int xpos, int ypos, double r, double g, double b, int fontsize, const std::string &id, int viewport)
+pcl::visualization::PCLVisualizer::addText (const std::string &text, int xpos, int ypos, const cv::Scalar& color, int fontsize, const std::string &id, int viewport)
 {
-    std::string tid;
-    if (id.empty ())
-        tid = text;
-    else
-        tid = id;
+   std::string tid = id.empty() ? text : id;
 
     // Check to see if this ID entry already exists (has it been already added to the visualizer?)
     ShapeActorMap::iterator am_it = shape_actor_map_->find (tid);
@@ -2012,7 +2008,7 @@ pcl::visualization::PCLVisualizer::addText (const std::string &text, int xpos, i
     tprop->SetFontFamilyToArial ();
     tprop->SetJustificationToLeft ();
     tprop->BoldOn ();
-    tprop->SetColor (r, g, b);
+    tprop->SetColor (color[2]/255, color[1]/255, color[0]/255);
     addActorToRenderer (actor, viewport);
 
     // Save the pointer/ID pair to the global actor map
@@ -2022,18 +2018,12 @@ pcl::visualization::PCLVisualizer::addText (const std::string &text, int xpos, i
 
 //////////////////////////////////////////////////////////////////////////////////////////
 bool
-pcl::visualization::PCLVisualizer::updateText (const std::string &text, int xpos, int ypos, double r, double g, double b, int fontsize, const std::string &id)
+pcl::visualization::PCLVisualizer::updateText (const std::string &text, int xpos, int ypos, const cv::Scalar& color, int fontsize, const std::string &id)
 {
-    std::string tid;
-    if (id.empty ())
-        tid = text;
-    else
-        tid = id;
+    std::string tid = id.empty() ? text : id;
 
-    // Check to see if this ID entry already exists (has it been already added to the visualizer?)
-    ShapeActorMap::iterator am_it = shape_actor_map_->find (tid);
-    if (am_it == shape_actor_map_->end ())
-        return (false);
+    if (shape_actor_map_->find (tid) == shape_actor_map_->end ())
+        return false;
 
     // Retrieve the Actor
     vtkTextActor *actor = vtkTextActor::SafeDownCast (am_it->second);
@@ -2043,71 +2033,13 @@ pcl::visualization::PCLVisualizer::updateText (const std::string &text, int xpos
 
     vtkTextProperty* tprop = actor->GetTextProperty ();
     tprop->SetFontSize (fontsize);
-    tprop->SetColor (r, g, b);
+    tprop->SetColor (color[2]/255, color[1]/255, color[0]/255);
 
     actor->Modified ();
 
     return (true);
 }
 
-/////////////////////////////////////////////////////////////////////////////////////////////
-bool
-pcl::visualization::PCLVisualizer::updateColorHandlerIndex (const std::string &id, int index)
-{
-    CloudActorMap::iterator am_it = cloud_actor_map_->find (id);
-    if (am_it == cloud_actor_map_->end ())
-    {
-        pcl::console::print_warn (stderr, "[updateColorHandlerIndex] PointCloud with id <%s> doesn't exist!\n", id.c_str ());
-        return (false);
-    }
-
-    int color_handler_size = int (am_it->second.color_handlers.size ());
-    if (index >= color_handler_size)
-    {
-        pcl::console::print_warn (stderr, "[updateColorHandlerIndex] Invalid index <%d> given! Maximum range is: 0-%lu.\n", index, static_cast<unsigned long> (am_it->second.color_handlers.size ()));
-        return (false);
-    }
-    // Get the handler
-    PointCloudColorHandler<sensor_msgs::PointCloud2>::ConstPtr color_handler = am_it->second.color_handlers[index];
-
-    vtkSmartPointer<vtkDataArray> scalars;
-    color_handler->getColor (scalars);
-    double minmax[2];
-    scalars->GetRange (minmax);
-    // Update the data
-    vtkPolyData *data = static_cast<vtkPolyData*>(am_it->second.actor->GetMapper ()->GetInput ());
-    data->GetPointData ()->SetScalars (scalars);
-    data->Update ();
-    // Modify the mapper
-    if (use_vbos_)
-    {
-        vtkVertexBufferObjectMapper* mapper = static_cast<vtkVertexBufferObjectMapper*>(am_it->second.actor->GetMapper ());
-        mapper->SetScalarRange (minmax);
-        mapper->SetScalarModeToUsePointData ();
-        mapper->SetInput (data);
-        // Modify the actor
-        am_it->second.actor->SetMapper (mapper);
-        am_it->second.actor->Modified ();
-        am_it->second.color_handler_index_ = index;
-
-        //style_->setCloudActorMap (cloud_actor_map_);
-    }
-    else
-    {
-        vtkPolyDataMapper* mapper = static_cast<vtkPolyDataMapper*>(am_it->second.actor->GetMapper ());
-        mapper->SetScalarRange (minmax);
-        mapper->SetScalarModeToUsePointData ();
-        mapper->SetInput (data);
-        // Modify the actor
-        am_it->second.actor->SetMapper (mapper);
-        am_it->second.actor->Modified ();
-        am_it->second.color_handler_index_ = index;
-
-        //style_->setCloudActorMap (cloud_actor_map_);
-    }
-
-    return (true);
-}
 
 
 

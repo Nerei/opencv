@@ -201,8 +201,8 @@ namespace pcl
           */
         void setBackgroundColor (const double &r, const double &g, const double &b, int viewport = 0);
 
-        bool addText (const std::string &text, int xpos, int ypos, double r = 1, double g = 1, double b = 1, int fontsize = 10, const std::string &id = "", int viewport = 0);
-        bool updateText (const std::string &text, int xpos, int ypos, double r = 1, double g = 1, double b = 1, int fontsize = 10, const std::string &id = "");
+        bool addText (const std::string &text, int xpos, int ypos, const cv::Scalar& color = cv::Scalar(255, 255, 255), int fontsize = 10, const std::string &id = "", int viewport = 0);
+        bool updateText (const std::string &text, int xpos, int ypos, const cv::Scalar& color  = cv::Scalar(255, 255, 255), int fontsize = 10, const std::string &id = "");
 
         /** \brief Set the pose of an existing shape.
           *
@@ -264,39 +264,6 @@ namespace pcl
         bool addPolylineFromPolygonMesh (const pcl::PolygonMesh &polymesh, const std::string &id = "polyline", int viewport = 0);
 
 
-        /** \brief Get the color handler index of a rendered PointCloud based on its ID
-          * \param[in] id the point cloud object id
-          */
-        inline int
-        getColorHandlerIndex (const std::string &id)
-        {
-          CloudActorMap::iterator am_it = style_->getCloudActorMap ()->find (id);
-          if (am_it == cloud_actor_map_->end ())
-            return (-1);
-
-          return (am_it->second.color_handler_index_);
-        }
-
-        /** \brief Get the geometry handler index of a rendered PointCloud based on its ID
-          * \param[in] id the point cloud object id
-          */
-        inline int
-        getGeometryHandlerIndex (const std::string &id)
-        {
-          CloudActorMap::iterator am_it = style_->getCloudActorMap ()->find (id);
-          if (am_it != cloud_actor_map_->end ())
-            return (-1);
-
-          return (am_it->second.geometry_handler_index_);
-        }
-
-        /** \brief Update/set the color index of a renderered PointCloud based on its ID
-          * \param[in] id the point cloud object id
-          * \param[in] index the color handler index to use
-          */
-        bool
-        updateColorHandlerIndex (const std::string &id, int index);
-
         /** \brief Set the rendering properties of a PointCloud (3x values - e.g., RGB)
           * \param[in] property the property type
           * \param[in] val1 the first value to be set
@@ -305,9 +272,7 @@ namespace pcl
           * \param[in] id the point cloud object id (default: cloud)
           * \param[in] viewport the view port where the Point Cloud's rendering properties should be modified (default: all)
           */
-        bool
-        setPointCloudRenderingProperties (int property, double val1, double val2, double val3,
-                                          const std::string &id = "cloud", int viewport = 0);
+        bool setPointCloudRenderingProperties (int property, double val1, double val2, double val3, const std::string &id = "cloud", int viewport = 0);
 
        /** \brief Set the rendering properties of a PointCloud
          * \param[in] property the property type
@@ -315,25 +280,20 @@ namespace pcl
          * \param[in] id the point cloud object id (default: cloud)
          * \param[in] viewport the view port where the Point Cloud's rendering properties should be modified (default: all)
          */
-        bool
-        setPointCloudRenderingProperties (int property, double value,
-                                          const std::string &id = "cloud", int viewport = 0);
+        bool setPointCloudRenderingProperties (int property, double value, const std::string &id = "cloud", int viewport = 0);
 
        /** \brief Get the rendering properties of a PointCloud
          * \param[in] property the property type
          * \param[in] value the resultant property value
          * \param[in] id the point cloud object id (default: cloud)
          */
-        bool
-        getPointCloudRenderingProperties (int property, double &value,
-                                          const std::string &id = "cloud");
+        bool getPointCloudRenderingProperties (int property, double &value, const std::string &id = "cloud");
 
         /** \brief Set whether the point cloud is selected or not
          *  \param[in] selected whether the cloud is selected or not (true = selected)
          *  \param[in] id the point cloud object id (default: cloud)
          */
-        bool
-        setPointCloudSelected (const bool selected, const std::string &id = "cloud" );
+        bool setPointCloudSelected (const bool selected, const std::string &id = "cloud" );
 
        /** \brief Set the rendering properties of a shape
          * \param[in] property the property type
@@ -729,8 +689,7 @@ namespace pcl
           * \param[in] up_z the y component of the view up direction of the camera
           * \param[in] viewport the viewport to modify camera of (0 modifies all cameras)
           */
-        void setCameraPosition (double pos_x, double pos_y, double pos_z, double view_x, double view_y, double view_z,
-                                double up_x, double up_y, double up_z, int viewport = 0);
+        void setCameraPosition (double pos_x, double pos_y, double pos_z, double view_x, double view_y, double view_z, double up_x, double up_y, double up_z, int viewport = 0);
 
         /** \brief Set the camera location and viewup according to the given arguments
           * \param[in] pos_x the x coordinate of the camera location
@@ -773,11 +732,7 @@ namespace pcl
         void getCameras (std::vector<Camera>& cameras);
 
         /** \brief Get the current viewing pose. */
-        Eigen::Affine3f getViewerPose (int viewport = 0);
-
-        /** \brief Save the current rendered image to disk, as a PNG screenshot.
-          * \param[in] file the name of the PNG file
-          */
+        Eigen::Affine3f getViewerPose (int viewport = 0);        
         void saveScreenshot (const std::string &file);
 
         /** \brief Return a pointer to the underlying VTK Render Window used. */
@@ -789,17 +744,8 @@ namespace pcl
         /** \brief Return a pointer to the CloudActorMap this visualizer uses. */
         CloudActorMapPtr getCloudActorMap () { return (cloud_actor_map_); }
 
-        /** \brief Set the position in screen coordinates.
-          * \param[in] x where to move the window to (X)
-          * \param[in] y where to move the window to (Y)
-          */
-        void setPosition (int x, int y) { win_->SetPosition (x, y); }
-
-        /** \brief Set the window size in screen coordinates.
-          * \param[in] xw window size in horizontal (pixels)
-          * \param[in] yw window size in vertical (pixels)
-          */
-        void setSize (int xw, int yw) { win_->SetSize (xw, yw); }
+        void setPosition (int x, int y);
+        void setSize (int xw, int yw);
 
         /** \brief Use Vertex Buffer Objects renderers.
           * \param[in] use_vbos set to true to use VBOs
@@ -995,17 +941,8 @@ namespace pcl
           */
         void updateCells (vtkSmartPointer<vtkIdTypeArray> &cells, vtkSmartPointer<vtkIdTypeArray> &initcells, vtkIdType nr_points);
 
-
-        /** \brief Allocate a new polydata smartpointer. Internal
-          * \param[out] polydata the resultant poly data
-          */
         void allocVtkPolyData (vtkSmartPointer<vtkAppendPolyData> &polydata);
-
-        /** \brief Allocate a new polydata smartpointer. Internal
-          * \param[out] polydata the resultant poly data
-          */
-        void
-        allocVtkPolyData (vtkSmartPointer<vtkPolyData> &polydata);
+        void allocVtkPolyData (vtkSmartPointer<vtkPolyData> &polydata);
 
         /** \brief Allocate a new unstructured grid smartpointer. Internal
           * \param[out] polydata the resultant poly data

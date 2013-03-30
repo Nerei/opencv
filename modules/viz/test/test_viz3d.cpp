@@ -107,7 +107,7 @@ TEST(Viz_viz3d, accuracy)
 
     //v.updatePointCloud<pcl::PointXYZ>(cloud, hander);
 
-    channels[0] *= 7;
+    //channels[0] *= 7;
     cv::merge(channels, data);
     colors.setTo(cv::Scalar(255, 0, 0));
 
