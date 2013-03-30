@@ -201,70 +201,8 @@ namespace pcl
           */
         void setBackgroundColor (const double &r, const double &g, const double &b, int viewport = 0);
 
-        /** \brief Add a text to screen
-          * \param[in] text the text to add
-          * \param[in] xpos the X position on screen where the text should be added
-          * \param[in] ypos the Y position on screen where the text should be added
-          * \param[in] id the text object id (default: equal to the "text" parameter)
-          * \param[in] viewport the view port (default: all)
-          */
-        bool addText (const std::string &text, int xpos, int ypos, const std::string &id = "", int viewport = 0);
-
-        /** \brief Add a text to screen
-          * \param[in] text the text to add
-          * \param[in] xpos the X position on screen where the text should be added
-          * \param[in] ypos the Y position on screen where the text should be added
-          * \param[in] r the red color value
-          * \param[in] g the green color value
-          * \param[in] b the blue color vlaue
-          * \param[in] id the text object id (default: equal to the "text" parameter)
-          * \param[in] viewport the view port (default: all)
-          */
-        bool addText (const std::string &text, int xpos, int ypos, double r, double g, double b, const std::string &id = "", int viewport = 0);
-
-        /** \brief Add a text to screen
-          * \param[in] text the text to add
-          * \param[in] xpos the X position on screen where the text should be added
-          * \param[in] ypos the Y position on screen where the text should be added
-          * \param[in] fontsize the fontsize of the text
-          * \param[in] r the red color value
-          * \param[in] g the green color value
-          * \param[in] b the blue color vlaue
-          * \param[in] id the text object id (default: equal to the "text" parameter)
-          * \param[in] viewport the view port (default: all)
-          */
-        bool addText (const std::string &text, int xpos, int ypos, int fontsize, double r, double g, double b, const std::string &id = "", int viewport = 0);
-
-        /** \brief Update a text to screen
-          * \param[in] text the text to update
-          * \param[in] xpos the new X position on screen
-          * \param[in] ypos the new Y position on screen
-          * \param[in] id the text object id (default: equal to the "text" parameter)
-          */
-        bool updateText (const std::string &text, int xpos, int ypos, const std::string &id = "");
-
-        /** \brief Update a text to screen
-          * \param[in] text the text to update
-          * \param[in] xpos the new X position on screen
-          * \param[in] ypos the new Y position on screen
-          * \param[in] r the red color value
-          * \param[in] g the green color value
-          * \param[in] b the blue color vlaue
-          * \param[in] id the text object id (default: equal to the "text" parameter)
-          */
-        bool updateText (const std::string &text, int xpos, int ypos, double r, double g, double b, const std::string &id = "");
-
-        /** \brief Update a text to screen
-          * \param[in] text the text to update
-          * \param[in] xpos the new X position on screen
-          * \param[in] ypos the new Y position on screen
-          * \param[in] fontsize the fontsize of the text
-          * \param[in] r the red color value
-          * \param[in] g the green color value
-          * \param[in] b the blue color vlaue
-          * \param[in] id the text object id (default: equal to the "text" parameter)
-          */
-        bool updateText (const std::string &text, int xpos, int ypos, int fontsize, double r, double g, double b, const std::string &id = "");
+        bool addText (const std::string &text, int xpos, int ypos, double r = 1, double g = 1, double b = 1, int fontsize = 10, const std::string &id = "", int viewport = 0);
+        bool updateText (const std::string &text, int xpos, int ypos, double r = 1, double g = 1, double b = 1, int fontsize = 10, const std::string &id = "");
 
         /** \brief Set the pose of an existing shape.
           *
@@ -277,16 +215,6 @@ namespace pcl
           */
         bool updateShapePose (const std::string &id, const Eigen::Affine3f& pose);
 
-        /** \brief Add a 3d text to the scene
-          * \param[in] text the text to add
-          * \param[in] position the world position where the text should be added
-          * \param[in] textScale the scale of the text to render
-          * \param[in] r the red color value
-          * \param[in] g the green color value
-          * \param[in] b the blue color value
-          * \param[in] id the text object id (default: equal to the "text" parameter)
-          * \param[in] viewport the view port (default: all)
-          */
         bool addText3D (const std::string &text, const PointXYZ &position, double textScale = 1.0,
                    double r = 1.0, double g = 1.0, double b = 1.0, const std::string &id = "", int viewport = 0);
 
@@ -300,8 +228,7 @@ namespace pcl
           * \param[in] id the polygon object id (default: "polygon")
           * \param[in] viewport the view port where the PolygonMesh should be added (default: all)
           */
-        bool
-        addPolygonMesh (const pcl::PolygonMesh &polymesh, const std::string &id = "polygon", int viewport = 0);
+        bool addPolygonMesh (const pcl::PolygonMesh &polymesh, const std::string &id = "polygon", int viewport = 0);
 
         /** \brief Add a PolygonMesh object to screen
           * \param[in] cloud the polygonal mesh point cloud
@@ -327,16 +254,14 @@ namespace pcl
           * \param[in] id the polygon object id (default: "polygon")
           * \return false if no polygonmesh with the specified ID was found
           */
-        bool
-        updatePolygonMesh (const pcl::PolygonMesh &polymesh, const std::string &id = "polygon");
+        bool updatePolygonMesh (const pcl::PolygonMesh &polymesh, const std::string &id = "polygon");
 
         /** \brief Add a Polygonline from a polygonMesh object to screen
           * \param[in] polymesh the polygonal mesh from where the polylines will be extracted
           * \param[in] id the polygon object id (default: "polygon")
           * \param[in] viewport the view port where the PolygonMesh should be added (default: all)
           */
-        bool
-        addPolylineFromPolygonMesh (const pcl::PolygonMesh &polymesh, const std::string &id = "polyline", int viewport = 0);
+        bool addPolylineFromPolygonMesh (const pcl::PolygonMesh &polymesh, const std::string &id = "polyline", int viewport = 0);
 
 
         /** \brief Get the color handler index of a rendered PointCloud based on its ID
@@ -507,23 +432,13 @@ namespace pcl
         /** \brief Add a line segment from two points
           * \param[in] pt1 the first (start) point on the line
           * \param[in] pt2 the second (end) point on the line
-          * \param[in] id the line id/name (default: "line")
-          * \param[in] viewport (optional) the id of the new viewport (default: 0)
-          */
-        template <typename P1, typename P2> bool
-        addLine (const P1 &pt1, const P2 &pt2, const std::string &id = "line", int viewport = 0);
-
-        /** \brief Add a line segment from two points
-          * \param[in] pt1 the first (start) point on the line
-          * \param[in] pt2 the second (end) point on the line
           * \param[in] r the red channel of the color that the line should be rendered with
           * \param[in] g the green channel of the color that the line should be rendered with
           * \param[in] b the blue channel of the color that the line should be rendered with
           * \param[in] id the line id/name (default: "line")
           * \param[in] viewport (optional) the id of the new viewport (default: 0)
           */
-        template <typename P1, typename P2> bool
-        addLine (const P1 &pt1, const P2 &pt2, double r, double g, double b, const std::string &id = "line", int viewport = 0);
+        bool addLine (const pcl::PointXYZ &pt1, const pcl::PointXYZ &pt2, double r, double g, double b, const std::string &id = "line", int viewport = 0);
 
         /** \brief Add a line arrow segment between two points, and display the distance between them
           * \param[in] pt1 the first (start) point on the line

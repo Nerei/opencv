@@ -1,5 +1,6 @@
 #include <opencv2/viz/viz3d.hpp>
 #include <opencv2/core.hpp>
+#include <q/visualization/common/shapes.h>
 
 void pcl::visualization::PCLVisualizer::setFullScreen (bool mode)
 {
@@ -364,5 +365,32 @@ bool pcl::visualization::PCLVisualizer::addPointCloudNormals (const cv::Mat &clo
 
   // Save the pointer/ID pair to the global actor map
   (*cloud_actor_map_)[id].actor = actor;
+  return (true);
+}
+
+
+////////////////////////////////////////////////////////////////////////////////////////////
+bool pcl::visualization::PCLVisualizer::addLine (const pcl::PointXYZ &pt1, const pcl::PointXYZ &pt2, double r, double g, double b, const std::string &id, int viewport)
+{
+  // Check to see if this ID entry already exists (has it been already added to the visualizer?)
+  ShapeActorMap::iterator am_it = shape_actor_map_->find (id);
+  if (am_it != shape_actor_map_->end ())
+  {
+    PCL_WARN ("[addLine] A shape with id <%s> already exists! Please choose a different id and retry.\n", id.c_str ());
+    return (false);
+  }
+
+  vtkSmartPointer<vtkDataSet> data = createLine (pt1.getVector4fMap (), pt2.getVector4fMap ());
+
+  // Create an Actor
+  vtkSmartPointer<vtkLODActor> actor;
+  createActorFromVTKDataSet (data, actor);
+  actor->GetProperty ()->SetRepresentationToWireframe ();
+  actor->GetProperty ()->SetColor (r, g, b);
+  actor->GetMapper ()->ScalarVisibilityOff ();
+  addActorToRenderer (actor, viewport);
+
+  // Save the pointer/ID pair to the global actor map
+  (*shape_actor_map_)[id] = actor;
   return (true);
 }

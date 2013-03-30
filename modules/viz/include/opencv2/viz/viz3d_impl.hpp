@@ -122,32 +122,7 @@ pcl::visualization::PCLVisualizer::addPolygon (const typename pcl::PointCloud<Po
   return (!addPolygon<PointT> (cloud, 0.5, 0.5, 0.5, id, viewport));
 }
 
-////////////////////////////////////////////////////////////////////////////////////////////
-template <typename P1, typename P2> bool
-pcl::visualization::PCLVisualizer::addLine (const P1 &pt1, const P2 &pt2, double r, double g, double b, const std::string &id, int viewport)
-{
-  // Check to see if this ID entry already exists (has it been already added to the visualizer?)
-  ShapeActorMap::iterator am_it = shape_actor_map_->find (id);
-  if (am_it != shape_actor_map_->end ())
-  {
-    PCL_WARN ("[addLine] A shape with id <%s> already exists! Please choose a different id and retry.\n", id.c_str ());
-    return (false);
-  }
 
-  vtkSmartPointer<vtkDataSet> data = createLine (pt1.getVector4fMap (), pt2.getVector4fMap ());
-
-  // Create an Actor
-  vtkSmartPointer<vtkLODActor> actor;
-  createActorFromVTKDataSet (data, actor);
-  actor->GetProperty ()->SetRepresentationToWireframe ();
-  actor->GetProperty ()->SetColor (r, g, b);
-  actor->GetMapper ()->ScalarVisibilityOff ();
-  addActorToRenderer (actor, viewport);
-
-  // Save the pointer/ID pair to the global actor map
-  (*shape_actor_map_)[id] = actor;
-  return (true);
-}
 
 ////////////////////////////////////////////////////////////////////////////////////////////
 template <typename P1, typename P2> bool
@@ -240,13 +215,6 @@ pcl::visualization::PCLVisualizer::addArrow (const P1 &pt1, const P2 &pt2, doubl
   // Save the pointer/ID pair to the global actor map
   (*shape_actor_map_)[id] = leader;
   return (true);
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////
-template <typename P1, typename P2> bool
-pcl::visualization::PCLVisualizer::addLine (const P1 &pt1, const P2 &pt2, const std::string &id, int viewport)
-{
-  return (!addLine (pt1, pt2, 0.5, 0.5, 0.5, id, viewport));
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////

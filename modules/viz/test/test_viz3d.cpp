@@ -102,6 +102,8 @@ TEST(Viz_viz3d, accuracy)
 
     v.spinOnce(1000, true);
 
+    v.addText("===Abd sadfljsadlk", 100, 100, 1, 1, 1, 15);
+
 
     //v.updatePointCloud<pcl::PointXYZ>(cloud, hander);
 
