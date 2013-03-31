@@ -38,14 +38,9 @@
  *
  */
 
-//#include <q/visualization/common/common.h>
-//#include <pcl/ros/conversions.h>
-//#include <pcl/visualization/pcl_visualizer.h>
 
 #include <pcl/ros/conversions.h>
-
 #include <pcl/common/io.h>
-
 #include <q/visualization/common/shapes.h>
 #include <pcl/common/time.h>
 #include <opencv2/viz/viz3d.hpp>
@@ -126,7 +121,6 @@ pcl::visualization::PCLVisualizer::PCLVisualizer (const std::string &name, const
     style_->setRendererCollection (rens_);
     style_->setCloudActorMap (cloud_actor_map_);
     style_->UseTimersOn ();
-    style_->setUseVbos(use_vbos_);
 
     if (create_interactor)
         createInteractor ();
@@ -208,7 +202,7 @@ pcl::visualization::PCLVisualizer::registerMouseCallback (boost::function<void (
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 boost::signals2::connection
-pcl::visualization::PCLVisualizer::registerPointPickingCallback (boost::function<void (const pcl::visualization::PointPickingEvent&)> callback)
+pcl::visualization::PCLVisualizer::registerPointPickingCallback (boost::function<void (const cv::PointPickingEvent&)> callback)
 {
     return (style_->registerPointPickingCallback (callback));
 }

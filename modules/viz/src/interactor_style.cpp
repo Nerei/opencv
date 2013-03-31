@@ -22,29 +22,11 @@ using namespace cv;
 //////////////////////////////////////////////////////////////////////////////////////////////
 void pcl::visualization::PCLVisualizerInteractorStyle::Initialize ()
 {
-    modifier_ = pcl::visualization::INTERACTOR_KB_MOD_ALT;
+    modifier_ = pcl::visualization::PCLVisualizerInteractorStyle::INTERACTOR_KB_MOD_ALT;
     // Set windows size (width, height) to unknown (-1)
     win_height_ = win_width_ = -1;
     win_pos_x_ = win_pos_y_ = 0;
     max_win_height_ = max_win_width_ = -1;
-
-    // Grid is disabled by default
-    grid_enabled_ = false;
-    grid_actor_ = vtkSmartPointer<vtkLegendScaleActor>::New ();
-
-    // LUT is disabled by default
-    lut_enabled_ = false;
-    lut_actor_ = vtkSmartPointer<vtkScalarBarActor>::New ();
-    lut_actor_->SetTitle ("");
-    lut_actor_->SetOrientationToHorizontal ();
-    lut_actor_->SetPosition (0.05, 0.01);
-    lut_actor_->SetWidth (0.9);
-    lut_actor_->SetHeight (0.1);
-    lut_actor_->SetNumberOfLabels (lut_actor_->GetNumberOfLabels () * 2);
-    vtkSmartPointer<vtkTextProperty> prop = lut_actor_->GetLabelTextProperty ();
-    prop->SetFontSize (10);
-    lut_actor_->SetLabelTextProperty (prop);
-    lut_actor_->SetTitleTextProperty (prop);
 
     // Create the image filter and PNG writer objects
     wif_ = vtkSmartPointer<vtkWindowToImageFilter>::New ();
@@ -173,7 +155,7 @@ boost::signals2::connection pcl::visualization::PCLVisualizerInteractorStyle::re
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////
-boost::signals2::connection pcl::visualization::PCLVisualizerInteractorStyle::registerPointPickingCallback (boost::function<void (const pcl::visualization::PointPickingEvent&)> callback)
+boost::signals2::connection pcl::visualization::PCLVisualizerInteractorStyle::registerPointPickingCallback (boost::function<void (const cv::PointPickingEvent&)> callback)
 {
     return (point_picking_signal_.connect (callback));
 }
@@ -236,116 +218,6 @@ pcl::visualization::PCLVisualizerInteractorStyle::OnKeyDown ()
     }
     }
 
-    // ---[ Check the rest of the key codes
-#if 0
-    // Switch between point color/geometry handlers
-    if (Interactor->GetKeySym () && Interactor->GetKeySym ()[0]  >= '0' && Interactor->GetKeySym ()[0] <= '9')
-    {
-        CloudActorMap::iterator it;
-        int index = Interactor->GetKeySym ()[0] - '0' - 1;
-        if (index == -1) index = 9;
-
-        // Add 10 more for CTRL+0..9 keys
-        if (ctrl)
-            index += 10;
-
-        // Geometry ?
-        if (keymod)
-        {
-            for (it = actors_->begin (); it != actors_->end (); ++it)
-            {
-                CloudActor *act = &(*it).second;
-                if (index >= static_cast<int> (act->geometry_handlers.size ()))
-                    continue;
-
-                // Save the geometry handler index for later usage
-                act->geometry_handler_index_ = index;
-
-                // Create the new geometry
-                PointCloudGeometryHandler<sensor_msgs::PointCloud2>::ConstPtr geometry_handler = act->geometry_handlers[index];
-
-                // Use the handler to obtain the geometry
-                vtkSmartPointer<vtkPoints> points;
-                geometry_handler->getGeometry (points);
-
-                // Set the vertices
-                vtkSmartPointer<vtkCellArray> vertices = vtkSmartPointer<vtkCellArray>::New ();
-                for (vtkIdType i = 0; i < static_cast<vtkIdType> (points->GetNumberOfPoints ()); ++i)
-                    vertices->InsertNextCell (static_cast<vtkIdType>(1), &i);
-
-                // Create the data
-                vtkSmartPointer<vtkPolyData> data = vtkSmartPointer<vtkPolyData>::New ();
-                data->SetPoints (points);
-                data->SetVerts (vertices);
-                // Modify the mapper
-                if (use_vbos_)
-                {
-                    vtkVertexBufferObjectMapper* mapper = static_cast<vtkVertexBufferObjectMapper*>(act->actor->GetMapper ());
-                    mapper->SetInput (data);
-                    // Modify the actor
-                    act->actor->SetMapper (mapper);
-                }
-                else
-                {
-                    vtkPolyDataMapper* mapper = static_cast<vtkPolyDataMapper*>(act->actor->GetMapper ());
-                    mapper->SetInput (data);
-                    // Modify the actor
-                    act->actor->SetMapper (mapper);
-                }
-                act->actor->Modified ();
-            }
-        }
-        else
-        {
-            for (it = actors_->begin (); it != actors_->end (); ++it)
-            {
-                CloudActor *act = &(*it).second;
-                // Check for out of bounds
-                if (index >= static_cast<int> (act->color_handlers.size ()))
-                    continue;
-
-                // Save the color handler index for later usage
-                act->color_handler_index_ = index;
-
-                // Get the new color
-                PointCloudColorHandler<sensor_msgs::PointCloud2>::ConstPtr color_handler = act->color_handlers[index];
-
-                vtkSmartPointer<vtkDataArray> scalars;
-                color_handler->getColor (scalars);
-                double minmax[2];
-                scalars->GetRange (minmax);
-                // Update the data
-                vtkPolyData *data = static_cast<vtkPolyData*>(act->actor->GetMapper ()->GetInput ());
-                data->GetPointData ()->SetScalars (scalars);
-                data->Update ();
-                // Modify the mapper
-                if (use_vbos_)
-                {
-                    vtkVertexBufferObjectMapper* mapper = static_cast<vtkVertexBufferObjectMapper*>(act->actor->GetMapper ());
-                    mapper->SetScalarRange (minmax);
-                    mapper->SetScalarModeToUsePointData ();
-                    mapper->SetInput (data);
-                    // Modify the actor
-                    act->actor->SetMapper (mapper);
-                }
-                else
-                {
-                    vtkPolyDataMapper* mapper = static_cast<vtkPolyDataMapper*>(act->actor->GetMapper ());
-                    mapper->SetScalarRange (minmax);
-                    mapper->SetScalarModeToUsePointData ();
-                    mapper->SetInput (data);
-                    // Modify the actor
-                    act->actor->SetMapper (mapper);
-                }
-                act->actor->Modified ();
-            }
-        }
-
-        Interactor->Render ();
-        return;
-    }
-
-#endif
     std::string key (Interactor->GetKeySym ());
     if (key.find ("XF86ZoomIn") != std::string::npos)
         zoomIn ();
@@ -356,67 +228,31 @@ pcl::visualization::PCLVisualizerInteractorStyle::OnKeyDown ()
     {
     case 'h': case 'H':
     {
-        std::cout <<              "| Help:\n"
-                                  "-------\n"
-                                  "          p, P   : switch to a point-based representation\n"
-                                  "          w, W   : switch to a wireframe-based representation (where available)\n"
-                                  "          s, S   : switch to a surface-based representation (where available)\n"
-                                  "\n"
-                                  "          j, J   : take a .PNG snapshot of the current window view\n"
-                                  "          c, C   : display current camera/window parameters\n"
-                                  "          f, F   : fly to point mode\n"
-                                  "\n"
-                                  "          e, E   : exit the interactor\n"
-                                  "          q, Q   : stop and call VTK's TerminateApp\n"
-                                  "\n"
-                                  "           +/-   : increment/decrement overall point size\n"
-                                  "     +/- [+ ALT] : zoom in/out \n"
-                                  "\n"
-                                  "    r, R [+ ALT] : reset camera [to viewpoint = {0, 0, 0} -> center_{x, y, z}]\n"
-                                  "\n"
-                                  "    ALT + s, S   : turn stereo mode on/off\n"
-                                  "    ALT + f, F   : switch between maximized window mode and original size\n"
-                                  "\n"
-                                  "    SHIFT + left click   : select a point\n"
-                                  << std::endl;
+        std::cout << "| Help:\n"
+                     "-------\n"
+                     "          p, P   : switch to a point-based representation\n"
+                     "          w, W   : switch to a wireframe-based representation (where available)\n"
+                     "          s, S   : switch to a surface-based representation (where available)\n"
+                     "\n"
+                     "          j, J   : take a .PNG snapshot of the current window view\n"
+                     "          c, C   : display current camera/window parameters\n"
+                     "          f, F   : fly to point mode\n"
+                     "\n"
+                     "          e, E   : exit the interactor\n"
+                     "          q, Q   : stop and call VTK's TerminateApp\n"
+                     "\n"
+                     "           +/-   : increment/decrement overall point size\n"
+                     "     +/- [+ ALT] : zoom in/out \n"
+                     "\n"
+                     "    r, R [+ ALT] : reset camera [to viewpoint = {0, 0, 0} -> center_{x, y, z}]\n"
+                     "\n"
+                     "    ALT + s, S   : turn stereo mode on/off\n"
+                     "    ALT + f, F   : switch between maximized window mode and original size\n"
+                     "\n"
+                     "    SHIFT + left click   : select a point\n"
+                     << std::endl;
         break;
     }
-
-        // Get the list of available handlers
-#if 0
-    case 'l': case 'L':
-    {
-        // Iterate over the entire actors list and extract the geomotry/color handlers list
-        for (CloudActorMap::iterator it = actors_->begin (); it != actors_->end (); ++it)
-        {
-            std::list<std::string> geometry_handlers_list, color_handlers_list;
-            CloudActor *act = &(*it).second;
-            for (size_t i = 0; i < act->geometry_handlers.size (); ++i)
-                geometry_handlers_list.push_back (act->geometry_handlers[i]->getFieldName ());
-            for (size_t i = 0; i < act->color_handlers.size (); ++i)
-                color_handlers_list.push_back (act->color_handlers[i]->getFieldName ());
-
-            if (!geometry_handlers_list.empty ())
-            {
-                int i = 0;
-                pcl::console::print_info ("List of available geometry handlers for actor "); pcl::console::print_value ("%s: ", (*it).first.c_str ());
-                for (std::list<std::string>::iterator git = geometry_handlers_list.begin (); git != geometry_handlers_list.end (); ++git)
-                    pcl::console::print_value ("%s(%d) ", (*git).c_str (), ++i);
-                pcl::console::print_info ("\n");
-            }
-            if (!color_handlers_list.empty ())
-            {
-                int i = 0;
-                pcl::console::print_info ("List of available color handlers for actor "); pcl::console::print_value ("%s: ", (*it).first.c_str ());
-                for (std::list<std::string>::iterator cit = color_handlers_list.begin (); cit != color_handlers_list.end (); ++cit)
-                    pcl::console::print_value ("%s(%d) ", (*cit).c_str (), ++i);
-                pcl::console::print_info ("\n");
-            }
-        }
-
-        break;
-    }
-#endif
 
         // Switch representation to points
     case 'p': case 'P':
@@ -612,24 +448,7 @@ pcl::visualization::PCLVisualizerInteractorStyle::OnKeyDown ()
             Superclass::OnKeyDown ();
         break;
     }
-#if 0
-        // Display a grid/scale over the screen
-    case 'g': case 'G':
-    {
-        if (!grid_enabled_)
-        {
-            grid_actor_->TopAxisVisibilityOn ();
-            CurrentRenderer->AddViewProp (grid_actor_);
-            grid_enabled_ = true;
-        }
-        else
-        {
-            CurrentRenderer->RemoveViewProp (grid_actor_);
-            grid_enabled_ = false;
-        }
-        break;
-    }
-#endif
+
     case 'o': case 'O':
     {
         vtkSmartPointer<vtkCamera> cam = CurrentRenderer->GetActiveCamera ();
@@ -640,36 +459,8 @@ pcl::visualization::PCLVisualizerInteractorStyle::OnKeyDown ()
         CurrentRenderer->Render ();
         break;
     }
-        // Display a LUT actor on screen
-#if 0
-    case 'u': case 'U':
-    {
-        CloudActorMap::iterator it;
-        for (it = actors_->begin (); it != actors_->end (); ++it)
-        {
-            CloudActor *act = &(*it).second;
 
-            vtkScalarsToColors* lut = act->actor->GetMapper ()->GetLookupTable ();
-            lut_actor_->SetLookupTable (lut);
-            lut_actor_->Modified ();
-        }
-        if (!lut_enabled_)
-        {
-            CurrentRenderer->AddActor (lut_actor_);
-            lut_actor_->SetVisibility (true);
-            lut_enabled_ = true;
-        }
-        else
-        {
-            CurrentRenderer->RemoveActor (lut_actor_);
-            lut_enabled_ = false;
-        }
-        CurrentRenderer->Render ();
-        break;
-    }
-#endif
-
-        // Overwrite the camera reset
+    // Overwrite the camera reset
     case 'r': case 'R':
     {
         if (!keymod)

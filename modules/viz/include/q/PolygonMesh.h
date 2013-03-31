@@ -2,7 +2,7 @@
 #include <vector>
 
 #include "sensor_msgs/PointCloud2.h"
-#include <pcl/Vertices.h>
+#include <q/Vertices.h>
 
 namespace pcl
 {

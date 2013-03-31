@@ -8,8 +8,7 @@
 #include <q/planar_polygon.h>
 #include <q/visualization/interactor_style.h>
 
-#include <q/visualization/keyboard_event.h>
-#include <q/visualization/mouse_event.h>
+#include <opencv2/viz/events.hpp>
 #include <q/visualization/point_picking_event.h>
 #include <q/visualization/common/actor_map.h>
 #include <q/visualization/common/common.h>
@@ -86,8 +85,8 @@ namespace pcl
           * \param[in] cb a boost function that will be registered as a callback for a point picking event
           * \return a connection object that allows to disconnect the callback function.
           */
-        boost::signals2::connection registerPointPickingCallback (boost::function<void (const pcl::visualization::PointPickingEvent&)> cb);
-        inline boost::signals2::connection registerPointPickingCallback (void (*callback) (const pcl::visualization::PointPickingEvent&, void*), void* cookie = NULL)
+        boost::signals2::connection registerPointPickingCallback (boost::function<void (const cv::PointPickingEvent&)> cb);
+        inline boost::signals2::connection registerPointPickingCallback (void (*callback) (const cv::PointPickingEvent&, void*), void* cookie = NULL)
         {
           return (registerPointPickingCallback (boost::bind (callback, _1, cookie)));
         }
@@ -99,7 +98,7 @@ namespace pcl
           * \return a connection object that allows to disconnect the callback function.
           */
         template<typename T> inline boost::signals2::connection
-        registerPointPickingCallback (void (T::*callback) (const pcl::visualization::PointPickingEvent&, void*), T& instance, void* cookie = NULL)
+        registerPointPickingCallback (void (T::*callback) (const cv::PointPickingEvent&, void*), T& instance, void* cookie = NULL)
         {
           return (registerPointPickingCallback (boost::bind (callback, boost::ref (instance), _1, cookie)));
         }
@@ -740,15 +739,6 @@ namespace pcl
 
         void setPosition (int x, int y);
         void setSize (int xw, int yw);
-
-        /** \brief Use Vertex Buffer Objects renderers.
-          * \param[in] use_vbos set to true to use VBOs
-          */
-        void setUseVbos (bool use_vbos)
-        {
-          use_vbos_ = use_vbos;
-          style_->setUseVbos (use_vbos_);
-        }
 
         /** \brief Create the internal Interactor object. */
         void createInteractor ();
