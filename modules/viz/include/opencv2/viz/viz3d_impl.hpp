@@ -9,6 +9,7 @@
 #include <vtkAlgorithmOutput.h>
 
 #include <q/visualization/common/shapes.h>
+#include <pcl/common/io.h>
 
 inline bool pcl::visualization::PCLVisualizer::addPolygon (const cv::Mat& cloud, const cv::Scalar& color, const std::string &id, int viewport)
 {

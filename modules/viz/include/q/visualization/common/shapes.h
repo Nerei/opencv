@@ -1,9 +1,7 @@
 #pragma once
 
 #include <opencv2/viz/types.hpp>
-#include <q/point_cloud.h>
 #include <q/visualization/3rdparty.h>
-//#include <pcl/common/eigen.h>
 
 namespace pcl
 {

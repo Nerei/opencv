@@ -2,8 +2,8 @@
 
 #include <opencv2/core.hpp>
 // PCL includes
-#include <q/point_types.h>
-#include <q/point_cloud.h>
+#include <pcl/point_types.h>
+#include <pcl/point_cloud.h>
 #include <opencv2/viz/types.hpp>
 #include <opencv2/viz/events.hpp>
 #include <q/visualization/interactor_style.h>
@@ -294,9 +294,7 @@ namespace pcl
          * \param[in] id the shape object id
          * \param[in] viewport the view port where the shape's properties should be modified (default: all)
          */
-        bool
-        setShapeRenderingProperties (int property, double value,
-                                     const std::string &id, int viewport = 0);
+        bool setShapeRenderingProperties (int property, double value, const std::string &id, int viewport = 0);
 
         /** \brief Set the rendering properties of a shape (3x values - e.g., RGB)
           * \param[in] property the property type
@@ -306,22 +304,16 @@ namespace pcl
           * \param[in] id the shape object id
           * \param[in] viewport the view port where the shape's properties should be modified (default: all)
           */
-         bool
-         setShapeRenderingProperties (int property, double val1, double val2, double val3,
-                                      const std::string &id, int viewport = 0);
-
+         bool setShapeRenderingProperties (int property, double val1, double val2, double val3, const std::string &id, int viewport = 0);
 
         /** \brief Returns true when the user tried to close the window */
-        bool
-        wasStopped () const { if (interactor_ != NULL) return (stopped_); else return (true); }
+        bool wasStopped () const { if (interactor_ != NULL) return (stopped_); else return (true); }
 
         /** \brief Set the stopped flag back to false */
-        void
-        resetStoppedFlag () { if (interactor_ != NULL) stopped_ = false; }
+        void resetStoppedFlag () { if (interactor_ != NULL) stopped_ = false; }
 
         /** \brief Stop the interaction and close the visualizaton window. */
-        void
-        close ()
+        void close ()
         {
           stopped_ = true;
           // This tends to close the window...
@@ -339,18 +331,14 @@ namespace pcl
           * the viewport will be set to 0 ('all'). In case one or multiple renderers do
           * exist, the viewport ID will be set to the total number of renderers - 1.
           */
-        void
-        createViewPort (double xmin, double ymin, double xmax, double ymax, int &viewport);
+        void createViewPort (double xmin, double ymin, double xmax, double ymax, int &viewport);
 
         /** \brief Create a new separate camera for the given viewport.
           * \param[in] viewport the viewport to create a new camera for.
           */
-        void
-        createViewPortCamera (const int viewport);
-
+        void createViewPortCamera (const int viewport);
 
         bool addPolygon(const cv::Mat& cloud, const cv::Scalar& color = cv::Scalar(255, 255, 255), const std::string &id = "polygon", int viewport = 0);
-
 
         /** \brief Add a line segment from two points
           * \param[in] pt1 the first (start) point on the line

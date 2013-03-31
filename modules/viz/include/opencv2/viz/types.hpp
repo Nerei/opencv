@@ -2,12 +2,15 @@
 
 #include <vector>
 #include <pcl/common/eigen.h>
-#include <q/point_cloud.h>
-#include "q/PointCloud2.h"
+#include <pcl/point_cloud.h>
 #include <opencv2/core/cvdef.h>
+#include<sensor_msgs/PointCloud2.h>
+
 
 namespace pcl
 {
+
+#if 1
     struct CV_EXPORTS Vertices
     {
         std::vector<unsigned int> vertices;
@@ -18,6 +21,7 @@ namespace pcl
         ::sensor_msgs::PointCloud2 cloud;
         std::vector< ::pcl::Vertices>  polygons;
     };
+#endif
 
     struct CV_EXPORTS ModelCoefficients
     {

@@ -1,7 +1,7 @@
 #pragma once
 
 #include <opencv2/core/cvdef.h>
-#include <q/point_types.h>
+#include <pcl/point_types.h>
 #include <vtkMatrix4x4.h>
 
 namespace pcl
