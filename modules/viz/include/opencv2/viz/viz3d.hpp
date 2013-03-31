@@ -788,24 +788,17 @@ namespace pcl
         /** \brief Boolean that holds whether or not the camera parameters were manually initialized*/
         bool camera_set_;
 
-        /** \brief Boolean that holds whether or not to use the vtkVertexBufferObjectMapper*/
-        bool use_vbos_;
+        /** \brief Internal method. Removes a vtk actor from the screen.
+          * \param[in] actor a pointer to the vtk actor object
+          * \param[in] viewport the view port where the actor should be removed from (default: all)
+          */
+        bool removeActorFromRenderer (const vtkSmartPointer<vtkLODActor> &actor, int viewport = 0);
 
         /** \brief Internal method. Removes a vtk actor from the screen.
           * \param[in] actor a pointer to the vtk actor object
           * \param[in] viewport the view port where the actor should be removed from (default: all)
           */
-        bool
-        removeActorFromRenderer (const vtkSmartPointer<vtkLODActor> &actor,
-                                 int viewport = 0);
-
-        /** \brief Internal method. Removes a vtk actor from the screen.
-          * \param[in] actor a pointer to the vtk actor object
-          * \param[in] viewport the view port where the actor should be removed from (default: all)
-          */
-        bool
-        removeActorFromRenderer (const vtkSmartPointer<vtkActor> &actor,
-                                 int viewport = 0);
+        bool removeActorFromRenderer (const vtkSmartPointer<vtkActor> &actor, int viewport = 0);
 
         /** \brief Internal method. Adds a vtk actor to screen.
           * \param[in] actor a pointer to the vtk actor object
@@ -814,38 +807,27 @@ namespace pcl
           * \note If viewport is set to 0, the actor will be added to all existing
           * renders. To select a specific viewport use an integer between 1 and N.
           */
-        void
-        addActorToRenderer (const vtkSmartPointer<vtkProp> &actor,
-                            int viewport = 0);
+        void addActorToRenderer (const vtkSmartPointer<vtkProp> &actor, int viewport = 0);
 
         /** \brief Internal method. Adds a vtk actor to screen.
           * \param[in] actor a pointer to the vtk actor object
           * \param[in] viewport the view port where the actor should be added to (default: all)
           */
-        bool
-        removeActorFromRenderer (const vtkSmartPointer<vtkProp> &actor,
-                                 int viewport = 0);
+        bool removeActorFromRenderer (const vtkSmartPointer<vtkProp> &actor, int viewport = 0);
 
         /** \brief Internal method. Creates a vtk actor from a vtk polydata object.
           * \param[in] data the vtk polydata object to create an actor for
           * \param[out] actor the resultant vtk actor object
           * \param[in] use_scalars set scalar properties to the mapper if it exists in the data. Default: true.
           */
-        void
-        createActorFromVTKDataSet (const vtkSmartPointer<vtkDataSet> &data,
-                                   vtkSmartPointer<vtkActor> &actor,
-                                   bool use_scalars = true);
+        void createActorFromVTKDataSet (const vtkSmartPointer<vtkDataSet> &data, vtkSmartPointer<vtkActor> &actor, bool use_scalars = true);
 
         /** \brief Internal method. Creates a vtk actor from a vtk polydata object.
           * \param[in] data the vtk polydata object to create an actor for
           * \param[out] actor the resultant vtk actor object
           * \param[in] use_scalars set scalar properties to the mapper if it exists in the data. Default: true.
           */
-        void
-        createActorFromVTKDataSet (const vtkSmartPointer<vtkDataSet> &data,
-                                   vtkSmartPointer<vtkLODActor> &actor,
-                                   bool use_scalars = true);
-
+        void createActorFromVTKDataSet (const vtkSmartPointer<vtkDataSet> &data, vtkSmartPointer<vtkLODActor> &actor, bool use_scalars = true);
 
         /** \brief Updates a set of cells (vtkIdTypeArray) if the number of points in a cloud changes
           * \param[out] cells the vtkIdTypeArray object (set of cells) to update

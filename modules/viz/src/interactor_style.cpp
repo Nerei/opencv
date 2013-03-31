@@ -15,7 +15,7 @@
 #include <vtkInteractorObserver.h>
 #include <vtkCamera.h>
 
-#include <q/visualization/vtk/vtkVertexBufferObjectMapper.h>
+//#include <q/visualization/vtk/vtkVertexBufferObjectMapper.h>
 
 using namespace cv;
 

@@ -307,20 +307,14 @@ inline bool pcl::visualization::PCLVisualizer::addText3D (const std::string &tex
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 template <typename PointT> bool
-pcl::visualization::PCLVisualizer::addPolygonMesh (const typename pcl::PointCloud<PointT>::ConstPtr &cloud,
-    const std::vector<pcl::Vertices> &vertices, const std::string &id, int viewport)
+pcl::visualization::PCLVisualizer::addPolygonMesh (const typename pcl::PointCloud<PointT>::ConstPtr &cloud, const std::vector<pcl::Vertices> &vertices, const std::string &id, int viewport)
 {
   if (vertices.empty () || cloud->points.empty ())
     return (false);
 
   CloudActorMap::iterator am_it = cloud_actor_map_->find (id);
   if (am_it != cloud_actor_map_->end ())
-  {
-    pcl::console::print_warn (stderr,
-                                "[addPolygonMesh] A shape with id <%s> already exists! Please choose a different id and retry.\n",
-                                id.c_str ());
-    return (false);
-  }
+    return std::cout << "[addPolygonMesh] A shape with id <" << id << "> already exists! Please choose a different id and retry." << std::endl, false;
 
   int rgb_idx = -1;
   std::vector<sensor_msgs::PointField> fields;
@@ -328,6 +322,7 @@ pcl::visualization::PCLVisualizer::addPolygonMesh (const typename pcl::PointClou
   rgb_idx = pcl::getFieldIndex (*cloud, "rgb", fields);
   if (rgb_idx == -1)
     rgb_idx = pcl::getFieldIndex (*cloud, "rgba", fields);
+
   if (rgb_idx != -1)
   {
     colors = vtkSmartPointer<vtkUnsignedCharArray>::New ();
