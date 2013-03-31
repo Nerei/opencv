@@ -39,8 +39,6 @@
 #ifndef PCL_PCL_VISUALIZER_INTERACTOR_STYLE_H_
 #define PCL_PCL_VISUALIZER_INTERACTOR_STYLE_H_
 
-//#include <pcl/console/print.h>
-
 #include <q/visualization/vtk.h>
 #include <q/visualization/common/actor_map.h>
 #include <q/visualization/common/ren_win_interact_map.h>
@@ -78,14 +76,9 @@ namespace pcl
       * -        e, E   : exit the interactor\
       * -        q, Q   : stop and call VTK's TerminateApp
       * -       + / -   : increment/decrement overall point size
-      * -        g, G   : display scale grid (on/off)
-      * -        u, U   : display lookup table (on/off)
       * -  r, R [+ ALT] : reset camera [to viewpoint = {0, 0, 0} -> center_{x, y, z}]
       * -  ALT + s, S   : turn stereo mode on/off
       * -  ALT + f, F   : switch between maximized window mode and original size
-      * -        l, L           : list all available geometric and color handlers for the current actor map
-      * -  ALT + 0..9 [+ CTRL]  : switch between different geometric handlers (where available)
-      * -        0..9 [+ CTRL]  : switch between different color handlers (where available)
       * - 
       * -  SHIFT + left click   : select a point
       *
@@ -273,41 +266,6 @@ namespace pcl
         InteractorKeyboardModifier modifier_;
 
         friend class PointPickingCallback;
-    };
-
-    /** \brief PCL histogram visualizer interactory style class.
-      * \author Radu B. Rusu
-      */
-    class PCLHistogramVisualizerInteractorStyle : public vtkInteractorStyleTrackballCamera
-    {
-      public:
-        static PCLHistogramVisualizerInteractorStyle *New ();
-
-        /** \brief Empty constructor. */
-        PCLHistogramVisualizerInteractorStyle () : wins_ (), init_ (false) {}
-
-        /** \brief Initialization routine. Must be called before anything else. */
-        void 
-        Initialize ();
-        
-        /** \brief Pass a map of render/window/interactors to the interactor style. 
-          * \param[in] wins the RenWinInteract map to use
-          */
-        void 
-        setRenWinInteractMap (const RenWinInteractMap &wins) { wins_ = wins; }
-
-      private:
-        /** \brief A map of all windows on screen (with their renderers and interactors). */
-        RenWinInteractMap wins_;
-
-        /** \brief Set to true after initialization is complete. */
-        bool init_;
-
-        /** \brief Interactor style internal method. Gets called whenever a key is pressed. */
-        void OnKeyDown ();
-
-        /** \brief Interactor style internal method. Gets called periodically if a timer is set. */
-        void OnTimer ();
     };
   }
 }

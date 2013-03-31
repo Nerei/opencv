@@ -7,8 +7,6 @@
 #include <pcl/point_cloud.h>
 #include <q/PolygonMesh.h>
 #include <q/planar_polygon.h>
-//#include <pcl/common/time.h>
-//#include <pcl/console/print.h>
 
 //#include <q/visualization/common/common.h>
 //#include <q/visualization/common/shapes.h>

@@ -43,7 +43,7 @@
 #include <vector>
 #include <vtkLODActor.h>
 #include <vtkSmartPointer.h>
-#include <sensor_msgs/PointCloud2.h>
+//#include <sensor_msgs/PointCloud2.h>
 #include <q/visualization/boost.h>
 #include <opencv2/core.hpp>
 
