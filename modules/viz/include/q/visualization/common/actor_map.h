@@ -4,7 +4,7 @@
 #include <vtkLODActor.h>
 #include <vtkSmartPointer.h>
 #include <opencv2/core/cvdef.h>
-#include <q/visualization/boost.h>
+#include <q/visualization/3rdparty.h>
 
 namespace pcl
 {

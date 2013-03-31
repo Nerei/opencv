@@ -42,7 +42,7 @@
 
 #include <opencv2/viz/types.hpp>
 #include <q/point_cloud.h>
-#include <q/visualization/vtk.h>
+#include <q/visualization/3rdparty.h>
 #include <pcl/common/eigen.h>
 
 

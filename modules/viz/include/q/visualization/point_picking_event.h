@@ -1,7 +1,7 @@
 #pragma once
 
 #include <opencv2/core/cvdef.h>
-#include <q/visualization/vtk.h>
+#include <q/visualization/3rdparty.h>
 
 namespace pcl
 {

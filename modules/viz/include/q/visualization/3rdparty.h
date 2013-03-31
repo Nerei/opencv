@@ -1,44 +1,27 @@
-/*
- * Software License Agreement (BSD License)
- *
- *  Point Cloud Library (PCL) - www.pointclouds.org
- *  Copyright (c) 2009-2012, Willow Garage, Inc.
- *  Copyright (c) 2012-, Open Perception, Inc.
- *
- *  All rights reserved.
- *
- *  Redistribution and use in source and binary forms, with or without
- *  modification, are permitted provided that the following conditions
- *  are met:
- *
- *   * Redistributions of source code must retain the above copyright
- *     notice, this list of conditions and the following disclaimer.
- *   * Redistributions in binary form must reproduce the above
- *     copyright notice, this list of conditions and the following
- *     disclaimer in the documentation and/or other materials provided
- *     with the distribution.
- *   * Neither the name of the copyright holder(s) nor the names of its
- *     contributors may be used to endorse or promote products derived
- *     from this software without specific prior written permission.
- *
- *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- *  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- *  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
- *  FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
- *  COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
- *  INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
- *  BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- *  LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- *  CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- *  LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
- *  ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- *  POSSIBILITY OF SUCH DAMAGE.
- *
- * $Id$
- *
- */
-#ifndef PCL_PCL_VISUALIZER_VTK_H_
-#define PCL_PCL_VISUALIZER_VTK_H_
+#pragma once
+
+#include <boost/function.hpp>
+#include <boost/shared_array.hpp>
+#define BOOST_PARAMETER_MAX_ARITY 7
+#include <boost/signals2.hpp>
+#include <boost/shared_ptr.hpp>
+#include <boost/algorithm/string.hpp>
+#include <boost/algorithm/string/split.hpp>
+#include <boost/algorithm/string/classification.hpp>
+#include <boost/thread.hpp>
+#include <boost/bind.hpp>
+#include <boost/unordered_map.hpp>
+#include <boost/thread/mutex.hpp>
+#include <boost/thread/thread.hpp>
+#include <boost/foreach.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/filesystem.hpp>
+
+
+#include <Eigen/Geometry>
+#include <Eigen/Dense>
+
+
 
 #if defined __GNUC__
 #pragma GCC system_header
@@ -115,11 +98,6 @@
 #include <vtkImageImport.h>
 #include <vtkImageViewer.h>
 #include <vtkInteractorStyleImage.h>
-#if ((VTK_MAJOR_VERSION == 5) && (VTK_MINOR_VERSION >= 10))
-#include <vtkImageSlice.h>
-#include <vtkImageProperty.h>
-#include <vtkImageSliceMapper.h>
-#endif
 #include <vtkImageFlip.h>
 #include <vtkTIFFWriter.h>
 #include <vtkBMPWriter.h>
@@ -152,18 +130,10 @@
 #include <vtkContextScene.h>
 #include <vtkColorSeries.h>
 #include <vtkAxis.h>
-
 #include <vtkSelection.h>
-
-#if VTK_MAJOR_VERSION==6 || (VTK_MAJOR_VERSION==5 && VTK_MINOR_VERSION>4)
 #include <vtkHardwareSelector.h>
-#else
-#include <vtkVisibleCellSelector.h>
-#endif
-
 #include <vtkTriangle.h>
 #include <vtkWorldPointPicker.h>
-
 #include <vtkInteractorStyleRubberBandPick.h>
 #include <vtkInteractorStyleTrackballActor.h>
 #include <vtkAreaPicker.h>
@@ -180,6 +150,3 @@
 #define __DEPRECATED
 #undef __DEPRECATED_DISABLED__
 #endif
-
-#endif    // PCL_PCL_VISUALIZER_VTK_H_
-

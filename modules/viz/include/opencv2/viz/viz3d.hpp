@@ -12,8 +12,7 @@
 #include <q/visualization/common/common.h>
 
 // VTK includes
-#include <q/visualization/vtk.h>
-#include <q/visualization/boost.h>
+#include <q/visualization/3rdparty.h>
 
 #include <Eigen/Geometry>
 
@@ -784,26 +783,6 @@ namespace pcl
           }
           PCLVisualizer* pcl_visualizer;
         };
-
-        //////////////////////////////////////////////////////////////////////////////////////////////
-        struct FPSCallback : public vtkCommand
-        {
-          static FPSCallback *New () { return (new FPSCallback); }
-
-          FPSCallback () : actor (), pcl_visualizer (), decimated () {}
-          FPSCallback (const FPSCallback& src) : vtkCommand (), actor (src.actor), pcl_visualizer (src.pcl_visualizer), decimated (src.decimated) {}
-          FPSCallback& operator = (const FPSCallback& src) { actor = src.actor; pcl_visualizer = src.pcl_visualizer; decimated = src.decimated; return (*this); }
-
-          virtual void
-          Execute (vtkObject* caller, unsigned long event_id, void* call_data);
-
-          vtkTextActor *actor;
-          PCLVisualizer* pcl_visualizer;
-          bool decimated;
-        };
-
-        /** \brief The FPSCallback object for the current visualizer. */
-        vtkSmartPointer<FPSCallback> update_fps_;
 
         /** \brief Set to false if the interaction loop is running. */
         bool stopped_;

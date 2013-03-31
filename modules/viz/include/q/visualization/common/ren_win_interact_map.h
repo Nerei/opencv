@@ -1,6 +1,6 @@
 #pragma once
 
-#include <q/visualization/vtk.h>
+#include <q/visualization/3rdparty.h>
 #include <map>
 
 namespace pcl
