@@ -40,7 +40,7 @@
 #define PCL_PCL_VISUALIZER_SHAPES_H_
 
 #include <q/ModelCoefficients.h>
-#include <pcl/point_cloud.h>
+#include <q/point_cloud.h>
 #include <q/visualization/vtk.h>
 #include <pcl/common/eigen.h>
 #include <q/planar_polygon.h>

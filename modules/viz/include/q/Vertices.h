@@ -1,8 +1,6 @@
-#ifndef PCL_MESSAGE_VERTICES_H
-#define PCL_MESSAGE_VERTICES_H
-#include <string>
+#pragma once
+
 #include <vector>
-#include <ostream>
 
 namespace pcl
 {
@@ -10,7 +8,7 @@ namespace pcl
   {
     std::vector<unsigned int> vertices;
   };
-} // namespace pcl
+}
 
-#endif // PCL_MESSAGE_VERTICES_H
+
 

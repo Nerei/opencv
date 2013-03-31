@@ -2,16 +2,11 @@
 
 #include <opencv2/core.hpp>
 // PCL includes
-#include <pcl/point_types.h>
-//#include <pcl/correspondence.h>
-#include <pcl/point_cloud.h>
+#include <q/point_types.h>
+#include <q/point_cloud.h>
 #include <q/PolygonMesh.h>
 #include <q/planar_polygon.h>
-
-//#include <q/visualization/common/common.h>
-//#include <q/visualization/common/shapes.h>
 #include <q/visualization/interactor_style.h>
-//#include <q/visualization/window.h>
 
 #include <q/visualization/keyboard_event.h>
 #include <q/visualization/mouse_event.h>
