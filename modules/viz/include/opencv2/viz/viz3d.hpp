@@ -20,6 +20,9 @@ namespace pcl
 {
   namespace visualization
   {
+
+    inline cv::Scalar VIZ_RGB(unsigned char r, unsigned char g, unsigned char b) { return cv::Scalar(b, g, r); }
+
     class CV_EXPORTS PCLVisualizer
     {
       public:
@@ -611,11 +614,6 @@ namespace pcl
 
         /** \brief Changes the visual representation for all actors to wireframe representation. */
         void setRepresentationToWireframeForAllActors ();
-
-        /** \brief Sets whether the 2D overlay text showing the framerate of the window is displayed or not.
-          * \param[in] show_fps determines whether the fps text will be shown or not.
-          */
-        void setShowFPS (bool show_fps);
 
         /** \brief Initialize camera parameters with some default values. */
         void initCameraParameters ();
