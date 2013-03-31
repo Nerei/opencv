@@ -173,81 +173,6 @@ pcl::visualization::PCLVisualizer::createInteractor ()
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
-void pcl::visualization::PCLVisualizer::setupInteractor (vtkRenderWindowInteractor *iren, vtkRenderWindow *win)
-{
-    win->AlphaBitPlanesOff ();
-    win->PointSmoothingOff ();
-    win->LineSmoothingOff ();
-    win->PolygonSmoothingOff ();
-    win->SwapBuffersOn ();
-    win->SetStereoTypeToAnaglyph ();
-
-    iren->SetRenderWindow (win);
-    iren->SetInteractorStyle (style_);
-    //iren->SetStillUpdateRate (30.0);
-    iren->SetDesiredUpdateRate (30.0);
-
-    // Initialize and create timer, also create window
-    iren->Initialize ();
-    timer_id_ = iren->CreateRepeatingTimer (5000L);
-
-
-    // Set a simple PointPicker
-    vtkSmartPointer<vtkPointPicker> pp = vtkSmartPointer<vtkPointPicker>::New ();
-    pp->SetTolerance (pp->GetTolerance () * 2);
-    iren->SetPicker (pp);
-
-    exit_main_loop_timer_callback_ = vtkSmartPointer<ExitMainLoopTimerCallback>::New ();
-    exit_main_loop_timer_callback_->pcl_visualizer = this;
-    exit_main_loop_timer_callback_->right_timer_id = -1;
-    iren->AddObserver (vtkCommand::TimerEvent, exit_main_loop_timer_callback_);
-
-    exit_callback_ = vtkSmartPointer<ExitCallback>::New ();
-    exit_callback_->pcl_visualizer = this;
-    iren->AddObserver (vtkCommand::ExitEvent, exit_callback_);
-
-    resetStoppedFlag ();
-}
-
-
-/////////////////////////////////////////////////////////////////////////////////////////////
-void
-pcl::visualization::PCLVisualizer::setupInteractor (vtkRenderWindowInteractor *iren, vtkRenderWindow *win, vtkInteractorStyle *style)
-{
-    win->AlphaBitPlanesOff ();
-    win->PointSmoothingOff ();
-    win->LineSmoothingOff ();
-    win->PolygonSmoothingOff ();
-    win->SwapBuffersOn ();
-    win->SetStereoTypeToAnaglyph ();
-
-    iren->SetRenderWindow (win);
-    iren->SetInteractorStyle (style);
-    //iren->SetStillUpdateRate (30.0);
-    iren->SetDesiredUpdateRate (30.0);
-
-    // Initialize and create timer, also create window
-    iren->Initialize ();
-    timer_id_ = iren->CreateRepeatingTimer (5000L);
-
-    // Set a simple PointPicker
-    //vtkSmartPointer<vtkPointPicker> pp = vtkSmartPointer<vtkPointPicker>::New ();
-    // pp->SetTolerance (pp->GetTolerance () * 2);
-    // iren->SetPicker (pp);
-
-    exit_main_loop_timer_callback_ = vtkSmartPointer<ExitMainLoopTimerCallback>::New ();
-    exit_main_loop_timer_callback_->pcl_visualizer = this;
-    exit_main_loop_timer_callback_->right_timer_id = -1;
-    iren->AddObserver (vtkCommand::TimerEvent, exit_main_loop_timer_callback_);
-
-    exit_callback_ = vtkSmartPointer<ExitCallback>::New ();
-    exit_callback_->pcl_visualizer = this;
-    iren->AddObserver (vtkCommand::ExitEvent, exit_callback_);
-
-    resetStoppedFlag ();
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////////
 pcl::visualization::PCLVisualizer::~PCLVisualizer ()
 {
     if (interactor_ != NULL)
@@ -1050,9 +975,7 @@ pcl::visualization::PCLVisualizer::setShapeRenderingProperties (
         actor->GetProperty ()->SetAmbient (0.8);
         actor->GetProperty ()->SetDiffuse (0.8);
         actor->GetProperty ()->SetSpecular (0.8);
-#if ((VTK_MAJOR_VERSION == 5) && (VTK_MINOR_VERSION >= 4))
         actor->GetProperty ()->SetLighting (0);
-#endif
         actor->Modified ();
         break;
     }
@@ -1347,11 +1270,8 @@ pcl::visualization::PCLVisualizer::resetCamera ()
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 void
-pcl::visualization::PCLVisualizer::setCameraPosition (
-        double pos_x, double pos_y, double pos_z,
-        double view_x, double view_y, double view_z,
-        double up_x, double up_y, double up_z,
-        int viewport)
+pcl::visualization::PCLVisualizer::setCameraPosition (double pos_x, double pos_y, double pos_z,
+        double view_x, double view_y, double view_z, double up_x, double up_y, double up_z, int viewport)
 {
     rens_->InitTraversal ();
     vtkRenderer* renderer = NULL;
@@ -2162,9 +2082,7 @@ pcl::visualization::PCLVisualizer::addPolygonMesh (const pcl::PolygonMesh &poly_
 
 //////////////////////////////////////////////////////////////////////////////////////////
 bool
-pcl::visualization::PCLVisualizer::updatePolygonMesh (
-        const pcl::PolygonMesh &poly_mesh,
-        const std::string &id)
+pcl::visualization::PCLVisualizer::updatePolygonMesh (const pcl::PolygonMesh &poly_mesh, const std::string &id)
 {
 
     if (poly_mesh.polygons.empty())
@@ -2268,8 +2186,7 @@ pcl::visualization::PCLVisualizer::updatePolygonMesh (
 
 ///////////////////////////////////////////////////////////////////////////////////
 bool
-pcl::visualization::PCLVisualizer::addPolylineFromPolygonMesh (
-        const pcl::PolygonMesh &polymesh, const std::string &id, int viewport)
+pcl::visualization::PCLVisualizer::addPolylineFromPolygonMesh (const pcl::PolygonMesh &polymesh, const std::string &id, int viewport)
 {
     ShapeActorMap::iterator am_it = shape_actor_map_->find (id);
     if (am_it != shape_actor_map_->end ())
@@ -2504,9 +2421,7 @@ pcl::visualization::PCLVisualizer::convertToVtkMatrix (
 
 //////////////////////////////////////////////////////////////////////////////////////////////
 void
-pcl::visualization::PCLVisualizer::convertToEigenMatrix (
-        const vtkSmartPointer<vtkMatrix4x4> &vtk_matrix,
-        Eigen::Matrix4f &m)
+pcl::visualization::PCLVisualizer::convertToEigenMatrix (const vtkSmartPointer<vtkMatrix4x4> &vtk_matrix, Eigen::Matrix4f &m)
 {
     for (int i = 0; i < 4; i++)
         for (int k = 0; k < 4; k++)
@@ -2518,8 +2433,7 @@ pcl::visualization::PCLVisualizer::convertToEigenMatrix (
 /////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////
 void
-pcl::visualization::PCLVisualizer::FPSCallback::Execute (
-        vtkObject* caller, unsigned long, void*)
+pcl::visualization::PCLVisualizer::FPSCallback::Execute (vtkObject* caller, unsigned long, void*)
 {
     vtkRenderer *ren = reinterpret_cast<vtkRenderer *> (caller);
     float fps = 1.0f / static_cast<float> (ren->GetLastRenderTimeInSeconds ());
