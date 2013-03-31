@@ -1,85 +1,20 @@
-/*
- * Software License Agreement (BSD License)
- *
- *  Point Cloud Library (PCL) - www.pointclouds.org
- *  Copyright (c) 2009-2012, Willow Garage, Inc.
- *
- *  All rights reserved.
- *
- *  Redistribution and use in source and binary forms, with or without
- *  modification, are permitted provided that the following conditions
- *  are met:
- *
- *   * Redistributions of source code must retain the above copyright
- *     notice, this list of conditions and the following disclaimer.
- *   * Redistributions in binary form must reproduce the above
- *     copyright notice, this list of conditions and the following
- *     disclaimer in the documentation and/or other materials provided
- *     with the distribution.
- *   * Neither the name of Willow Garage, Inc. nor the names of its
- *     contributors may be used to endorse or promote products derived
- *     from this software without specific prior written permission.
- *
- *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- *  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- *  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
- *  FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
- *  COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
- *  INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
- *  BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- *  LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- *  CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- *  LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
- *  ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- *  POSSIBILITY OF SUCH DAMAGE.
- *
- * $Id$
- *
- */
-#ifndef PCL_PCL_VISUALIZER_SHAPES_H_
-#define PCL_PCL_VISUALIZER_SHAPES_H_
-
+#pragma once
 
 #include <opencv2/viz/types.hpp>
 #include <q/point_cloud.h>
 #include <q/visualization/3rdparty.h>
-#include <pcl/common/eigen.h>
+//#include <pcl/common/eigen.h>
 
-
-
-
-/**
-  * \file pcl/visualization/common/shapes.h
-  * Define methods or creating 3D shapes from parametric models
-  * \ingroup visualization
-  */
-
-/*@{*/
 namespace pcl
 {
   namespace visualization
   {
-    /** \brief Create a 3d poly line from a set of points. 
-      * \param[in] cloud the set of points used to create the 3d polyline
-      * \ingroup visualization
-      */
-    template <typename PointT> vtkSmartPointer<vtkDataSet> inline 
-    createPolygon (const typename pcl::PointCloud<PointT>::ConstPtr &cloud);
-
-    /** \brief Create a 3d poly line from a set of points on the boundary of a planar region. 
-      * \param[in] planar_polygon the set of points used to create the 3d polyline
-      * \ingroup visualization
-      */
-    template <typename PointT> vtkSmartPointer<vtkDataSet> inline 
-    createPolygon (const pcl::PlanarPolygon<PointT> &planar_polygon);
-
     /** \brief Create a line shape from two points
       * \param[in] pt1 the first point on the line
       * \param[in] pt2 the end point on the line
       * \ingroup visualization
       */
-    CV_EXPORTS vtkSmartPointer<vtkDataSet> 
-    createLine (const Eigen::Vector4f &pt1, const Eigen::Vector4f &pt2);
+    CV_EXPORTS vtkSmartPointer<vtkDataSet> createLine (const Eigen::Vector4f &pt1, const Eigen::Vector4f &pt2);
 
     /** \brief Create a sphere shape from a point and a radius
       * \param[in] center the center of the sphere (as an Eigen Vector4f, with only the first 3 coordinates used)
@@ -87,8 +22,7 @@ namespace pcl
       * \param[in] res (optional) the resolution used for rendering the model
       * \ingroup visualization
       */
-    CV_EXPORTS vtkSmartPointer<vtkDataSet>
-    createSphere (const Eigen::Vector4f &center, double radius, int res = 10);
+    CV_EXPORTS vtkSmartPointer<vtkDataSet> createSphere (const Eigen::Vector4f &center, double radius, int res = 10);
 
     /** \brief Create a cylinder shape from a set of model coefficients.
       * \param[in] coefficients the model coefficients (point_on_axis, axis_direction, radius)
@@ -116,8 +50,7 @@ namespace pcl
       *
       * \ingroup visualization
       */
-    CV_EXPORTS vtkSmartPointer<vtkDataSet> 
-    createCylinder (const pcl::ModelCoefficients &coefficients, int numsides = 30);
+    CV_EXPORTS vtkSmartPointer<vtkDataSet> createCylinder (const pcl::ModelCoefficients &coefficients, int numsides = 30);
 
     /** \brief Create a sphere shape from a set of model coefficients.
       * \param[in] coefficients the model coefficients (sphere center, radius)
@@ -141,8 +74,7 @@ namespace pcl
       *
       * \ingroup visualization
       */
-    CV_EXPORTS vtkSmartPointer<vtkDataSet> 
-    createSphere (const pcl::ModelCoefficients &coefficients, int res = 10);
+    CV_EXPORTS vtkSmartPointer<vtkDataSet> createSphere (const pcl::ModelCoefficients &coefficients, int res = 10);
 
     /** \brief Create a line shape from a set of model coefficients.
       * \param[in] coefficients the model coefficients (point_on_line, line_direction)
@@ -166,8 +98,7 @@ namespace pcl
       *
       * \ingroup visualization
       */
-    CV_EXPORTS vtkSmartPointer<vtkDataSet> 
-    createLine (const pcl::ModelCoefficients &coefficients);
+    CV_EXPORTS vtkSmartPointer<vtkDataSet> createLine (const pcl::ModelCoefficients &coefficients);
 
     /** \brief Create a planar shape from a set of model coefficients.
       * \param[in] coefficients the model coefficients (a, b, c, d with ax+by+cz+d=0)
@@ -188,16 +119,14 @@ namespace pcl
       *
       * \ingroup visualization
       */
-    CV_EXPORTS vtkSmartPointer<vtkDataSet> 
-    createPlane (const pcl::ModelCoefficients &coefficients);
+    CV_EXPORTS vtkSmartPointer<vtkDataSet> createPlane (const pcl::ModelCoefficients &coefficients);
 
     /** \brief Create a planar shape from a set of model coefficients.
       * \param[in] coefficients the model coefficients (a, b, c, d with ax+by+cz+d=0)
       * \param[in] x,y,z projection of this point on the plane is used to get the center of the plane.
       * \ingroup visualization
       */
-    CV_EXPORTS vtkSmartPointer<vtkDataSet> 
-    createPlane (const pcl::ModelCoefficients &coefficients, double x, double y, double z);
+    CV_EXPORTS vtkSmartPointer<vtkDataSet> createPlane (const pcl::ModelCoefficients &coefficients, double x, double y, double z);
     
     /** \brief Create a 2d circle shape from a set of model coefficients.
       * \param[in] coefficients the model coefficients (x, y, radius)
@@ -218,22 +147,19 @@ namespace pcl
       *
       * \ingroup visualization
       */
-    CV_EXPORTS vtkSmartPointer<vtkDataSet> 
-    create2DCircle (const pcl::ModelCoefficients &coefficients, double z = 0.0);
+    CV_EXPORTS vtkSmartPointer<vtkDataSet> create2DCircle (const pcl::ModelCoefficients &coefficients, double z = 0.0);
 
     /** \brief Create a cone shape from a set of model coefficients.
       * \param[in] coefficients the cone coefficients (point_on_axis, axis_direction, radius)
       * \ingroup visualization
       */
-    CV_EXPORTS vtkSmartPointer<vtkDataSet> 
-    createCone (const pcl::ModelCoefficients &coefficients);
+    CV_EXPORTS vtkSmartPointer<vtkDataSet> createCone (const pcl::ModelCoefficients &coefficients);
 
     /** \brief Creaet a cube shape from a set of model coefficients.
       * \param[in] coefficients the cube coefficients (Tx, Ty, Tz, Qx, Qy, Qz, Qw, width, height, depth)
       * \ingroup visualization 
       */
-    CV_EXPORTS vtkSmartPointer<vtkDataSet> 
-    createCube (const pcl::ModelCoefficients &coefficients);
+    CV_EXPORTS vtkSmartPointer<vtkDataSet> createCube (const pcl::ModelCoefficients &coefficients);
 
     /** \brief Creaet a cube shape from a set of model coefficients.
       *
@@ -244,9 +170,7 @@ namespace pcl
       * \param[in] depth the cube's depth
       * \ingroup visualization 
       */
-    CV_EXPORTS vtkSmartPointer<vtkDataSet> 
-    createCube (const Eigen::Vector3f &translation, const Eigen::Quaternionf &rotation,
-                double width, double height, double depth);
+    CV_EXPORTS vtkSmartPointer<vtkDataSet> createCube (const Eigen::Vector3f &translation, const Eigen::Quaternionf &rotation, double width, double height, double depth);
     
     /** \brief Create a cube from a set of bounding points
       * \param[in] x_min is the minimum x value of the box
@@ -258,20 +182,11 @@ namespace pcl
       * \param[in] id the cube id/name (default: "cube")
       * \param[in] viewport (optional) the id of the new viewport (default: 0)
       */
-    CV_EXPORTS vtkSmartPointer<vtkDataSet> 
-    createCube (double x_min, double x_max,
-                double y_min, double y_max,
-                double z_min, double z_max);
+    CV_EXPORTS vtkSmartPointer<vtkDataSet> createCube (double x_min, double x_max, double y_min, double y_max, double z_min, double z_max);
     
     /** \brief Allocate a new unstructured grid smartpointer. For internal use only.
       * \param[out] polydata the resultant unstructured grid. 
       */
-    CV_EXPORTS void
-    allocVtkUnstructuredGrid (vtkSmartPointer<vtkUnstructuredGrid> &polydata);
+    CV_EXPORTS void allocVtkUnstructuredGrid (vtkSmartPointer<vtkUnstructuredGrid> &polydata);
   }
 }
-/*@}*/
-
-#include <q/visualization/common/impl/shapes.hpp>
-
-#endif

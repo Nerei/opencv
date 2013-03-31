@@ -345,39 +345,9 @@ namespace pcl
         void
         createViewPortCamera (const int viewport);
 
-        /** \brief Add a polygon (polyline) that represents the input point cloud (connects all
-          * points in order)
-          * \param[in] cloud the point cloud dataset representing the polygon
-          * \param[in] r the red channel of the color that the polygon should be rendered with
-          * \param[in] g the green channel of the color that the polygon should be rendered with
-          * \param[in] b the blue channel of the color that the polygon should be rendered with
-          * \param[in] id (optional) the polygon id/name (default: "polygon")
-          * \param[in] viewport (optional) the id of the new viewport (default: 0)
-          */
-        template <typename PointT> bool
-        addPolygon (const typename pcl::PointCloud<PointT>::ConstPtr &cloud,
-                    double r, double g, double b,
-                    const std::string &id = "polygon", int viewport = 0);
 
-        /** \brief Add a polygon (polyline) that represents the input point cloud (connects all
-          * points in order)
-          * \param[in] cloud the point cloud dataset representing the polygon
-          * \param[in] id the polygon id/name (default: "polygon")
-          * \param[in] viewport (optional) the id of the new viewport (default: 0)
-          */
-        template <typename PointT> bool
-        addPolygon (const typename pcl::PointCloud<PointT>::ConstPtr &cloud, const std::string &id = "polygon", int viewport = 0);
+        bool addPolygon(const cv::Mat& cloud, const cv::Scalar& color = cv::Scalar(255, 255, 255), const std::string &id = "polygon", int viewport = 0);
 
-        /** \brief Add a planar polygon that represents the input point cloud (connects all points in order)
-          * \param[in] polygon the polygon to draw
-          * \param[in] r the red channel of the color that the polygon should be rendered with
-          * \param[in] g the green channel of the color that the polygon should be rendered with
-          * \param[in] b the blue channel of the color that the polygon should be rendered with
-          * \param[in] id the polygon id/name (default: "polygon")
-          * \param[in] viewport (optional) the id of the new viewport (default: 0)
-          */
-        template <typename PointT> bool
-        addPolygon (const pcl::PlanarPolygon<PointT> &polygon, double r, double g, double b, const std::string &id = "polygon", int viewport = 0);
 
         /** \brief Add a line segment from two points
           * \param[in] pt1 the first (start) point on the line

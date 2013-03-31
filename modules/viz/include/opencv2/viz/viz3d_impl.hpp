@@ -8,121 +8,86 @@
 #include <vtkLeaderActor2D.h>
 #include <vtkAlgorithmOutput.h>
 
+#include <q/visualization/common/shapes.h>
 
-
-////////////////////////////////////////////////////////////////////////////////////////////
-template <typename PointT> bool
-pcl::visualization::PCLVisualizer::addPolygon (const typename pcl::PointCloud<PointT>::ConstPtr &cloud, double r, double g, double b, const std::string &id, int viewport)
+inline bool pcl::visualization::PCLVisualizer::addPolygon (const cv::Mat& cloud, const cv::Scalar& color, const std::string &id, int viewport)
 {
-  vtkSmartPointer<vtkDataSet> data = createPolygon<PointT> (cloud);
-  if (!data)
-    return (false);
+    CV_Assert(cloud.type() == CV_32FC3 && cloud.rows == 1);
 
-  // Check to see if this ID entry already exists (has it been already added to the visualizer?)
-  ShapeActorMap::iterator am_it = shape_actor_map_->find (id);
-  if (am_it != shape_actor_map_->end ())
-  {
-    vtkSmartPointer<vtkAppendPolyData> all_data = vtkSmartPointer<vtkAppendPolyData>::New ();
+    vtkSmartPointer<vtkPoints> poly_points = vtkSmartPointer<vtkPoints>::New ();
+    vtkSmartPointer<vtkPolygon> polygon    = vtkSmartPointer<vtkPolygon>::New ();
 
-    // Add old data
-    all_data->AddInput (reinterpret_cast<vtkPolyDataMapper*> ((vtkActor::SafeDownCast (am_it->second))->GetMapper ())->GetInput ());
+    int total = cloud.size().area();
+    poly_points->SetNumberOfPoints (total);
+    polygon->GetPointIds ()->SetNumberOfIds (total);
 
-    // Add new data
-    vtkSmartPointer<vtkDataSetSurfaceFilter> surface_filter = vtkSmartPointer<vtkDataSetSurfaceFilter>::New ();
-    surface_filter->SetInput (vtkUnstructuredGrid::SafeDownCast (data));
-    vtkSmartPointer<vtkPolyData> poly_data = surface_filter->GetOutput ();
-    all_data->AddInput (poly_data);
 
-    // Create an Actor
-    vtkSmartPointer<vtkActor> actor;
-    createActorFromVTKDataSet (all_data->GetOutput (), actor);
-    actor->GetProperty ()->SetRepresentationToWireframe ();
-    actor->GetProperty ()->SetColor (r, g, b);
-    actor->GetMapper ()->ScalarVisibilityOff ();
-    removeActorFromRenderer (am_it->second, viewport);
-    addActorToRenderer (actor, viewport);
+    int i;
+    for (i = 0; i < total; ++i)
+    {
+        cv::Point3f p = cloud.ptr<cv::Point3f>()[i];
+        poly_points->SetPoint (i, p.x, p.y, p.z);
+        polygon->GetPointIds ()->SetId (i, i);
+    }
 
-    // Save the pointer/ID pair to the global actor map
-    (*shape_actor_map_)[id] = actor;
-  }
-  else
-  {
-    // Create an Actor
-    vtkSmartPointer<vtkActor> actor;
-    createActorFromVTKDataSet (data, actor);
-    actor->GetProperty ()->SetRepresentationToWireframe ();
-    actor->GetProperty ()->SetColor (r, g, b);
-    actor->GetMapper ()->ScalarVisibilityOff ();
-    addActorToRenderer (actor, viewport);
+    vtkSmartPointer<vtkUnstructuredGrid> poly_grid;
+    allocVtkUnstructuredGrid (poly_grid);
+    poly_grid->Allocate (1, 1);
+    poly_grid->InsertNextCell (polygon->GetCellType (), polygon->GetPointIds ());
+    poly_grid->SetPoints (poly_points);
+    poly_grid->Update ();
 
-    // Save the pointer/ID pair to the global actor map
-    (*shape_actor_map_)[id] = actor;
-  }
 
-  return (true);
+    //////////////////////////////////////////////////////
+    vtkSmartPointer<vtkDataSet> data = poly_grid;
+
+
+    // Check to see if this ID entry already exists (has it been already added to the visualizer?)
+    ShapeActorMap::iterator am_it = shape_actor_map_->find (id);
+    if (am_it != shape_actor_map_->end ())
+    {
+        vtkSmartPointer<vtkAppendPolyData> all_data = vtkSmartPointer<vtkAppendPolyData>::New ();
+
+        // Add old data
+        all_data->AddInput (reinterpret_cast<vtkPolyDataMapper*> ((vtkActor::SafeDownCast (am_it->second))->GetMapper ())->GetInput ());
+
+        // Add new data
+        vtkSmartPointer<vtkDataSetSurfaceFilter> surface_filter = vtkSmartPointer<vtkDataSetSurfaceFilter>::New ();
+        surface_filter->SetInput (vtkUnstructuredGrid::SafeDownCast (data));
+        vtkSmartPointer<vtkPolyData> poly_data = surface_filter->GetOutput ();
+        all_data->AddInput (poly_data);
+
+        // Create an Actor
+        vtkSmartPointer<vtkActor> actor;
+        createActorFromVTKDataSet (all_data->GetOutput (), actor);
+        actor->GetProperty ()->SetRepresentationToWireframe ();
+        actor->GetProperty ()->SetColor (color[2]/255, color[1]/255, color[0]/255);
+        actor->GetMapper ()->ScalarVisibilityOff ();
+        actor->GetProperty ()->BackfaceCullingOff ();
+
+        removeActorFromRenderer (am_it->second, viewport);
+        addActorToRenderer (actor, viewport);
+
+        // Save the pointer/ID pair to the global actor map
+        (*shape_actor_map_)[id] = actor;
+    }
+    else
+    {
+        // Create an Actor
+        vtkSmartPointer<vtkActor> actor;
+        createActorFromVTKDataSet (data, actor);
+        actor->GetProperty ()->SetRepresentationToWireframe ();
+        actor->GetProperty ()->SetColor (color[2]/255, color[1]/255, color[0]/255);
+        actor->GetMapper ()->ScalarVisibilityOff ();
+        actor->GetProperty ()->BackfaceCullingOff ();
+        addActorToRenderer (actor, viewport);
+
+        // Save the pointer/ID pair to the global actor map
+        (*shape_actor_map_)[id] = actor;
+    }
+
+    return (true);
 }
-
-////////////////////////////////////////////////////////////////////////////////////////////
-template <typename PointT> bool
-pcl::visualization::PCLVisualizer::addPolygon (const pcl::PlanarPolygon<PointT> &polygon, double r, double g, double b, const std::string &id, int viewport)
-{
-  vtkSmartPointer<vtkDataSet> data = createPolygon<PointT> (polygon);
-  if (!data)
-    return (false);
-
-  // Check to see if this ID entry already exists (has it been already added to the visualizer?)
-  ShapeActorMap::iterator am_it = shape_actor_map_->find (id);
-  if (am_it != shape_actor_map_->end ())
-  {
-    vtkSmartPointer<vtkAppendPolyData> all_data = vtkSmartPointer<vtkAppendPolyData>::New ();
-
-    // Add old data
-    all_data->AddInput (reinterpret_cast<vtkPolyDataMapper*> ((vtkActor::SafeDownCast (am_it->second))->GetMapper ())->GetInput ());
-
-    // Add new data
-    vtkSmartPointer<vtkDataSetSurfaceFilter> surface_filter = vtkSmartPointer<vtkDataSetSurfaceFilter>::New ();
-    surface_filter->SetInput (vtkUnstructuredGrid::SafeDownCast (data));
-    vtkSmartPointer<vtkPolyData> poly_data = surface_filter->GetOutput ();
-    all_data->AddInput (poly_data);
-
-    // Create an Actor
-    vtkSmartPointer<vtkActor> actor;
-    createActorFromVTKDataSet (all_data->GetOutput (), actor);
-    actor->GetProperty ()->SetRepresentationToWireframe ();
-    actor->GetProperty ()->SetColor (r, g, b);
-    actor->GetMapper ()->ScalarVisibilityOn ();
-    actor->GetProperty ()->BackfaceCullingOff ();
-    removeActorFromRenderer (am_it->second, viewport);
-    addActorToRenderer (actor, viewport);
-
-    // Save the pointer/ID pair to the global actor map
-    (*shape_actor_map_)[id] = actor;
-  }
-  else
-  {
-    // Create an Actor
-    vtkSmartPointer<vtkActor> actor;
-    createActorFromVTKDataSet (data, actor);
-    actor->GetProperty ()->SetRepresentationToWireframe ();
-    actor->GetProperty ()->SetColor (r, g, b);
-    actor->GetMapper ()->ScalarVisibilityOn ();
-    actor->GetProperty ()->BackfaceCullingOff ();
-    addActorToRenderer (actor, viewport);
-
-    // Save the pointer/ID pair to the global actor map
-    (*shape_actor_map_)[id] = actor;
-  }
-  return (true);
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////
-template <typename PointT> bool
-pcl::visualization::PCLVisualizer::addPolygon (const typename pcl::PointCloud<PointT>::ConstPtr &cloud,  const std::string &id, int viewport)
-{
-  return (!addPolygon<PointT> (cloud, 0.5, 0.5, 0.5, id, viewport));
-}
-
-
 
 ////////////////////////////////////////////////////////////////////////////////////////////
 template <typename P1, typename P2> bool

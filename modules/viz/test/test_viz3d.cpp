@@ -115,6 +115,25 @@ TEST(Viz_viz3d, accuracy)
     std::cout << "aaa" << std::endl;
 
     v.addSphere(pcl::PointXYZ(0, 0, 0), 0.3, 0, 0, 1);
+
+    cv::Mat cvpoly(1, 5, CV_32FC3);
+    cv::Point3f* pdata = cvpoly.ptr<cv::Point3f>();
+    pdata[0] = cv::Point3f(0, 0, 0);
+    pdata[1] = cv::Point3f(0, 1, 1);
+    pdata[2] = cv::Point3f(3, 1, 2);
+    pdata[3] = cv::Point3f(0, 2, 4);
+    pdata[4] = cv::Point3f(7, 2, 3);
+    v.addPolygon(cvpoly);
+
+//    pcl::PointCloud<pcl::PointXYZ> polygon;
+//    polygon.push_back(pcl::PointXYZ(0, 0, 0));
+//    polygon.push_back(pcl::PointXYZ(0, 0, 3));
+//    polygon.push_back(pcl::PointXYZ(0, 3, 3));
+//    polygon.push_back(pcl::PointXYZ(2, 2, 2));
+//    polygon.push_back(pcl::PointXYZ(-2, 2, 2));
+
+//    v.addPolygon<pcl::PointXYZ>(polygon.makeShared(), 0, 1, 1, "polygon");
+
     v.updatePointCloud(data, colors);
     v.spin();
 }
