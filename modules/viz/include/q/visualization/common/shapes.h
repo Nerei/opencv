@@ -39,13 +39,14 @@
 #ifndef PCL_PCL_VISUALIZER_SHAPES_H_
 #define PCL_PCL_VISUALIZER_SHAPES_H_
 
-#include <q/ModelCoefficients.h>
+
+#include <opencv2/viz/types.hpp>
 #include <q/point_cloud.h>
 #include <q/visualization/vtk.h>
 #include <pcl/common/eigen.h>
-#include <q/planar_polygon.h>
 
-#include <opencv2/core/cvdef.h>
+
+
 
 /**
   * \file pcl/visualization/common/shapes.h

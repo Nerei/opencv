@@ -4,11 +4,9 @@
 // PCL includes
 #include <q/point_types.h>
 #include <q/point_cloud.h>
-#include <q/PolygonMesh.h>
-#include <q/planar_polygon.h>
-#include <q/visualization/interactor_style.h>
-
+#include <opencv2/viz/types.hpp>
 #include <opencv2/viz/events.hpp>
+#include <q/visualization/interactor_style.h>
 #include <q/visualization/point_picking_event.h>
 #include <q/visualization/common/actor_map.h>
 #include <q/visualization/common/common.h>
