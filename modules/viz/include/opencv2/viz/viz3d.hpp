@@ -2,7 +2,7 @@
 
 #include <opencv2/core.hpp>
 // PCL includes
-//#include <pcl/point_types.h>
+#include <pcl/point_types.h>
 //#include <pcl/correspondence.h>
 #include <pcl/point_cloud.h>
 #include <q/PolygonMesh.h>
@@ -19,6 +19,7 @@
 #include <q/visualization/mouse_event.h>
 #include <q/visualization/point_picking_event.h>
 #include <q/visualization/common/actor_map.h>
+#include <q/visualization/common/common.h>
 
 // VTK includes
 #include <q/visualization/vtk.h>

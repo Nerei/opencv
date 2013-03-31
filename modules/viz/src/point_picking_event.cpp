@@ -41,6 +41,7 @@
 #include <q/visualization/interactor_style.h>
 #include <vtkPointPicker.h>
 #include <vtkRendererCollection.h>
+#include <pcl/console/print.h>
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 void

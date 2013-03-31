@@ -14,6 +14,7 @@
 #include <vtkMatrix4x4.h>
 #include <vtkInteractorObserver.h>
 #include <vtkCamera.h>
+#include <pcl/console/print.h>
 
 #include <q/visualization/vtk/vtkVertexBufferObjectMapper.h>
 
@@ -245,7 +246,7 @@ pcl::visualization::PCLVisualizerInteractorStyle::OnKeyDown ()
   }
 
   // ---[ Check the rest of the key codes
-
+#if 0
   // Switch between point color/geometry handlers
   if (Interactor->GetKeySym () && Interactor->GetKeySym ()[0]  >= '0' && Interactor->GetKeySym ()[0] <= '9')
   {
@@ -353,6 +354,7 @@ pcl::visualization::PCLVisualizerInteractorStyle::OnKeyDown ()
     return;
   }
 
+#endif
   std::string key (Interactor->GetKeySym ());
   if (key.find ("XF86ZoomIn") != std::string::npos)
     zoomIn ();
@@ -397,6 +399,7 @@ pcl::visualization::PCLVisualizerInteractorStyle::OnKeyDown ()
     }
 
     // Get the list of available handlers
+#if 0
     case 'l': case 'L':
     {
       // Iterate over the entire actors list and extract the geomotry/color handlers list
@@ -429,6 +432,7 @@ pcl::visualization::PCLVisualizerInteractorStyle::OnKeyDown ()
 
       break;
     }
+#endif
 
     // Switch representation to points
     case 'p': case 'P':

@@ -42,6 +42,10 @@
 //#include <pcl/ros/conversions.h>
 //#include <pcl/visualization/pcl_visualizer.h>
 
+#include <pcl/ros/conversions.h>
+
+#include <pcl/common/io.h>
+
 #include <q/visualization/common/shapes.h>
 #include <pcl/common/time.h>
 #include <opencv2/viz/viz3d.hpp>

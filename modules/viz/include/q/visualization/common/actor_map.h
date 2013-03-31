@@ -38,13 +38,14 @@
 #define PCL_PCL_VISUALIZER_ACTOR_MAP_H_
 
 
-#include <q/visualization/point_cloud_geometry_handlers.h>
-#include <q/visualization/point_cloud_color_handlers.h>
+//#include <q/visualization/point_cloud_geometry_handlers.h>
+//#include <q/visualization/point_cloud_color_handlers.h>
 #include <vector>
 #include <vtkLODActor.h>
 #include <vtkSmartPointer.h>
 #include <sensor_msgs/PointCloud2.h>
 #include <q/visualization/boost.h>
+#include <opencv2/core.hpp>
 
 namespace pcl
 {
@@ -52,31 +53,31 @@ namespace pcl
   {
     class CV_EXPORTS CloudActor
     {
-      typedef PointCloudGeometryHandler<sensor_msgs::PointCloud2> GeometryHandler;
-      typedef GeometryHandler::Ptr GeometryHandlerPtr;
-      typedef GeometryHandler::ConstPtr GeometryHandlerConstPtr;
+//      typedef PointCloudGeometryHandler<sensor_msgs::PointCloud2> GeometryHandler;
+//      typedef GeometryHandler::Ptr GeometryHandlerPtr;
+//      typedef GeometryHandler::ConstPtr GeometryHandlerConstPtr;
 
-      typedef PointCloudColorHandler<sensor_msgs::PointCloud2> ColorHandler;
-      typedef ColorHandler::Ptr ColorHandlerPtr;
-      typedef ColorHandler::ConstPtr ColorHandlerConstPtr;
+//      typedef PointCloudColorHandler<sensor_msgs::PointCloud2> ColorHandler;
+//      typedef ColorHandler::Ptr ColorHandlerPtr;
+//      typedef ColorHandler::ConstPtr ColorHandlerConstPtr;
 
       public:
-        CloudActor () : color_handler_index_ (0), geometry_handler_index_ (0) {}
+        CloudActor (){}// : color_handler_index_ (0), geometry_handler_index_ (0) {}
 
         virtual ~CloudActor ()
         {
-          geometry_handlers.clear ();
-          color_handlers.clear ();
+//          geometry_handlers.clear ();
+//          color_handlers.clear ();
         }
 
         /** \brief The actor holding the data to render. */
         vtkSmartPointer<vtkLODActor> actor;
 
         /** \brief A vector of geometry handlers that can be used for rendering the data. */
-        std::vector<GeometryHandlerConstPtr> geometry_handlers;
+        //std::vector<GeometryHandlerConstPtr> geometry_handlers;
 
         /** \brief A vector of color handlers that can be used for rendering the data. */
-        std::vector<ColorHandlerConstPtr> color_handlers;
+        //std::vector<ColorHandlerConstPtr> color_handlers;
 
         /** \brief The active color handler. */
         int color_handler_index_;
