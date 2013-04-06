@@ -171,6 +171,13 @@ TEST(Viz_viz3d, accuracy)
     v.updatePolygonMesh(me_cl, me_co, cv::Mat(), polygons, "pq");
 
 
+    for(int i = 0; i < me_cl.cols; ++i)
+        me_cl.ptr<cv::Point3f>()[i] -= cv::Point3f(2, 2, 2);
+
+
+    v.addPolylineFromPolygonMesh (me_cl, polygons);
+
+
     v.addText("===Abd sadfljsadlk", 100, 100, cv::Scalar(255, 0, 0), 15);
         for(int i = 0; i < cloud.cols; ++i)
         cloud.ptr<cv::Point3f>()[i].x *=2;

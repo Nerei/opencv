@@ -1,7 +1,9 @@
 #pragma once
 
-#include <opencv2/viz/types.hpp>
 #include <q/visualization/3rdparty.h>
+#include <Eigen/Core>
+#include <opencv2/core/cvdef.h>
+#include <opencv2/viz/types.hpp>
 
 namespace pcl
 {

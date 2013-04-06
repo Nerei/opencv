@@ -2,7 +2,6 @@
 
 #include <opencv2/core/cvdef.h>
 #include <opencv2/core.hpp>
-//#include <pcl/point_types.h>
 #include <vtkMatrix4x4.h>
 #include <Eigen/Core>
 

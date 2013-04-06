@@ -15,12 +15,9 @@
 #include <boost/thread/thread.hpp>
 #include <boost/foreach.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
-#include <boost/filesystem.hpp>
-
 
 #include <Eigen/Geometry>
 #include <Eigen/Dense>
-
 
 
 #if defined __GNUC__

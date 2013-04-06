@@ -2,12 +2,12 @@
 
 #include <opencv2/core.hpp>
 // PCL includes
-#include <opencv2/viz/types.hpp>
 #include <opencv2/viz/events.hpp>
 #include <q/visualization/interactor_style.h>
 #include <q/visualization/point_picking_event.h>
 #include <q/visualization/common/actor_map.h>
 #include <q/visualization/common/common.h>
+#include <opencv2/viz/types.hpp>
 
 // VTK includes
 #include <q/visualization/3rdparty.h>
@@ -16,8 +16,14 @@
 
 namespace pcl
 {
+
+
   namespace visualization
   {
+
+
+
+
 
     inline cv::Scalar VIZ_RGB(unsigned char r, unsigned char g, unsigned char b) { return cv::Scalar(b, g, r); }
 
@@ -223,7 +229,8 @@ namespace pcl
           * \param[in] id the polygon object id (default: "polygon")
           * \param[in] viewport the view port where the PolygonMesh should be added (default: all)
           */
-        bool addPolylineFromPolygonMesh (const pcl::PolygonMesh &polymesh, const std::string &id = "polyline", int viewport = 0);
+        bool addPolylineFromPolygonMesh (const cv::Mat& cloud, const std::vector<pcl::Vertices> &vertices, const std::string &id = "polyline", int viewport = 0);
+
 
 
         /** \brief Set the rendering properties of a PointCloud (3x values - e.g., RGB)

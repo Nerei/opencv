@@ -719,8 +719,6 @@ inline bool pcl::visualization::PCLVisualizer::updatePolygonMesh (const cv::Mat&
 #include <vtkAlgorithmOutput.h>
 
 #include <q/visualization/common/shapes.h>
-#include <pcl/common/io.h>
-
 
 
 
@@ -730,10 +728,8 @@ bool pcl::visualization::PCLVisualizer::addArrow (const cv::Point3f &pt1, const 
   // Check to see if this ID entry already exists (has it been already added to the visualizer?)
   ShapeActorMap::iterator am_it = shape_actor_map_->find (id);
   if (am_it != shape_actor_map_->end ())
-  {
-    PCL_WARN ("[addArrow] A shape with id <%s> already exists! Please choose a different id and retry.\n", id.c_str ());
-    return (false);
-  }
+    return std::cout << "[addArrow] A shape with id <"<<id <<"> already exists! Please choose a different id and retry." << std::endl, false;
+
 
   // Create an Actor
   vtkSmartPointer<vtkLeaderActor2D> leader = vtkSmartPointer<vtkLeaderActor2D>::New ();
@@ -758,10 +754,8 @@ bool pcl::visualization::PCLVisualizer::addArrow (const cv::Point3f &pt1, const 
   // Check to see if this ID entry already exists (has it been already added to the visualizer?)
   ShapeActorMap::iterator am_it = shape_actor_map_->find (id);
   if (am_it != shape_actor_map_->end ())
-  {
-    PCL_WARN ("[addArrow] A shape with id <%s> already exists! Please choose a different id and retry.\n", id.c_str ());
-    return (false);
-  }
+    return std::cout << "[addArrow] A shape with id <" << id << "> already exists! Please choose a different id and retry." << std::endl, false;
+
 
   // Create an Actor
   vtkSmartPointer<vtkLeaderActor2D> leader = vtkSmartPointer<vtkLeaderActor2D>::New ();
@@ -792,7 +786,7 @@ pcl::visualization::PCLVisualizer::addArrow (const cv::Point3f &pt1, const cv::P
   ShapeActorMap::iterator am_it = shape_actor_map_->find (id);
   if (am_it != shape_actor_map_->end ())
   {
-    PCL_WARN ("[addArrow] A shape with id <%s> already exists! Please choose a different id and retry.\n", id.c_str ());
+    std::cout << "[addArrow] A shape with id <" << id << "> already exists! Please choose a different id and retry." << std::endl;
     return (false);
   }
 
@@ -822,7 +816,7 @@ inline bool pcl::visualization::PCLVisualizer::addSphere (const cv::Point3f& cen
   ShapeActorMap::iterator am_it = shape_actor_map_->find (id);
   if (am_it != shape_actor_map_->end ())
   {
-    PCL_WARN ("[addSphere] A shape with id <%s> already exists! Please choose a different id and retry.\n", id.c_str ());
+    std::cout << "[addSphere] A shape with id <"<<id << "> already exists! Please choose a different id and retry." << std::endl;
     return (false);
   }
 
@@ -894,8 +888,7 @@ inline bool pcl::visualization::PCLVisualizer::addText3D (const std::string &tex
   ShapeActorMap::iterator am_it = shape_actor_map_->find (tid);
   if (am_it != shape_actor_map_->end ())
   {
-    pcl::console::print_warn (stderr, "[addText3d] A text with id <%s> already exists! Please choose a different id and retry.\n", tid.c_str ());
-    return (false);
+    return std::cout << "[addText3d] A text with id <" << tid << "> already exists! Please choose a different id and retry." << std::endl, false;
   }
 
   vtkSmartPointer<vtkVectorText> textSource = vtkSmartPointer<vtkVectorText>::New ();

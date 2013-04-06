@@ -36,35 +36,12 @@ macro(find_vtk)
   endif()
 endmacro()
 
-link_directories("d:/SVN/pcl_3rdparty/boost_1_51_0/stage/lib/")
-
-
-macro(find_pcl)
-  find_package(PCL REQUIRED COMPONENTS common io)
-  if(PCL_FOUND)
-    set(HAVE_PCL ON)
-    include_directories(SYSTEM ${PCL_INCLUDE_DIRS})
-  endif()
-endmacro()
-
 macro(find_boost)
-  if(${CMAKE_VERSION} VERSION_LESS 2.8.5)
-    set(Boost_ADDITIONAL_VERSIONS "1.43" "1.43.0" "1.44" "1.44.0" "1.45" "1.45.0" "1.46.1" "1.46.0" "1.46" "1.47" "1.47.0")
-  else(${CMAKE_VERSION} VERSION_LESS 2.8.5)
-    set(Boost_ADDITIONAL_VERSIONS "1.47" "1.47.0" "1.48" "1.48.0" "1.49" "1.49.0")
-  endif(${CMAKE_VERSION} VERSION_LESS 2.8.5)
-
   # Disable the config mode of find_package(Boost)
   set(Boost_NO_BOOST_CMAKE ON)
   set(Boost_USE_STATIC_LIBS ON)
 
-  # Required boost modules
-  #find_package(Boost 1.49.0 QUIET COMPONENTS system thread date_time regex serialization)
-
-  #if (NOT Boost_FOUND)
-    check_in_3rdparty("boost" BOOST_ROOT "Boost_")
-    find_package(Boost 1.49.0 REQUIRED COMPONENTS system thread date_time regex serialization)
-  #endif()
+  find_package(Boost 1.49.0 REQUIRED COMPONENTS system thread date_time)
 
   if(Boost_FOUND)
     set(HAVE_BOOST ON)
@@ -73,16 +50,13 @@ macro(find_boost)
     add_definitions(${Boost_LIB_DIAGNOSTIC_DEFINITIONS})
     include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
     link_directories(${Boost_LIBRARY_DIRS})
-
     message(STATUS "Boost found (include: ${Boost_INCLUDE_DIRS})")
   endif()
 endmacro()
 
 find_vtk()
-find_pcl()
 find_boost()
 
-include_directories(${Boost_INCLUDE_DIRS})
 
 find_package(OpenGL)
 if (OPENGL_FOUND)
@@ -117,7 +91,8 @@ set(BUILD_opencv_viz_INIT OFF)
 
 include_directories(src)
 set(the_description "Viz")
-ocv_define_module(viz opencv_core ${PCL_LIBRARIES})
+ocv_define_module(viz opencv_core)
+#${PCL_LIBRARIES}
 
 target_link_libraries(opencv_viz vtkCommon vtkWidgets vtkHybrid vtkCharts vtkFiltering vtkRendering ${OPENGL_LIBRARIES})
 
