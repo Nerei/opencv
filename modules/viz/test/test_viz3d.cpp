@@ -134,21 +134,6 @@ void mesh_load(std::vector<pcl::Vertices>& polygons, cv::Mat& cloud, cv::Mat& co
 
 }
 
-void convert_cloud(const pcl::PointCloud<pcl::PointXYZRGB>::Ptr& points, cv::Mat& cloud, cv::Mat& colors)
-{
-    cloud.create(points->height, points->width, CV_32FC3);
-    colors.create(cloud.size(), CV_8UC3);
-
-    std::cout << points->height << ", " << points->width << ", " << cloud.cols << std::endl;
-
-    for(int x = 0; x < cloud.cols; ++x)
-    {
-        pcl::PointXYZRGB p = points->points[x];
-        cloud.ptr<cv::Point3f>()[x] = cv::Point3f(p.x, p.y, p.z);
-        colors.ptr<cv::Vec3b>()[x] = cv::Vec3b(p.b, p.g, p.r);
-    }
-}
-
 TEST(Viz_viz3d, accuracy)
 {
     pcl::visualization::PCLVisualizer v;
@@ -192,7 +177,7 @@ TEST(Viz_viz3d, accuracy)
 
     colors.setTo(cv::Scalar(255, 0, 0));
 
-    v.addSphere(pcl::PointXYZ(0, 0, 0), 0.3, 0, 0, 1);
+    v.addSphere(cv::Point3f(0, 0, 0), 0.3, 0, 0, 1);
 
     cv::Mat cvpoly(1, 5, CV_32FC3);
     cv::Point3f* pdata = cvpoly.ptr<cv::Point3f>();
@@ -206,3 +191,4 @@ TEST(Viz_viz3d, accuracy)
     v.updatePointCloud(cloud, colors);
     v.spin();
 }
+

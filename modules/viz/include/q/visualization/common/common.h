@@ -1,8 +1,10 @@
 #pragma once
 
 #include <opencv2/core/cvdef.h>
-#include <pcl/point_types.h>
+#include <opencv2/core.hpp>
+//#include <pcl/point_types.h>
 #include <vtkMatrix4x4.h>
+#include <Eigen/Core>
 
 namespace pcl
 {
@@ -96,7 +98,7 @@ namespace pcl
                   * This function computes the projection and view matrix every time.
                   * It is very inefficient to use this for every point in the point cloud!
                   */
-            void cvtWindowCoordinates (const PointXYZ& pt, Eigen::Vector4d& window_cord) const
+            void cvtWindowCoordinates (const cv::Point3f& pt, Eigen::Vector4d& window_cord) const
             {
                 Eigen::Matrix4d proj, view;
                 this->computeViewMatrix (view);
@@ -115,7 +117,7 @@ namespace pcl
                   * the projection matrix * the view matrix.  However, additional
                   * matrices like a camera disortion matrix can also be added.
                   */
-            void cvtWindowCoordinates (const PointXYZ& pt, Eigen::Vector4d& window_cord, const Eigen::Matrix4d& composite_mat) const
+            void cvtWindowCoordinates (const cv::Point3f& pt, Eigen::Vector4d& window_cord, const Eigen::Matrix4d& composite_mat) const
             {
                 Eigen::Vector4d pte (pt.x, pt.y, pt.z, 1);
                 window_cord = composite_mat * pte;

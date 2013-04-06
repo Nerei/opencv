@@ -2,7 +2,6 @@
 
 #include <opencv2/core.hpp>
 // PCL includes
-#include <pcl/point_types.h>
 #include <opencv2/viz/types.hpp>
 #include <opencv2/viz/events.hpp>
 #include <q/visualization/interactor_style.h>
@@ -207,7 +206,7 @@ namespace pcl
           */
         bool updateShapePose (const std::string &id, const Eigen::Affine3f& pose);
 
-        bool addText3D (const std::string &text, const PointXYZ &position, double textScale = 1.0,
+        bool addText3D (const std::string &text, const cv::Point3f &position, double textScale = 1.0,
                    double r = 1.0, double g = 1.0, double b = 1.0, const std::string &id = "", int viewport = 0);
 
         bool addPointCloudNormals (const cv::Mat &cloud, const cv::Mat& normals, int level = 100, float scale = 0.02f, const std::string &id = "cloud", int viewport = 0);
@@ -319,7 +318,7 @@ namespace pcl
           * \param[in] id the line id/name (default: "line")
           * \param[in] viewport (optional) the id of the new viewport (default: 0)
           */
-        bool addLine (const pcl::PointXYZ &pt1, const pcl::PointXYZ &pt2, double r, double g, double b, const std::string &id = "line", int viewport = 0);
+        bool addLine (const cv::Point3f &pt1, const cv::Point3f &pt2, double r, double g, double b, const std::string &id = "line", int viewport = 0);
 
         /** \brief Add a line arrow segment between two points, and display the distance between them
           * \param[in] pt1 the first (start) point on the line
@@ -330,8 +329,7 @@ namespace pcl
           * \param[in] id the arrow id/name (default: "arrow")
           * \param[in] viewport (optional) the id of the new viewport (default: 0)
           */
-        template <typename P1, typename P2> bool
-        addArrow (const P1 &pt1, const P2 &pt2, double r, double g, double b, const std::string &id = "arrow", int viewport = 0);
+        bool addArrow (const cv::Point3f &pt1, const cv::Point3f &pt2, double r, double g, double b, const std::string &id = "arrow", int viewport = 0);
 
         /** \brief Add a line arrow segment between two points, and display the distance between them
           * \param[in] pt1 the first (start) point on the line
@@ -343,8 +341,7 @@ namespace pcl
           * \param[in] id the line id/name (default: "arrow")
           * \param[in] viewport (optional) the id of the new viewport (default: 0)
           */
-        template <typename P1, typename P2> bool
-        addArrow (const P1 &pt1, const P2 &pt2, double r, double g, double b, bool display_length, const std::string &id = "arrow", int viewport = 0);
+        bool addArrow (const cv::Point3f &pt1, const cv::Point3f &pt2, double r, double g, double b, bool display_length, const std::string &id = "arrow", int viewport = 0);
 
         /** \brief Add a line arrow segment between two points, and display the distance between them in a given color
           * \param[in] pt1 the first (start) point on the line
@@ -358,13 +355,12 @@ namespace pcl
           * \param[in] id the line id/name (default: "arrow")
           * \param[in] viewport (optional) the id of the new viewport (default: 0)
           */
-          template <typename P1, typename P2> bool
-          addArrow (const P1 &pt1, const P2 &pt2, double r_line, double g_line, double b_line,
+          bool addArrow (const cv::Point3f &pt1, const cv::Point3f &pt2, double r_line, double g_line, double b_line,
                       double r_text, double g_text, double b_text, const std::string &id = "arrow", int viewport = 0);
 
 
-        bool addSphere (const PointXYZ &center, double radius, double r, double g, double b, const std::string &id = "sphere", int viewport = 0);
-        bool updateSphere (const PointXYZ &center, double radius, double r, double g, double b, const std::string &id = "sphere");
+        bool addSphere (const cv::Point3f &center, double radius, double r, double g, double b, const std::string &id = "sphere", int viewport = 0);
+        bool updateSphere (const cv::Point3f &center, double radius, double r, double g, double b, const std::string &id = "sphere");
 
          /** \brief Add a vtkPolydata as a mesh
           * \param[in] polydata vtkPolyData
@@ -835,6 +831,5 @@ namespace pcl
   }
 }
 
-#include <opencv2/viz/viz3d_impl.hpp>
 
 
