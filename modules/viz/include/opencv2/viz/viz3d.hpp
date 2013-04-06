@@ -359,7 +359,7 @@ namespace temp_viz
           * \param[in] id the line id/name (default: "arrow")
           * \param[in] viewport (optional) the id of the new viewport (default: 0)
           */
-          bool addArrow (const cv::Point3f &pt1, const cv::Point3f &pt2, double r_line, double g_line, double b_line,
+        bool addArrow (const cv::Point3f &pt1, const cv::Point3f &pt2, double r_line, double g_line, double b_line,
                       double r_text, double g_text, double b_text, const std::string &id = "arrow", int viewport = 0);
 
 
@@ -379,8 +379,7 @@ namespace temp_viz
           * \param[in] id the model id/name (default: "PolyData")
           * \param[in] viewport (optional) the id of the new viewport (default: 0)
           */
-        bool
-        addModelFromPolyData (vtkSmartPointer<vtkPolyData> polydata, vtkSmartPointer<vtkTransform> transform, const std::string &id = "PolyData", int viewport = 0);
+        bool addModelFromPolyData (vtkSmartPointer<vtkPolyData> polydata, vtkSmartPointer<vtkTransform> transform, const std::string &id = "PolyData", int viewport = 0);
 
         /** \brief Add a PLYmodel as a mesh
           * \param[in] filename of the ply file
@@ -405,7 +404,6 @@ namespace temp_viz
           * \code
           * // The following are given (or computed using sample consensus techniques)
           * // See SampleConsensusModelCylinder for more information.
-          * // Eigen::Vector3f pt_on_axis, axis_direction;
           * // float radius;
           *
           * temp_viz::ModelCoefficients cylinder_coeff;
@@ -433,7 +431,7 @@ namespace temp_viz
           * \code
           * // The following are given (or computed using sample consensus techniques)
           * // See SampleConsensusModelPlane for more information
-          * // Eigen::Vector4f plane_parameters;
+
           *
           * temp_viz::ModelCoefficients plane_coeff;
           * plane_coeff.values.resize (4);    // We need 4 values
@@ -485,11 +483,7 @@ namespace temp_viz
           * \param[in] id the cube id/name (default: "cube")
           * \param[in] viewport (optional) the id of the new viewport (default: 0)
           */
-        bool
-        addCube (const Eigen::Vector3f &translation, const Eigen::Quaternionf &rotation,
-                 double width, double height, double depth,
-                 const std::string &id = "cube",
-                 int viewport = 0);
+        bool addCube (const cv::Vec3f& translation, const cv::Vec3f quaternion, double width, double height, double depth, const std::string &id = "cube", int viewport = 0);
 
         /** \brief Add a cube
           * \param[in] x_min the min X coordinate
@@ -504,8 +498,7 @@ namespace temp_viz
           * \param[in] id the cube id/name (default: "cube")
           * \param[in] viewport (optional) the id of the new viewport (default: 0)
           */
-        bool
-        addCube (float x_min, float x_max, float y_min, float y_max, float z_min, float z_max,
+        bool addCube (float x_min, float x_max, float y_min, float y_max, float z_min, float z_max,
                  double r = 1.0, double g = 1.0, double b = 1.0, const std::string &id = "cube", int viewport = 0);
 
         /** \brief Changes the visual representation for all actors to surface representation. */
@@ -598,20 +591,12 @@ namespace temp_viz
         /** \brief Return a pointer to the underlying VTK Render Window used. */
         vtkSmartPointer<vtkRenderWindow> getRenderWindow () { return (win_); }
 
-        /** \brief Return a pointer to the underlying VTK Renderer Collection. */
-        vtkSmartPointer<vtkRendererCollection> getRendererCollection () { return (rens_); }
-
-        /** \brief Return a pointer to the CloudActorMap this visualizer uses. */
-        CloudActorMapPtr getCloudActorMap () { return (cloud_actor_map_); }
-
         void setPosition (int x, int y);
         void setSize (int xw, int yw);
 
         /** \brief Create the internal Interactor object. */
         void createInteractor ();
 
-        /** \brief Get a pointer to the current interactor style used. */
-        inline vtkSmartPointer<PCLVisualizerInteractorStyle> getInteractorStyle (){ return (style_); }
       protected:
         /** \brief The render window interactor. */
 
@@ -753,29 +738,18 @@ namespace temp_viz
           * \param[out] transformation the camera transformation matrix
           */
         void getTransformationMatrix (const Eigen::Vector4f &origin, const Eigen::Quaternion<float> &orientation, Eigen::Matrix4f &transformation);
-
-        //There's no reason these conversion functions shouldn't be public and static so others can use them.
-      public:
-        /** \brief Convert Eigen::Matrix4f to vtkMatrix4x4
-          * \param[in] m the input Eigen matrix
-          * \param[out] vtk_matrix the resultant VTK matrix
-          */
-        static void convertToVtkMatrix (const Eigen::Matrix4f &m, vtkSmartPointer<vtkMatrix4x4> &vtk_matrix);
-
-        /** \brief Convert origin and orientation to vtkMatrix4x4
-          * \param[in] origin the point cloud origin
-          * \param[in] orientation the point cloud orientation
-          * \param[out] vtk_matrix the resultant VTK 4x4 matrix
-          */
-        static void convertToVtkMatrix (const Eigen::Vector4f &origin, const Eigen::Quaternion<float> &orientation, vtkSmartPointer<vtkMatrix4x4> &vtk_matrix);
-
-        /** \brief Convert vtkMatrix4x4 to an Eigen4f
-          * \param[in] vtk_matrix the original VTK 4x4 matrix
-          * \param[out] m the resultant Eigen 4x4 matrix
-          */
-        static void convertToEigenMatrix (const vtkSmartPointer<vtkMatrix4x4> &vtk_matrix, Eigen::Matrix4f &m);
-
     };
+
+    void convertToVtkMatrix (const Eigen::Matrix4f &m, vtkSmartPointer<vtkMatrix4x4> &vtk_matrix);
+
+    /** \brief Convert origin and orientation to vtkMatrix4x4
+      * \param[in] origin the point cloud origin
+      * \param[in] orientation the point cloud orientation
+      * \param[out] vtk_matrix the resultant VTK 4x4 matrix
+      */
+    void convertToVtkMatrix (const Eigen::Vector4f &origin, const Eigen::Quaternion<float> &orientation, vtkSmartPointer<vtkMatrix4x4> &vtk_matrix);
+    void convertToEigenMatrix (const vtkSmartPointer<vtkMatrix4x4> &vtk_matrix, Eigen::Matrix4f &m);
+
 }
 
 

@@ -62,8 +62,8 @@ namespace temp_viz
                   */
             inline void setCloudActorMap (const CloudActorMapPtr &actors) { actors_ = actors; }
 
-            /** \brief Get the cloud actor map pointer. */
-            inline CloudActorMapPtr getCloudActorMap () { return (actors_); }
+//            /** \brief Get the cloud actor map pointer. */
+//            inline CloudActorMapPtr getCloudActorMap () { return (actors_); }
 
             /** \brief Pass a set of renderers to the interactor style.
                   * \param[in] rens the vtkRendererCollection to use

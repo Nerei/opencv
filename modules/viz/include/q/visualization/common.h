@@ -7,8 +7,6 @@
 
 namespace temp_viz
 {
-
-
     CV_EXPORTS Eigen::Matrix4d vtkToEigen (vtkMatrix4x4* vtk_matrix);
     CV_EXPORTS Eigen::Vector2i worldToView (const Eigen::Vector4d &world_pt, const Eigen::Matrix4d &view_projection_matrix, int width, int height);
     CV_EXPORTS void getViewFrustum (const Eigen::Matrix4d &view_projection_matrix, double planes[24]);

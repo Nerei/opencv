@@ -1391,8 +1391,7 @@ bool temp_viz::Viz3d::addCube (const temp_viz::ModelCoefficients &coefficients, 
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////
-bool temp_viz::Viz3d::addCube (const Eigen::Vector3f &translation, const Eigen::Quaternionf &rotation,
-        double width, double height, double depth, const std::string &id, int viewport)
+bool temp_viz::Viz3d::addCube (const cv::Vec3f& translation, const cv::Vec3f quaternion, double width, double height, double depth, const std::string &id, int viewport)
 {
     // Check to see if this ID entry already exists (has it been already added to the visualizer?)
     ShapeActorMap::iterator am_it = shape_actor_map_->find (id);
@@ -1402,7 +1401,10 @@ bool temp_viz::Viz3d::addCube (const Eigen::Vector3f &translation, const Eigen::
         return (false);
     }
 
-    vtkSmartPointer<vtkDataSet> data = createCube (translation, rotation, width, height, depth);
+    Eigen::Vector3f t(translation[0], translation[1], translation[2]);
+    Eigen::Quaternionf q(quaternion[0], quaternion[1], quaternion[2], quaternion[3]);
+
+    vtkSmartPointer<vtkDataSet> data = createCube (t, q, width, height, depth);
 
     // Create an Actor
     vtkSmartPointer<vtkLODActor> actor;
@@ -1899,7 +1901,7 @@ void temp_viz::Viz3d::getTransformationMatrix (const Eigen::Vector4f &origin, co
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////
-void temp_viz::Viz3d::convertToVtkMatrix (const Eigen::Vector4f &origin, const Eigen::Quaternion<float> &orientation, vtkSmartPointer<vtkMatrix4x4> &vtk_matrix)
+void temp_viz::convertToVtkMatrix (const Eigen::Vector4f &origin, const Eigen::Quaternion<float> &orientation, vtkSmartPointer<vtkMatrix4x4> &vtk_matrix)
 {
     // set rotation
     Eigen::Matrix3f rot = orientation.toRotationMatrix ();
@@ -1915,7 +1917,7 @@ void temp_viz::Viz3d::convertToVtkMatrix (const Eigen::Vector4f &origin, const E
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////
-void temp_viz::Viz3d::convertToVtkMatrix (const Eigen::Matrix4f &m, vtkSmartPointer<vtkMatrix4x4> &vtk_matrix)
+void temp_viz::convertToVtkMatrix (const Eigen::Matrix4f &m, vtkSmartPointer<vtkMatrix4x4> &vtk_matrix)
 {
     for (int i = 0; i < 4; i++)
         for (int k = 0; k < 4; k++)
@@ -1923,7 +1925,7 @@ void temp_viz::Viz3d::convertToVtkMatrix (const Eigen::Matrix4f &m, vtkSmartPoin
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////
-void temp_viz::Viz3d::convertToEigenMatrix (const vtkSmartPointer<vtkMatrix4x4> &vtk_matrix, Eigen::Matrix4f &m)
+void temp_viz::convertToEigenMatrix (const vtkSmartPointer<vtkMatrix4x4> &vtk_matrix, Eigen::Matrix4f &m)
 {
     for (int i = 0; i < 4; i++)
         for (int k = 0; k < 4; k++)
