@@ -16,15 +16,8 @@
 
 namespace pcl
 {
-
-
   namespace visualization
   {
-
-
-
-
-
     inline cv::Scalar VIZ_RGB(unsigned char r, unsigned char g, unsigned char b) { return cv::Scalar(b, g, r); }
 
     class CV_EXPORTS PCLVisualizer

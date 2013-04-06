@@ -23,7 +23,7 @@
 
 #include <q/visualization/3rdparty.h>
 //#include <q/visualization/vtk/vtkVertexBufferObjectMapper.h>
-#include <q/visualization/vtk/vtkRenderWindowInteractorFix.h>
+//#include <q/visualization/vtk/vtkRenderWindowInteractorFix.h>
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 pcl::visualization::PCLVisualizer::PCLVisualizer (const std::string &name, const bool create_interactor)
@@ -72,6 +72,20 @@ pcl::visualization::PCLVisualizer::PCLVisualizer (const std::string &name, const
 
     win_->SetWindowName (name.c_str ());
 }
+
+
+#include <vtkRenderWindowInteractor.h>
+
+//vtkRenderWindowInteractor* vtkRenderWindowInteractorFixNew ()
+#ifndef __APPLE__
+vtkRenderWindowInteractor* vtkRenderWindowInteractorFixNew ()
+{
+  return (vtkRenderWindowInteractor::New ());
+}
+#endif
+
+
+
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 void pcl::visualization::PCLVisualizer::createInteractor ()

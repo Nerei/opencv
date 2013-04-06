@@ -41,7 +41,7 @@ macro(find_boost)
   set(Boost_NO_BOOST_CMAKE ON)
   set(Boost_USE_STATIC_LIBS ON)
 
-  find_package(Boost 1.49.0 REQUIRED COMPONENTS system thread date_time)
+  find_package(Boost 1.49.0 REQUIRED COMPONENTS system thread)
 
   if(Boost_FOUND)
     set(HAVE_BOOST ON)
