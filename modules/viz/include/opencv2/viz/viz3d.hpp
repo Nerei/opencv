@@ -18,14 +18,20 @@ namespace temp_viz
 {
     inline cv::Scalar VIZ_RGB(unsigned char r, unsigned char g, unsigned char b) { return cv::Scalar(b, g, r); }
 
-    class CV_EXPORTS PCLVisualizer
+    struct CV_EXPORTS Vertices
+    {
+        std::vector<unsigned int> vertices;
+    };
+
+
+    class CV_EXPORTS Viz3d
     {
       public:
-        typedef boost::shared_ptr<PCLVisualizer> Ptr;
+        typedef cv::Ptr<Viz3d> Ptr;
 
-        PCLVisualizer (const std::string &name = "Viz", const bool create_interactor = true);
+        Viz3d (const std::string &name = "Viz", const bool create_interactor = true);
 
-        virtual ~PCLVisualizer ();
+        virtual ~Viz3d ();
         void setFullScreen (bool mode);
         void setWindowName (const std::string &name);
 
@@ -629,7 +635,7 @@ namespace temp_viz
             pcl_visualizer->interactor_->TerminateApp ();
           }
           int right_timer_id;
-          PCLVisualizer* pcl_visualizer;
+          Viz3d* pcl_visualizer;
         };
         struct ExitCallback : public vtkCommand
         {
@@ -645,7 +651,7 @@ namespace temp_viz
             // This tends to close the window...
             pcl_visualizer->interactor_->TerminateApp ();
           }
-          PCLVisualizer* pcl_visualizer;
+          Viz3d* pcl_visualizer;
         };
 
         /** \brief Set to false if the interaction loop is running. */

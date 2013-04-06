@@ -6,6 +6,7 @@
 #include <opencv2/core/cvdef.h>
 #include <q/visualization/3rdparty.h>
 #include <map>
+#include <opencv2/core.hpp>
 
 namespace temp_viz
 {
@@ -30,10 +31,10 @@ namespace temp_viz
     };
 
     typedef boost::unordered_map<std::string, CloudActor> CloudActorMap;
-    typedef boost::shared_ptr<CloudActorMap> CloudActorMapPtr;
+    typedef cv::Ptr<CloudActorMap> CloudActorMapPtr;
 
     typedef boost::unordered_map<std::string, vtkSmartPointer<vtkProp> > ShapeActorMap;
-    typedef boost::shared_ptr<ShapeActorMap> ShapeActorMapPtr;
+    typedef cv::Ptr<ShapeActorMap> ShapeActorMapPtr;
 
     typedef std::map<int, vtkSmartPointer<vtkProp> > CoordinateActorMap;
 

@@ -32,7 +32,7 @@ namespace temp_viz
           */
         class CV_EXPORTS PCLVisualizerInteractorStyle : public vtkInteractorStyleTrackballCamera
         {
-            typedef boost::shared_ptr<CloudActorMap> CloudActorMapPtr;
+            typedef cv::Ptr<CloudActorMap> CloudActorMapPtr;
 
         public:
 
