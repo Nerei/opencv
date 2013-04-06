@@ -65,71 +65,21 @@ pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_load()
     return cloud;
 }
 
-pcl::PointCloud<pcl::PointXYZRGB>::Ptr mesh_load(std::vector<pcl::Vertices>& polygons, const char* file = "d:/horse.ply")
+
+cv::Mat cvcloud_load()
 {
-    vtkSmartPointer<vtkPLYReader> reader = vtkSmartPointer<vtkPLYReader>::New();
-    reader->SetFileName(file);
-    reader->Update();
-    vtkSmartPointer<vtkPolyData> poly_data = reader->GetOutput ();
+    cv::Mat cloud(1, 20000, CV_32FC3);
+        std::ifstream ifs("d:/cloud_dragon.ply");
 
-    typedef unsigned int uint32_t;
-    polygons.clear();
+    std::string str;
+    for(size_t i = 0; i < 11; ++i)
+        std::getline(ifs, str);
 
-    vtkSmartPointer<vtkPoints> mesh_points = poly_data->GetPoints ();
-    vtkIdType nr_points = mesh_points->GetNumberOfPoints ();
-    vtkIdType nr_polygons = poly_data->GetNumberOfPolys ();
+    cv::Point3f* data = cloud.ptr<cv::Point3f>();
+    for(size_t i = 0; i < 20000; ++i)
+        ifs >> data[i].x >> data[i].y >> data[i].z;
 
-    // First get the xyz information
-    pcl::PointCloud<pcl::PointXYZRGB>::Ptr xyzrgb_cloud (new pcl::PointCloud<pcl::PointXYZRGB> (nr_points, 1));
-    double point_xyz[3];
-    for (vtkIdType i = 0; i < mesh_points->GetNumberOfPoints (); i++)
-    {
-        mesh_points->GetPoint (i, &point_xyz[0]);
-        xyzrgb_cloud->points[i].x = static_cast<float> (point_xyz[0]);
-        xyzrgb_cloud->points[i].y = static_cast<float> (point_xyz[1]);
-        xyzrgb_cloud->points[i].z = static_cast<float> (point_xyz[2]);
-    }
-
-    // Then the color information, if any
-    vtkUnsignedCharArray* poly_colors = NULL;
-    if (poly_data->GetPointData() != NULL)
-        poly_colors = vtkUnsignedCharArray::SafeDownCast (poly_data->GetPointData ()->GetScalars ("Colors"));
-
-    // some applications do not save the name of scalars (including PCL's native vtk_io)
-    if (!poly_colors && poly_data->GetPointData () != NULL)
-        poly_colors = vtkUnsignedCharArray::SafeDownCast (poly_data->GetPointData ()->GetScalars ("scalars"));
-
-    if (!poly_colors && poly_data->GetPointData () != NULL)
-        poly_colors = vtkUnsignedCharArray::SafeDownCast (poly_data->GetPointData ()->GetScalars ("RGB"));
-
-    // TODO: currently only handles rgb values with 3 components
-    if (poly_colors && (poly_colors->GetNumberOfComponents () == 3))
-    {
-        unsigned char point_color[3];
-        for (vtkIdType i = 0; i < mesh_points->GetNumberOfPoints (); i++)
-        {
-            poly_colors->GetTupleValue (i, &point_color[0]);
-            xyzrgb_cloud->points[i].r = point_color[0];
-            xyzrgb_cloud->points[i].g = point_color[1];
-            xyzrgb_cloud->points[i].b = point_color[2];
-        }
-    }
-
-    // Now handle the polygons
-    polygons.resize (nr_polygons);
-    vtkIdType* cell_points;
-    vtkIdType nr_cell_points;
-    vtkCellArray * mesh_polygons = poly_data->GetPolys ();
-    mesh_polygons->InitTraversal ();
-    int id_poly = 0;
-    while (mesh_polygons->GetNextCell (nr_cell_points, cell_points))
-    {
-        polygons[id_poly].vertices.resize (nr_cell_points);
-        for (int i = 0; i < nr_cell_points; ++i)
-            polygons[id_poly].vertices[i] = static_cast<int> (cell_points[i]);
-        ++id_poly;
-    }
-    return xyzrgb_cloud;
+    return cloud;
 }
 
 void mesh_load(std::vector<pcl::Vertices>& polygons, cv::Mat& cloud, cv::Mat& colors, const char* file = "d:/horse.ply")
@@ -235,6 +185,8 @@ TEST(Viz_viz3d, accuracy)
     channels.resize(3);
     cv::merge(channels, data);
 
+    data = cvcloud_load();
+
     cv::Mat colors(data.size(), CV_8UC3, cv::Scalar(0, 255, 0));
     v.addPointCloud(data, colors);
 
@@ -278,7 +230,11 @@ TEST(Viz_viz3d, accuracy)
 
     v.addText("===Abd sadfljsadlk", 100, 100, cv::Scalar(255, 0, 0), 15);
     //channels[0] *= 7;
-    cv::merge(channels, data);
+    //cv::merge(channels, data);
+
+    for(int i = 0; i < data.cols; ++i)
+        data.ptr<cv::Point3f>()[i].x *=2;
+
     colors.setTo(cv::Scalar(255, 0, 0));
 
     v.addSphere(pcl::PointXYZ(0, 0, 0), 0.3, 0, 0, 1);
