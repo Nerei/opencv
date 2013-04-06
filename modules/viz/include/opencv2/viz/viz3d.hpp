@@ -229,6 +229,10 @@ namespace pcl
           * \param[in] id the polygon object id (default: "polygon")
           * \param[in] viewport the view port where the PolygonMesh should be added (default: all)
           */
+
+        bool addPolygonMesh (const cv::Mat& cloud, const cv::Mat& colors, const cv::Mat& mask, const std::vector<pcl::Vertices> &vertices, const std::string &id = "polygon", int viewport = 0);
+
+
         template <typename PointT> bool
         addPolygonMesh (const typename pcl::PointCloud<PointT>::ConstPtr &cloud, const std::vector<pcl::Vertices> &vertices,
                         const std::string &id = "polygon", int viewport = 0);
@@ -239,6 +243,9 @@ namespace pcl
           * \param[in] id the polygon object id (default: "polygon")
           * \return false if no polygonmesh with the specified ID was found
           */
+
+        bool updatePolygonMesh (const cv::Mat& cloud, const cv::Mat& colors, const cv::Mat& mask, const std::vector<pcl::Vertices> &vertices, const std::string &id = "polygon");
+
         template <typename PointT> bool
         updatePolygonMesh (const typename pcl::PointCloud<PointT>::ConstPtr &cloud, const std::vector<pcl::Vertices> &vertices, const std::string &id = "polygon");
 

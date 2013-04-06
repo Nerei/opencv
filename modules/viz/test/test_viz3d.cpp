@@ -65,10 +65,10 @@ pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_load()
     return cloud;
 }
 
-pcl::PointCloud<pcl::PointXYZRGB>::Ptr mesh_load(std::vector<pcl::Vertices>& polygons)
+pcl::PointCloud<pcl::PointXYZRGB>::Ptr mesh_load(std::vector<pcl::Vertices>& polygons, const char* file = "d:/horse.ply")
 {
     vtkSmartPointer<vtkPLYReader> reader = vtkSmartPointer<vtkPLYReader>::New();
-    reader->SetFileName("d:/horse.ply");
+    reader->SetFileName(file);
     reader->Update();
     vtkSmartPointer<vtkPolyData> poly_data = reader->GetOutput ();
 
@@ -132,6 +132,20 @@ pcl::PointCloud<pcl::PointXYZRGB>::Ptr mesh_load(std::vector<pcl::Vertices>& pol
     return xyzrgb_cloud;
 }
 
+void convert_cloud(const pcl::PointCloud<pcl::PointXYZRGB>::Ptr& points, cv::Mat& cloud, cv::Mat& colors)
+{
+    cloud.create(points->height, points->width, CV_32FC3);
+    colors.create(cloud.size(), CV_8UC3);
+
+    std::cout << points->height << ", " << points->width << ", " << cloud.cols << std::endl;
+
+    for(int x = 0; x < cloud.cols; ++x)
+    {
+        pcl::PointXYZRGB p = points->points[x];
+        cloud.ptr<cv::Point3f>()[x] = cv::Point3f(p.x, p.y, p.z);
+        colors.ptr<cv::Vec3b>()[x] = cv::Vec3b(p.b, p.g, p.r);
+    }
+}
 
 TEST(Viz_viz3d, accuracy)
 {
@@ -167,9 +181,33 @@ TEST(Viz_viz3d, accuracy)
 
     std::vector<pcl::Vertices> polygons;
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr me = mesh_load(polygons);
-    v.addPolygonMesh<pcl::PointXYZRGB>(me, polygons, "pq");
+
+    cv::Mat me_cl, me_co;
+    convert_cloud(me, me_cl, me_co);
+
+    std::cout << "aasasas" << std::endl;
+    v.addPolygonMesh(me_cl, me_co, cv::Mat(), polygons, "pq");
+    //v.addPolygonMesh<pcl::PointXYZRGB>(me, polygons, "pqs");
 
     v.spinOnce(1000, true);
+
+
+
+    //me = mesh_load(polygons, "d:/dragon.ply");
+    convert_cloud(me, me_cl, me_co);
+
+    for(size_t i = 0; i < me->points.size(); ++i)
+    {
+        me->points[i].x +=1;
+        me->points[i].y +=1;
+        me->points[i].z +=1;
+    }
+
+    convert_cloud(me, me_cl, me_co);
+    v.updatePolygonMesh(me_cl, me_co, cv::Mat(), polygons, "pq");
+    //v.updatePolygonMesh<pcl::PointXYZRGB>(me, polygons, "pq");
+
+
 
     v.addText("===Abd sadfljsadlk", 100, 100, cv::Scalar(255, 0, 0), 15);
     //channels[0] *= 7;
