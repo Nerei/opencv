@@ -1,8 +1,8 @@
 #pragma once
 
 #include <q/visualization/3rdparty.h>
-#include <q/visualization/common/actor_map.h>
-#include <q/visualization/common/ren_win_interact_map.h>
+#include <q/visualization/actor_map.h>
+#include <q/visualization/ren_win_interact_map.h>
 #include <opencv2/viz/events.hpp>
 #include <q/visualization/point_picking_event.h>
 

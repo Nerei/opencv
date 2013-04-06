@@ -5,8 +5,8 @@
 #include <opencv2/viz/events.hpp>
 #include <q/visualization/interactor_style.h>
 #include <q/visualization/point_picking_event.h>
-#include <q/visualization/common/actor_map.h>
-#include <q/visualization/common/common.h>
+#include <q/visualization/actor_map.h>
+#include <q/visualization/common.h>
 #include <opencv2/viz/types.hpp>
 
 // VTK includes

@@ -1,19 +1,19 @@
 #pragma once
 
 #include <boost/function.hpp>
+#include <boost/bind.hpp>
 #include <boost/shared_array.hpp>
+#include <boost/shared_ptr.hpp>
 #define BOOST_PARAMETER_MAX_ARITY 7
 #include <boost/signals2.hpp>
-#include <boost/shared_ptr.hpp>
-#include <boost/algorithm/string.hpp>
-#include <boost/algorithm/string/split.hpp>
-#include <boost/algorithm/string/classification.hpp>
+//#include <boost/algorithm/string.hpp>
+//#include <boost/algorithm/string/split.hpp>
+//#include <boost/algorithm/string/classification.hpp>
 #include <boost/thread.hpp>
-#include <boost/bind.hpp>
 #include <boost/unordered_map.hpp>
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/thread.hpp>
-#include <boost/foreach.hpp>
+//#include <boost/foreach.hpp>
 
 #include <Eigen/Geometry>
 #include <Eigen/Dense>

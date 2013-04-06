@@ -1,6 +1,6 @@
 #include <opencv2/viz/viz3d.hpp>
 #include <opencv2/core.hpp>
-#include <q/visualization/common/shapes.h>
+#include <q/visualization/shapes.h>
 
 void pcl::visualization::PCLVisualizer::setFullScreen (bool mode)
 {
@@ -718,7 +718,7 @@ inline bool pcl::visualization::PCLVisualizer::updatePolygonMesh (const cv::Mat&
 #include <vtkLeaderActor2D.h>
 #include <vtkAlgorithmOutput.h>
 
-#include <q/visualization/common/shapes.h>
+#include <q/visualization/shapes.h>
 
 
 

@@ -1,5 +1,5 @@
 
-#include <q/visualization/common/shapes.h>
+#include <q/visualization/shapes.h>
 #include <opencv2/viz/viz3d.hpp>
 #include <vtkTextActor.h>
 #include <vtkTextProperty.h>
