@@ -1,6 +1,15 @@
 #include <opencv2/viz/viz3d.hpp>
 #include <opencv2/core.hpp>
-#include <q/visualization/shapes.h>
+#include <q/shapes.h>
+
+#include <vtkCellData.h>
+#include <vtkSmartPointer.h>
+#include <vtkCellArray.h>
+#include <vtkProperty2D.h>
+#include <vtkMapper2D.h>
+#include <vtkLeaderActor2D.h>
+#include <q/shapes.h>
+#include <vtkAlgorithmOutput.h>
 
 void temp_viz::Viz3d::setFullScreen (bool mode)
 {
@@ -703,15 +712,7 @@ inline bool temp_viz::Viz3d::updatePolygonMesh (const cv::Mat& cloud, const cv::
 }
 
 
-#include <vtkCellData.h>
-#include <vtkSmartPointer.h>
-#include <vtkCellArray.h>
-#include <vtkProperty2D.h>
-#include <vtkMapper2D.h>
-#include <vtkLeaderActor2D.h>
-#include <vtkAlgorithmOutput.h>
 
-#include <q/visualization/shapes.h>
 
 
 

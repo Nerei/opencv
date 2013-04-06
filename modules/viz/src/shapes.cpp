@@ -1,4 +1,4 @@
-#include <q/visualization/shapes.h>
+#include <q/shapes.h>
 
 inline float rad2deg (float alpha)
 { return (alpha * 57.29578f); }
