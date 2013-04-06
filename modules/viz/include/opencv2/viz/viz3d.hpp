@@ -216,45 +216,9 @@ namespace pcl
         bool updatePointCloud (const cv::Mat& cloud, const cv::Mat& colors, const std::string& id = "cloud", const cv::Mat& mask = cv::Mat());
 
 
-        /** \brief Add a PolygonMesh object to screen
-          * \param[in] polymesh the polygonal mesh
-          * \param[in] id the polygon object id (default: "polygon")
-          * \param[in] viewport the view port where the PolygonMesh should be added (default: all)
-          */
-        bool addPolygonMesh (const pcl::PolygonMesh &polymesh, const std::string &id = "polygon", int viewport = 0);
-
-        /** \brief Add a PolygonMesh object to screen
-          * \param[in] cloud the polygonal mesh point cloud
-          * \param[in] vertices the polygonal mesh vertices
-          * \param[in] id the polygon object id (default: "polygon")
-          * \param[in] viewport the view port where the PolygonMesh should be added (default: all)
-          */
-
         bool addPolygonMesh (const cv::Mat& cloud, const cv::Mat& colors, const cv::Mat& mask, const std::vector<pcl::Vertices> &vertices, const std::string &id = "polygon", int viewport = 0);
-
-
-        template <typename PointT> bool
-        addPolygonMesh (const typename pcl::PointCloud<PointT>::ConstPtr &cloud, const std::vector<pcl::Vertices> &vertices,
-                        const std::string &id = "polygon", int viewport = 0);
-
-        /** \brief Update a PolygonMesh object on screen
-          * \param[in] cloud the polygonal mesh point cloud
-          * \param[in] vertices the polygonal mesh vertices
-          * \param[in] id the polygon object id (default: "polygon")
-          * \return false if no polygonmesh with the specified ID was found
-          */
-
         bool updatePolygonMesh (const cv::Mat& cloud, const cv::Mat& colors, const cv::Mat& mask, const std::vector<pcl::Vertices> &vertices, const std::string &id = "polygon");
 
-        template <typename PointT> bool
-        updatePolygonMesh (const typename pcl::PointCloud<PointT>::ConstPtr &cloud, const std::vector<pcl::Vertices> &vertices, const std::string &id = "polygon");
-
-        /** \brief Update a PolygonMesh object on screen
-          * \param[in] polymesh the polygonal mesh
-          * \param[in] id the polygon object id (default: "polygon")
-          * \return false if no polygonmesh with the specified ID was found
-          */
-        bool updatePolygonMesh (const pcl::PolygonMesh &polymesh, const std::string &id = "polygon");
 
         /** \brief Add a Polygonline from a polygonMesh object to screen
           * \param[in] polymesh the polygonal mesh from where the polylines will be extracted
