@@ -64,7 +64,7 @@ cv::Mat cvcloud_load()
     return cloud;
 }
 
-void mesh_load(std::vector<pcl::Vertices>& polygons, cv::Mat& cloud, cv::Mat& colors, const char* file = "d:/horse.ply")
+void mesh_load(std::vector<temp_viz::Vertices>& polygons, cv::Mat& cloud, cv::Mat& colors, const char* file = "d:/horse.ply")
 {
     vtkSmartPointer<vtkPLYReader> reader = vtkSmartPointer<vtkPLYReader>::New();
     reader->SetFileName(file);
@@ -136,7 +136,7 @@ void mesh_load(std::vector<pcl::Vertices>& polygons, cv::Mat& cloud, cv::Mat& co
 
 TEST(Viz_viz3d, accuracy)
 {
-    pcl::visualization::PCLVisualizer v;
+    temp_viz::PCLVisualizer v;
 
     v.addCoordinateSystem(1.0, Eigen::Affine3f::Identity());
 
@@ -148,12 +148,12 @@ TEST(Viz_viz3d, accuracy)
 
     v.addPointCloudNormals(cloud, normals, 100, 0.02, "n");
 
-    pcl::ModelCoefficients mc;
+    temp_viz::ModelCoefficients mc;
     mc.values.resize(4);
     mc.values[0] = mc.values[1] = mc.values[2] = mc.values[3] = 1;
     v.addPlane(mc);
 
-    std::vector<pcl::Vertices> polygons;
+    std::vector<temp_viz::Vertices> polygons;
     cv::Mat me_cl, me_co;
     mesh_load(polygons, me_cl, me_co, "d:/horse.ply");
 

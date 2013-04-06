@@ -4,9 +4,9 @@
 #include <vtkRendererCollection.h>
 
 /////////////////////////////////////////////////////////////////////////////////////////////
-void pcl::visualization::PointPickingCallback::Execute (vtkObject *caller, unsigned long eventid, void*)
+void temp_viz::PointPickingCallback::Execute (vtkObject *caller, unsigned long eventid, void*)
 {
-    vtkRenderWindowInteractor* iren = reinterpret_cast<pcl::visualization::PCLVisualizerInteractorStyle*>(caller)->GetInteractor ();
+    vtkRenderWindowInteractor* iren = reinterpret_cast<temp_viz::PCLVisualizerInteractorStyle*>(caller)->GetInteractor ();
 
     if ((eventid == vtkCommand::LeftButtonPressEvent) && (iren->GetShiftKey () > 0))
     {
@@ -16,7 +16,7 @@ void pcl::visualization::PointPickingCallback::Execute (vtkObject *caller, unsig
         if (idx != -1)
         {
             cv::PointPickingEvent event (idx, x, y, z);
-            reinterpret_cast<pcl::visualization::PCLVisualizerInteractorStyle*>(caller)->point_picking_signal_ (event);
+            reinterpret_cast<temp_viz::PCLVisualizerInteractorStyle*>(caller)->point_picking_signal_ (event);
         }
     }
     else if ((eventid == vtkCommand::LeftButtonPressEvent) && (iren->GetAltKey () == 1))
@@ -30,14 +30,14 @@ void pcl::visualization::PointPickingCallback::Execute (vtkObject *caller, unsig
             idx = performSinglePick (iren, x, y, z);
         // Create a PointPickingEvent
         cv::PointPickingEvent event (idx_, idx, x_, y_, z_, x, y, z);
-        reinterpret_cast<pcl::visualization::PCLVisualizerInteractorStyle*>(caller)->point_picking_signal_ (event);
+        reinterpret_cast<temp_viz::PCLVisualizerInteractorStyle*>(caller)->point_picking_signal_ (event);
     }
     // Call the parent's class mouse events
-    reinterpret_cast<pcl::visualization::PCLVisualizerInteractorStyle*>(caller)->OnLeftButtonDown ();
+    reinterpret_cast<temp_viz::PCLVisualizerInteractorStyle*>(caller)->OnLeftButtonDown ();
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
-int pcl::visualization::PointPickingCallback::performSinglePick (vtkRenderWindowInteractor *iren)
+int temp_viz::PointPickingCallback::performSinglePick (vtkRenderWindowInteractor *iren)
 {
     int mouse_x, mouse_y;
     //vtkPointPicker *picker = reinterpret_cast<vtkPointPicker*> (iren->GetPicker ());
@@ -59,7 +59,7 @@ int pcl::visualization::PointPickingCallback::performSinglePick (vtkRenderWindow
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
-int pcl::visualization::PointPickingCallback::performSinglePick (vtkRenderWindowInteractor *iren, float &x, float &y, float &z)
+int temp_viz::PointPickingCallback::performSinglePick (vtkRenderWindowInteractor *iren, float &x, float &y, float &z)
 {
     int mouse_x, mouse_y;
     // vtkPointPicker *picker = reinterpret_cast<vtkPointPicker*> (iren->GetPicker ());

@@ -15,7 +15,7 @@
 #include <boost/thread/thread.hpp>
 //#include <boost/foreach.hpp>
 
-#include <Eigen/Geometry>
+//#include <Eigen/Geometry>
 #include <Eigen/Dense>
 
 

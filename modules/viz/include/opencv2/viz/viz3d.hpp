@@ -5,7 +5,7 @@
 #include <opencv2/viz/events.hpp>
 #include <q/visualization/interactor_style.h>
 #include <q/visualization/point_picking_event.h>
-#include <q/visualization/actor_map.h>
+#include <q/visualization/viz_types.h>
 #include <q/visualization/common.h>
 #include <opencv2/viz/types.hpp>
 
@@ -14,10 +14,8 @@
 
 #include <Eigen/Geometry>
 
-namespace pcl
+namespace temp_viz
 {
-  namespace visualization
-  {
     inline cv::Scalar VIZ_RGB(unsigned char r, unsigned char g, unsigned char b) { return cv::Scalar(b, g, r); }
 
     class CV_EXPORTS PCLVisualizer
@@ -213,8 +211,8 @@ namespace pcl
         bool updatePointCloud (const cv::Mat& cloud, const cv::Mat& colors, const std::string& id = "cloud", const cv::Mat& mask = cv::Mat());
 
 
-        bool addPolygonMesh (const cv::Mat& cloud, const cv::Mat& colors, const cv::Mat& mask, const std::vector<pcl::Vertices> &vertices, const std::string &id = "polygon", int viewport = 0);
-        bool updatePolygonMesh (const cv::Mat& cloud, const cv::Mat& colors, const cv::Mat& mask, const std::vector<pcl::Vertices> &vertices, const std::string &id = "polygon");
+        bool addPolygonMesh (const cv::Mat& cloud, const cv::Mat& colors, const cv::Mat& mask, const std::vector<temp_viz::Vertices> &vertices, const std::string &id = "polygon", int viewport = 0);
+        bool updatePolygonMesh (const cv::Mat& cloud, const cv::Mat& colors, const cv::Mat& mask, const std::vector<temp_viz::Vertices> &vertices, const std::string &id = "polygon");
 
 
         /** \brief Add a Polygonline from a polygonMesh object to screen
@@ -222,7 +220,7 @@ namespace pcl
           * \param[in] id the polygon object id (default: "polygon")
           * \param[in] viewport the view port where the PolygonMesh should be added (default: all)
           */
-        bool addPolylineFromPolygonMesh (const cv::Mat& cloud, const std::vector<pcl::Vertices> &vertices, const std::string &id = "polyline", int viewport = 0);
+        bool addPolylineFromPolygonMesh (const cv::Mat& cloud, const std::vector<temp_viz::Vertices> &vertices, const std::string &id = "polyline", int viewport = 0);
 
 
 
@@ -404,7 +402,7 @@ namespace pcl
           * // Eigen::Vector3f pt_on_axis, axis_direction;
           * // float radius;
           *
-          * pcl::ModelCoefficients cylinder_coeff;
+          * temp_viz::ModelCoefficients cylinder_coeff;
           * cylinder_coeff.values.resize (7);    // We need 7 values
           * cylinder_coeff.values[0] = pt_on_axis.x ();
           * cylinder_coeff.values[1] = pt_on_axis.y ();
@@ -419,56 +417,7 @@ namespace pcl
           * addCylinder (cylinder_coeff);
           * \endcode
           */
-        bool addCylinder (const pcl::ModelCoefficients &coefficients, const std::string &id = "cylinder", int viewport = 0);
-
-        /** \brief Add a sphere from a set of given model coefficients
-          * \param[in] coefficients the model coefficients (sphere center, radius)
-          * \param[in] id the sphere id/name (default: "sphere")
-          * \param[in] viewport (optional) the id of the new viewport (default: 0)
-          *
-          * \code
-          * // The following are given (or computed using sample consensus techniques)
-          * // See SampleConsensusModelSphere for more information
-          * // Eigen::Vector3f sphere_center;
-          * // float radius;
-          *
-          * pcl::ModelCoefficients sphere_coeff;
-          * sphere_coeff.values.resize (4);    // We need 4 values
-          * sphere_coeff.values[0] = sphere_center.x ();
-          * sphere_coeff.values[1] = sphere_center.y ();
-          * sphere_coeff.values[2] = sphere_center.z ();
-          *
-          * sphere_coeff.values[3] = radius;
-          *
-          * addSphere (sphere_coeff);
-          * \endcode
-          */
-        bool addSphere (const pcl::ModelCoefficients &coefficients, const std::string &id = "sphere", int viewport = 0);
-
-        /** \brief Add a line from a set of given model coefficients
-          * \param[in] coefficients the model coefficients (point_on_line, direction)
-          * \param[in] id the line id/name (default: "line")
-          * \param[in] viewport (optional) the id of the new viewport (default: 0)
-          *
-          * \code
-          * // The following are given (or computed using sample consensus techniques)
-          * // See SampleConsensusModelLine for more information
-          * // Eigen::Vector3f point_on_line, line_direction;
-          *
-          * pcl::ModelCoefficients line_coeff;
-          * line_coeff.values.resize (6);    // We need 6 values
-          * line_coeff.values[0] = point_on_line.x ();
-          * line_coeff.values[1] = point_on_line.y ();
-          * line_coeff.values[2] = point_on_line.z ();
-          *
-          * line_coeff.values[3] = line_direction.x ();
-          * line_coeff.values[4] = line_direction.y ();
-          * line_coeff.values[5] = line_direction.z ();
-          *
-          * addLine (line_coeff);
-          * \endcode
-          */
-        bool addLine (const pcl::ModelCoefficients &coefficients, const std::string &id = "line", int viewport = 0);
+        bool addCylinder (const temp_viz::ModelCoefficients &coefficients, const std::string &id = "cylinder", int viewport = 0);
 
         /** \brief Add a plane from a set of given model coefficients
           * \param[in] coefficients the model coefficients (a, b, c, d with ax+by+cz+d=0)
@@ -480,7 +429,7 @@ namespace pcl
           * // See SampleConsensusModelPlane for more information
           * // Eigen::Vector4f plane_parameters;
           *
-          * pcl::ModelCoefficients plane_coeff;
+          * temp_viz::ModelCoefficients plane_coeff;
           * plane_coeff.values.resize (4);    // We need 4 values
           * plane_coeff.values[0] = plane_parameters.x ();
           * plane_coeff.values[1] = plane_parameters.y ();
@@ -490,8 +439,8 @@ namespace pcl
           * addPlane (plane_coeff);
           * \endcode
           */
-        bool addPlane (const pcl::ModelCoefficients &coefficients, const std::string &id = "plane", int viewport = 0);
-        bool addPlane (const pcl::ModelCoefficients &coefficients, double x, double y, double z, const std::string &id = "plane", int viewport = 0);
+        bool addPlane (const temp_viz::ModelCoefficients &coefficients, const std::string &id = "plane", int viewport = 0);
+        bool addPlane (const temp_viz::ModelCoefficients &coefficients, double x, double y, double z, const std::string &id = "plane", int viewport = 0);
 
         /** \brief Add a circle from a set of given model coefficients
           * \param[in] coefficients the model coefficients (x, y, radius)
@@ -503,30 +452,23 @@ namespace pcl
           * // See SampleConsensusModelCircle2D for more information
           * // float x, y, radius;
           *
-          * pcl::ModelCoefficients circle_coeff;
+          * temp_viz::ModelCoefficients circle_coeff;
           * circle_coeff.values.resize (3);    // We need 3 values
           * circle_coeff.values[0] = x;
           * circle_coeff.values[1] = y;
           * circle_coeff.values[2] = radius;
           *
-          * vtkSmartPointer<vtkDataSet> data = pcl::visualization::create2DCircle (circle_coeff, z);
+          * vtkSmartPointer<vtkDataSet> data = temp_viz::create2DCircle (circle_coeff, z);
           * \endcode
            */
-        bool addCircle (const pcl::ModelCoefficients &coefficients, const std::string &id = "circle", int viewport = 0);
-
-        /** \brief Add a cone from a set of given model coefficients
-          * \param[in] coefficients the model coefficients (point_on_axis, axis_direction, radiu)
-          * \param[in] id the cone id/name (default: "cone")
-          * \param[in] viewport (optional) the id of the new viewport (default: 0)
-          */
-        bool addCone (const pcl::ModelCoefficients &coefficients, const std::string &id = "cone", int viewport = 0);
+        bool addCircle (const temp_viz::ModelCoefficients &coefficients, const std::string &id = "circle", int viewport = 0);
 
         /** \brief Add a cube from a set of given model coefficients
           * \param[in] coefficients the model coefficients (Tx, Ty, Tz, Qx, Qy, Qz, Qw, width, height, depth)
           * \param[in] id the cube id/name (default: "cube")
           * \param[in] viewport (optional) the id of the new viewport (default: 0)
           */
-        bool addCube (const pcl::ModelCoefficients &coefficients, const std::string &id = "cube", int viewport = 0);
+        bool addCube (const temp_viz::ModelCoefficients &coefficients, const std::string &id = "cube", int viewport = 0);
 
         /** \brief Add a cube from a set of given model coefficients
           * \param[in] translation a translation to apply to the cube from 0,0,0
@@ -680,7 +622,7 @@ namespace pcl
             if (event_id != vtkCommand::TimerEvent)
               return;
             int timer_id = * static_cast<int*> (call_data);
-            //PCL_WARN ("[pcl::visualization::PCLVisualizer::ExitMainLoopTimerCallback] Timer %d called.\n", timer_id);
+            //PCL_WARN ("[temp_viz::PCLVisualizer::ExitMainLoopTimerCallback] Timer %d called.\n", timer_id);
             if (timer_id != right_timer_id)
               return;
             // Stop vtk loop and send notification to app to wake it up
@@ -828,7 +770,6 @@ namespace pcl
         static void convertToEigenMatrix (const vtkSmartPointer<vtkMatrix4x4> &vtk_matrix, Eigen::Matrix4f &m);
 
     };
-  }
 }
 
 

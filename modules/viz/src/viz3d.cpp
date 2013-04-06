@@ -2,22 +2,22 @@
 #include <opencv2/core.hpp>
 #include <q/visualization/shapes.h>
 
-void pcl::visualization::PCLVisualizer::setFullScreen (bool mode)
+void temp_viz::PCLVisualizer::setFullScreen (bool mode)
 {
   if (win_)
     win_->SetFullScreen (mode);
 }
 
-void pcl::visualization::PCLVisualizer::setWindowName (const std::string &name)
+void temp_viz::PCLVisualizer::setWindowName (const std::string &name)
 {
   if (win_)
     win_->SetWindowName (name.c_str ());
 }
 
-void pcl::visualization::PCLVisualizer::setPosition (int x, int y) { win_->SetPosition (x, y); }
-void pcl::visualization::PCLVisualizer::setSize (int xw, int yw) { win_->SetSize (xw, yw); }
+void temp_viz::PCLVisualizer::setPosition (int x, int y) { win_->SetPosition (x, y); }
+void temp_viz::PCLVisualizer::setSize (int xw, int yw) { win_->SetSize (xw, yw); }
 
-void pcl::visualization::PCLVisualizer::addPointCloud(const cv::Mat& cloud, const cv::Mat& colors, const std::string& id, const cv::Mat& mask, int viewport)
+void temp_viz::PCLVisualizer::addPointCloud(const cv::Mat& cloud, const cv::Mat& colors, const std::string& id, const cv::Mat& mask, int viewport)
 {
     CV_Assert(cloud.type() == CV_32FC3 && colors.type() == CV_8UC3 && colors.size() == cloud.size());
     CV_Assert(mask.empty() || (mask.type() == CV_8U && mask.size() == cloud.size()));
@@ -147,7 +147,7 @@ void pcl::visualization::PCLVisualizer::addPointCloud(const cv::Mat& cloud, cons
 }
 
 
-bool pcl::visualization::PCLVisualizer::updatePointCloud (const cv::Mat& cloud, const cv::Mat& colors, const std::string& id, const cv::Mat& mask)
+bool temp_viz::PCLVisualizer::updatePointCloud (const cv::Mat& cloud, const cv::Mat& colors, const std::string& id, const cv::Mat& mask)
 {
     // Check to see if this ID entry already exists (has it been already added to the visualizer?)
     CloudActorMap::iterator am_it = cloud_actor_map_->find (id);
@@ -279,7 +279,7 @@ bool pcl::visualization::PCLVisualizer::updatePointCloud (const cv::Mat& cloud, 
 
 
 
-bool pcl::visualization::PCLVisualizer::addPointCloudNormals (const cv::Mat &cloud, const cv::Mat& normals, int level, float scale, const std::string &id, int viewport)
+bool temp_viz::PCLVisualizer::addPointCloudNormals (const cv::Mat &cloud, const cv::Mat& normals, int level, float scale, const std::string &id, int viewport)
 {
     CV_Assert(cloud.size() == normals.size() && cloud.type() == CV_32FC3 && normals.type() == CV_32FC3);
 
@@ -373,18 +373,14 @@ bool pcl::visualization::PCLVisualizer::addPointCloudNormals (const cv::Mat &clo
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////
-bool pcl::visualization::PCLVisualizer::addLine (const cv::Point3f &pt1, const cv::Point3f &pt2, double r, double g, double b, const std::string &id, int viewport)
+bool temp_viz::PCLVisualizer::addLine (const cv::Point3f &pt1, const cv::Point3f &pt2, double r, double g, double b, const std::string &id, int viewport)
 {
   // Check to see if this ID entry already exists (has it been already added to the visualizer?)
   ShapeActorMap::iterator am_it = shape_actor_map_->find (id);
   if (am_it != shape_actor_map_->end ())
     return std::cout << "[addLine] A shape with id <" << id <<  "> already exists! Please choose a different id and retry." << std::endl, false;
 
-
-  Eigen::Vector4f pe1(pt1.x, pt1.y, pt1.z, 0);
-  Eigen::Vector4f pe2(pt2.x, pt2.y, pt2.z, 0);
-
-  vtkSmartPointer<vtkDataSet> data = createLine (pe1, pe2);
+  vtkSmartPointer<vtkDataSet> data = createLine (pt1, pt2);
 
   // Create an Actor
   vtkSmartPointer<vtkLODActor> actor;
@@ -401,10 +397,7 @@ bool pcl::visualization::PCLVisualizer::addLine (const cv::Point3f &pt1, const c
 
 
 
-
-
-
-inline bool pcl::visualization::PCLVisualizer::addPolygonMesh (const cv::Mat& cloud, const cv::Mat& colors, const cv::Mat& mask, const std::vector<pcl::Vertices> &vertices, const std::string &id, int viewport)
+inline bool temp_viz::PCLVisualizer::addPolygonMesh (const cv::Mat& cloud, const cv::Mat& colors, const cv::Mat& mask, const std::vector<temp_viz::Vertices> &vertices, const std::string &id, int viewport)
 {
     CV_Assert(cloud.type() == CV_32FC3 && cloud.rows == 1 && !vertices.empty ());
     CV_Assert(colors.empty() || (!colors.empty() && colors.size() == cloud.size() && colors.type() == CV_8UC3));
@@ -417,9 +410,9 @@ inline bool pcl::visualization::PCLVisualizer::addPolygonMesh (const cv::Mat& cl
 //    std::vector<sensor_msgs::PointField> fields;
 
 
-//    rgb_idx = pcl::getFieldIndex (*cloud, "rgb", fields);
+//    rgb_idx = temp_viz::getFieldIndex (*cloud, "rgb", fields);
 //    if (rgb_idx == -1)
-//      rgb_idx = pcl::getFieldIndex (*cloud, "rgba", fields);
+//      rgb_idx = temp_viz::getFieldIndex (*cloud, "rgba", fields);
 
     vtkSmartPointer<vtkUnsignedCharArray> colors_array;
 #if 1
@@ -437,12 +430,12 @@ inline bool pcl::visualization::PCLVisualizer::addPolygonMesh (const cv::Mat& cl
       for(int i = 0; i < colors.cols; ++i)
           colors_array->InsertNextTupleValue(&data[i*3]);
 
-//      pcl::RGB rgb_data;
+//      temp_viz::RGB rgb_data;
 //      for (size_t i = 0; i < cloud->size (); ++i)
 //      {
 //        if (!isFinite (cloud->points[i]))
 //          continue;
-//        memcpy (&rgb_data, reinterpret_cast<const char*> (&cloud->points[i]) + fields[rgb_idx].offset, sizeof (pcl::RGB));
+//        memcpy (&rgb_data, reinterpret_cast<const char*> (&cloud->points[i]) + fields[rgb_idx].offset, sizeof (temp_viz::RGB));
 //        unsigned char color[3];
 //        color[0] = rgb_data.r;
 //        color[1] = rgb_data.g;
@@ -593,7 +586,7 @@ inline bool pcl::visualization::PCLVisualizer::addPolygonMesh (const cv::Mat& cl
 }
 
 
-inline bool pcl::visualization::PCLVisualizer::updatePolygonMesh (const cv::Mat& cloud, const cv::Mat& colors, const cv::Mat& mask, const std::vector<pcl::Vertices> &vertices, const std::string &id)
+inline bool temp_viz::PCLVisualizer::updatePolygonMesh (const cv::Mat& cloud, const cv::Mat& colors, const cv::Mat& mask, const std::vector<temp_viz::Vertices> &vertices, const std::string &id)
 {
     CV_Assert(cloud.type() == CV_32FC3 && cloud.rows == 1 && !vertices.empty ());
     CV_Assert(colors.empty() || (!colors.empty() && colors.size() == cloud.size() && colors.type() == CV_8UC3));
@@ -723,7 +716,7 @@ inline bool pcl::visualization::PCLVisualizer::updatePolygonMesh (const cv::Mat&
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////
-bool pcl::visualization::PCLVisualizer::addArrow (const cv::Point3f &pt1, const cv::Point3f &pt2, double r, double g, double b, const std::string &id, int viewport)
+bool temp_viz::PCLVisualizer::addArrow (const cv::Point3f &pt1, const cv::Point3f &pt2, double r, double g, double b, const std::string &id, int viewport)
 {
   // Check to see if this ID entry already exists (has it been already added to the visualizer?)
   ShapeActorMap::iterator am_it = shape_actor_map_->find (id);
@@ -749,7 +742,7 @@ bool pcl::visualization::PCLVisualizer::addArrow (const cv::Point3f &pt1, const 
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////
-bool pcl::visualization::PCLVisualizer::addArrow (const cv::Point3f &pt1, const cv::Point3f &pt2, double r, double g, double b, bool display_length, const std::string &id, int viewport)
+bool temp_viz::PCLVisualizer::addArrow (const cv::Point3f &pt1, const cv::Point3f &pt2, double r, double g, double b, bool display_length, const std::string &id, int viewport)
 {
   // Check to see if this ID entry already exists (has it been already added to the visualizer?)
   ShapeActorMap::iterator am_it = shape_actor_map_->find (id);
@@ -779,7 +772,7 @@ bool pcl::visualization::PCLVisualizer::addArrow (const cv::Point3f &pt1, const 
 }
 ////////////////////////////////////////////////////////////////////////////////////////////
 bool
-pcl::visualization::PCLVisualizer::addArrow (const cv::Point3f &pt1, const cv::Point3f &pt2, double r_line, double g_line, double b_line,
+temp_viz::PCLVisualizer::addArrow (const cv::Point3f &pt1, const cv::Point3f &pt2, double r_line, double g_line, double b_line,
                          double r_text, double g_text, double b_text, const std::string &id, int viewport)
 {
   // Check to see if this ID entry already exists (has it been already added to the visualizer?)
@@ -810,7 +803,7 @@ pcl::visualization::PCLVisualizer::addArrow (const cv::Point3f &pt1, const cv::P
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////
-inline bool pcl::visualization::PCLVisualizer::addSphere (const cv::Point3f& center, double radius, double r, double g, double b, const std::string &id, int viewport)
+inline bool temp_viz::PCLVisualizer::addSphere (const cv::Point3f& center, double radius, double r, double g, double b, const std::string &id, int viewport)
 {
   // Check to see if this ID entry already exists (has it been already added to the visualizer?)
   ShapeActorMap::iterator am_it = shape_actor_map_->find (id);
@@ -852,7 +845,7 @@ inline bool pcl::visualization::PCLVisualizer::addSphere (const cv::Point3f& cen
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////
-inline bool pcl::visualization::PCLVisualizer::updateSphere (const cv::Point3f &center, double radius, double r, double g, double b, const std::string &id)
+inline bool temp_viz::PCLVisualizer::updateSphere (const cv::Point3f &center, double radius, double r, double g, double b, const std::string &id)
 {
   // Check to see if this ID entry already exists (has it been already added to the visualizer?)
   ShapeActorMap::iterator am_it = shape_actor_map_->find (id);
@@ -875,7 +868,7 @@ inline bool pcl::visualization::PCLVisualizer::updateSphere (const cv::Point3f &
 }
 
 //////////////////////////////////////////////////
-inline bool pcl::visualization::PCLVisualizer::addText3D (const std::string &text, const cv::Point3f& position,
+inline bool temp_viz::PCLVisualizer::addText3D (const std::string &text, const cv::Point3f& position,
   double textScale, double r, double g, double b, const std::string &id, int viewport)
 {
   std::string tid;
@@ -934,7 +927,7 @@ inline bool pcl::visualization::PCLVisualizer::addText3D (const std::string &tex
 
 
 
-inline bool pcl::visualization::PCLVisualizer::addPolygon (const cv::Mat& cloud, const cv::Scalar& color, const std::string &id, int viewport)
+inline bool temp_viz::PCLVisualizer::addPolygon (const cv::Mat& cloud, const cv::Scalar& color, const std::string &id, int viewport)
 {
     CV_Assert(cloud.type() == CV_32FC3 && cloud.rows == 1);
 

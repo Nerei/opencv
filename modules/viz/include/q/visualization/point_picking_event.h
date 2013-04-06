@@ -3,26 +3,24 @@
 #include <opencv2/core/cvdef.h>
 #include <q/visualization/3rdparty.h>
 
-namespace pcl
+namespace temp_viz
 {
-    namespace visualization
+    class CV_EXPORTS PointPickingCallback : public vtkCommand
     {
-        class CV_EXPORTS PointPickingCallback : public vtkCommand
-        {
-        public:
-            static PointPickingCallback *New () { return (new PointPickingCallback); }
+    public:
+        static PointPickingCallback *New () { return (new PointPickingCallback); }
 
-            PointPickingCallback () : x_ (0), y_ (0), z_ (0), idx_ (-1), pick_first_ (false) {}
-            virtual ~PointPickingCallback () {}
-            virtual void Execute (vtkObject *caller, unsigned long eventid, void*);
-            int performSinglePick (vtkRenderWindowInteractor *iren);
-            int performSinglePick (vtkRenderWindowInteractor *iren, float &x, float &y, float &z);
+        PointPickingCallback () : x_ (0), y_ (0), z_ (0), idx_ (-1), pick_first_ (false) {}
+        virtual ~PointPickingCallback () {}
+        virtual void Execute (vtkObject *caller, unsigned long eventid, void*);
+        int performSinglePick (vtkRenderWindowInteractor *iren);
+        int performSinglePick (vtkRenderWindowInteractor *iren, float &x, float &y, float &z);
 
-        private:
-            float x_, y_, z_;
-            int idx_;
-            bool pick_first_;
-        };
-    } //namespace visualization
-} //namespace pcl
+    private:
+        float x_, y_, z_;
+        int idx_;
+        bool pick_first_;
+    };
+
+} //namespace temp_viz
 

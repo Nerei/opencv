@@ -3,7 +3,7 @@
 #include <vector>
 #include <opencv2/core/cvdef.h>
 
-namespace pcl
+namespace temp_viz
 {
     struct CV_EXPORTS Vertices
     {

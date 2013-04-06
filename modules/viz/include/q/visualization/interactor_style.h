@@ -1,15 +1,12 @@
 #pragma once
 
 #include <q/visualization/3rdparty.h>
-#include <q/visualization/actor_map.h>
-#include <q/visualization/ren_win_interact_map.h>
+#include <q/visualization/viz_types.h>
 #include <opencv2/viz/events.hpp>
 #include <q/visualization/point_picking_event.h>
 
-namespace pcl
+namespace temp_viz
 {
-    namespace visualization
-    {
         /** \brief PCLVisualizerInteractorStyle defines an unique, custom VTK
           * based interactory style for PCL Visualizer applications. Besides
           * defining the rendering style, we also create a list of custom actions
@@ -168,5 +165,4 @@ namespace pcl
 
             friend class PointPickingCallback;
         };
-    }
 }
