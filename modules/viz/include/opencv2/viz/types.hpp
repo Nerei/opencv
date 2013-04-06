@@ -2,9 +2,8 @@
 
 #include <vector>
 #include <pcl/common/eigen.h>
-#include <pcl/point_cloud.h>
 #include <opencv2/core/cvdef.h>
-#include<sensor_msgs/PointCloud2.h>
+#include <sensor_msgs/PointCloud2.h>
 
 
 namespace pcl

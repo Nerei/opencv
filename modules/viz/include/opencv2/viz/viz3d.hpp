@@ -3,7 +3,6 @@
 #include <opencv2/core.hpp>
 // PCL includes
 #include <pcl/point_types.h>
-#include <pcl/point_cloud.h>
 #include <opencv2/viz/types.hpp>
 #include <opencv2/viz/events.hpp>
 #include <q/visualization/interactor_style.h>

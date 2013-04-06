@@ -47,24 +47,6 @@
 #include <fstream>
 #include <string>
 
-pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_load()
-{
-    pcl::PointCloud<pcl::PointXYZ>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZ>);
-    std::ifstream ifs("d:/cloud_dragon.ply");
-
-    std::string str;
-    for(size_t i = 0; i < 11; ++i)
-        std::getline(ifs, str);
-
-    for(size_t i = 0; i < 20000; ++i)
-    {
-        pcl::PointXYZ p;
-        ifs >> p.x >> p.y >> p.z;
-        cloud->push_back(p);
-    }
-    return cloud;
-}
-
 
 cv::Mat cvcloud_load()
 {
@@ -169,71 +151,44 @@ void convert_cloud(const pcl::PointCloud<pcl::PointXYZRGB>::Ptr& points, cv::Mat
 
 TEST(Viz_viz3d, accuracy)
 {
-    //cv::Window wnd("wind");
-    //wnd.spin();
-
     pcl::visualization::PCLVisualizer v;
 
     v.addCoordinateSystem(1.0, Eigen::Affine3f::Identity());
 
-    pcl::PointCloud<pcl::PointXYZ>::Ptr cloud = cloud_load();
+    cv::Mat cloud = cvcloud_load();
 
-    cv::Mat data(1, cloud->size(), CV_32FC4, (void*)&cloud->points[0]);
+    cv::Mat colors(cloud.size(), CV_8UC3, cv::Scalar(0, 255, 0));
+    v.addPointCloud(cloud, colors);
+    cv::Mat normals(cloud.size(), CV_32FC3, cv::Scalar(0, 10, 0));
 
-    std::vector<cv::Mat> channels;
-    cv::split(data, channels);
-    channels.resize(3);
-    cv::merge(channels, data);
-
-    data = cvcloud_load();
-
-    cv::Mat colors(data.size(), CV_8UC3, cv::Scalar(0, 255, 0));
-    v.addPointCloud(data, colors);
-
-
-    cv::Mat normals(data.size(), CV_32FC3, cv::Scalar(0, 10, 0));
-
-    v.addPointCloudNormals(data, normals, 100, 0.02, "n");
+    v.addPointCloudNormals(cloud, normals, 100, 0.02, "n");
 
     pcl::ModelCoefficients mc;
     mc.values.resize(4);
     mc.values[0] = mc.values[1] = mc.values[2] = mc.values[3] = 1;
     v.addPlane(mc);
 
-
     std::vector<pcl::Vertices> polygons;
-    //pcl::PointCloud<pcl::PointXYZRGB>::Ptr me = mesh_load(polygons);
-
     cv::Mat me_cl, me_co;
-    //convert_cloud(me, me_cl, me_co);
-
     mesh_load(polygons, me_cl, me_co, "d:/horse.ply");
 
-    std::cout << "aasasas" << std::endl;
+
     v.addPolygonMesh(me_cl, me_co, cv::Mat(), polygons, "pq");
-    //v.addPolygonMesh<pcl::PointXYZRGB>(me, polygons, "pqs");
+
 
     v.spinOnce(1000, true);
 
-    //me = mesh_load(polygons, "d:/dragon.ply");
-    //convert_cloud(me, me_cl, me_co);
 
     for(int i = 0; i < me_cl.cols; ++i)
         me_cl.ptr<cv::Point3f>()[i] += cv::Point3f(1, 1, 1);
 
 
-    //convert_cloud(me, me_cl, me_co);
     v.updatePolygonMesh(me_cl, me_co, cv::Mat(), polygons, "pq");
-    //v.updatePolygonMesh<pcl::PointXYZRGB>(me, polygons, "pq");
-
 
 
     v.addText("===Abd sadfljsadlk", 100, 100, cv::Scalar(255, 0, 0), 15);
-    //channels[0] *= 7;
-    //cv::merge(channels, data);
-
-    for(int i = 0; i < data.cols; ++i)
-        data.ptr<cv::Point3f>()[i].x *=2;
+        for(int i = 0; i < cloud.cols; ++i)
+        cloud.ptr<cv::Point3f>()[i].x *=2;
 
     colors.setTo(cv::Scalar(255, 0, 0));
 
@@ -248,6 +203,6 @@ TEST(Viz_viz3d, accuracy)
     pdata[4] = cv::Point3f(7, 2, 3);
     v.addPolygon(cvpoly);
 
-    v.updatePointCloud(data, colors);
+    v.updatePointCloud(cloud, colors);
     v.spin();
 }
