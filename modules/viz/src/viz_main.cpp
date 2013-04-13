@@ -26,8 +26,18 @@
 //#include <q/visualization/vtk/vtkVertexBufferObjectMapper.h>
 //#include <q/visualization/vtk/vtkRenderWindowInteractorFix.h>
 
+#include <vtkRenderWindowInteractor.h>
+
+//vtkRenderWindowInteractor* vtkRenderWindowInteractorFixNew ()
+#ifndef __APPLE__
+vtkRenderWindowInteractor* vtkRenderWindowInteractorFixNew ()
+{
+  return (vtkRenderWindowInteractor::New ());
+}
+#endif
+
 /////////////////////////////////////////////////////////////////////////////////////////////
-temp_viz::VizImpl::VizImpl (const std::string &name, const bool create_interactor)
+temp_viz::VizImpl::VizImpl (const std::string &name)
     : interactor_ ()
     , stopped_ ()
     , timer_id_ ()
@@ -41,6 +51,7 @@ temp_viz::VizImpl::VizImpl (const std::string &name, const bool create_interacto
     //, coordinate_actor_map_ ()
     , camera_set_ ()
     , ren_()
+    , s_lastDone_(0.0)
 {
     // Create a Renderer
     ren_ = vtkSmartPointer<vtkRenderer>::New ();
@@ -65,29 +76,10 @@ temp_viz::VizImpl::VizImpl (const std::string &name, const bool create_interacto
     style_->setCloudActorMap (cloud_actor_map_);
     style_->UseTimersOn ();
 
-    if (create_interactor)
-        createInteractor ();
-
-    win_->SetWindowName (name.c_str ());
-}
 
 
-#include <vtkRenderWindowInteractor.h>
+    /////////////////////////////////////////////////
 
-//vtkRenderWindowInteractor* vtkRenderWindowInteractorFixNew ()
-#ifndef __APPLE__
-vtkRenderWindowInteractor* vtkRenderWindowInteractorFixNew ()
-{
-  return (vtkRenderWindowInteractor::New ());
-}
-#endif
-
-
-
-
-/////////////////////////////////////////////////////////////////////////////////////////////
-void temp_viz::VizImpl::createInteractor ()
-{
     interactor_ = vtkSmartPointer <vtkRenderWindowInteractor>::Take (vtkRenderWindowInteractorFixNew ());
 
     //win_->PointSmoothingOn ();
@@ -124,6 +116,11 @@ void temp_viz::VizImpl::createInteractor ()
     interactor_->AddObserver (vtkCommand::ExitEvent, exit_callback_);
 
     resetStoppedFlag ();
+
+
+
+    //////////////////////////////
+    win_->SetWindowName (name.c_str ());
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
@@ -175,32 +172,8 @@ namespace temp_viz
       boost::posix_time::ptime current_time = boost::posix_time::microsec_clock::local_time ();
       return (static_cast<double>((current_time - epoch_time).total_nanoseconds ()) * 1.0e-9);
     }
-    }
 
-
-#ifndef DO_EVERY_TS
-#define DO_EVERY_TS(secs, currentTime, code) \
-if (1) {\
-  static double s_lastDone_ = 0.0; \
-  double s_now_ = (currentTime); \
-  if (s_lastDone_ > s_now_) \
-    s_lastDone_ = s_now_; \
-  if ((s_now_ - s_lastDone_) > (secs)) {        \
-    code; \
-    s_lastDone_ = s_now_; \
-  }\
-} else \
-  (void)0
-#endif
-
-
-/// Executes code, only if secs are gone since last exec.
-#ifndef DO_EVERY
-#define DO_EVERY(secs, code) \
-  DO_EVERY_TS(secs, temp_viz::getTime(), code)
-#endif
-
-//#include <pcl/common/time.h>
+}
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 void temp_viz::VizImpl::spinOnce (int time, bool force_redraw)
@@ -213,11 +186,17 @@ void temp_viz::VizImpl::spinOnce (int time, bool force_redraw)
     if (force_redraw)
         interactor_->Render ();
 
-    DO_EVERY (1.0 / interactor_->GetDesiredUpdateRate (),
-              exit_main_loop_timer_callback_->right_timer_id = interactor_->CreateRepeatingTimer (time);
-            interactor_->Start ();
-    interactor_->DestroyTimer (exit_main_loop_timer_callback_->right_timer_id);
-    );
+    double s_now_ = temp_viz::getTime();
+    if (s_lastDone_ > s_now_)
+      s_lastDone_ = s_now_;
+
+    if ((s_now_ - s_lastDone_) > (1.0 / interactor_->GetDesiredUpdateRate ()))
+    {
+        exit_main_loop_timer_callback_->right_timer_id = interactor_->CreateRepeatingTimer (time);
+        interactor_->Start ();
+        interactor_->DestroyTimer (exit_main_loop_timer_callback_->right_timer_id);
+        s_lastDone_ = s_now_;
+    }
 }
 
 int feq (double a, double b) { return fabs (a - b) < 1e-9; }
@@ -324,23 +303,16 @@ bool temp_viz::VizImpl::removeCoordinateSystem (const std::string &id)
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
-bool
-temp_viz::VizImpl::removePointCloud (const std::string &id)
+bool temp_viz::VizImpl::removePointCloud (const std::string &id)
 {
-    // Check to see if the given ID entry exists
     CloudActorMap::iterator am_it = cloud_actor_map_->find (id);
-
     if (am_it == cloud_actor_map_->end ())
-        return (false);
+        return false;
 
-    // Remove it from all renderers
     if (removeActorFromRenderer (am_it->second.actor))
-    {
-        // Remove the pointer/ID pair to the global actor map
-        cloud_actor_map_->erase (am_it);
-        return (true);
-    }
-    return (false);
+        return cloud_actor_map_->erase (am_it), true;
+
+    return false;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
@@ -387,21 +359,14 @@ bool temp_viz::VizImpl::removeText3D (const std::string &id)
 {
     // Check to see if the given ID entry exists
     ShapeActorMap::iterator am_it = shape_actor_map_->find (id);
-
     if (am_it == shape_actor_map_->end ())
-    {
-        //temp_viz::console::print_warn (stderr, "[removeSape] Could not find any shape with id <%s>!\n", id.c_str ());
-        return (false);
-    }
+        return false;
 
     // Remove it from all renderers
     if (removeActorFromRenderer (am_it->second))
-    {
-        // Remove the pointer/ID pair to the global actor map
-        shape_actor_map_->erase (am_it);
-        return (true);
-    }
-    return (false);
+        return shape_actor_map_->erase (am_it), true;
+
+    return false;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
@@ -436,12 +401,9 @@ bool temp_viz::VizImpl::removeAllShapes ()
 
 
 //////////////////////////////////////////////////////////////////////////////////////////
-bool
-temp_viz::VizImpl::removeActorFromRenderer (const vtkSmartPointer<vtkLODActor> &actor)
+bool temp_viz::VizImpl::removeActorFromRenderer (const vtkSmartPointer<vtkLODActor> &actor)
 {
     vtkLODActor* actor_to_remove = vtkLODActor::SafeDownCast (actor);
-
-    // Add it to all renderers
 
     vtkRenderer* renderer = ren_;
 
@@ -618,11 +580,11 @@ void temp_viz::VizImpl::createActorFromVTKDataSet (const vtkSmartPointer<vtkData
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////
-void temp_viz::VizImpl::setBackgroundColor (const double &r, const double &g, const double &b)
+void temp_viz::VizImpl::setBackgroundColor (const cv::Scalar& color)
 {
     //rens_->InitTraversal ();
     vtkRenderer* renderer = ren_;
-    renderer->SetBackground (r, g, b);
+    renderer->SetBackground (color[2]/255, color[1]/255, color[0]/255);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
@@ -1520,15 +1482,15 @@ bool temp_viz::VizImpl::addCircle (const temp_viz::ModelCoefficients &coefficien
 ////    win_->Modified ();
 //}
 
-//////////////////////////////////////////////////////////////////////////////////////////
-void temp_viz::VizImpl::createViewPortCamera ()
-{
-    vtkSmartPointer<vtkCamera> cam = vtkSmartPointer<vtkCamera>::New ();
-    //rens_->InitTraversal ();
-    vtkRenderer* renderer = ren_;
-    renderer->SetActiveCamera (cam);
-    renderer->ResetCamera ();
-}
+////////////////////////////////////////////////////////////////////////////////////////////
+//void temp_viz::VizImpl::createViewPortCamera ()
+//{
+//    vtkSmartPointer<vtkCamera> cam = vtkSmartPointer<vtkCamera>::New ();
+//    //rens_->InitTraversal ();
+//    vtkRenderer* renderer = ren_;
+//    renderer->SetActiveCamera (cam);
+//    renderer->ResetCamera ();
+//}
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 bool temp_viz::VizImpl::addText (const std::string &text, int xpos, int ypos, const cv::Scalar& color, int fontsize, const std::string &id)

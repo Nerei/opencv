@@ -43,7 +43,7 @@ namespace temp_viz
       public:
         typedef cv::Ptr<VizImpl> Ptr;
 
-        VizImpl (const std::string &name = "Viz", const bool create_interactor = true);
+        VizImpl (const std::string &name = "Viz");
 
         virtual ~VizImpl ();
         void setFullScreen (bool mode);
@@ -139,92 +139,43 @@ namespace temp_viz
         /** \brief Removes a previously added 3D axes (coordinate system)
           */
         bool removeCoordinateSystem (const std::string &id = "coordinate");
-
-        /** \brief Removes a Point Cloud from screen, based on a given ID.
-          * \param[in] id the point cloud object id (i.e., given on \a addPointCloud)
-          * \return true if the point cloud is successfully removed and false if the point cloud is
-          * not actually displayed
-          */
         bool removePointCloud (const std::string &id = "cloud");
-
-        /** \brief Removes a PolygonMesh from screen, based on a given ID.
-          * \param[in] id the polygon object id (i.e., given on \a addPolygonMesh)
-          */
         inline bool removePolygonMesh (const std::string &id = "polygon")
         {
           // Polygon Meshes are represented internally as point clouds with special cell array structures since 1.4
           return removePointCloud (id);
         }
-
-        /** \brief Removes an added shape from screen (line, polygon, etc.), based on a given ID
-          * \note This methods also removes PolygonMesh objects and PointClouds, if they match the ID
-          * \param[in] id the shape object id (i.e., given on \a addLine etc.)
-          */
         bool removeShape (const std::string &id = "cloud");
 
-        /** \brief Removes an added 3D text from the scene, based on a given ID
-          * \param[in] id the 3D text id (i.e., given on \a addText3D etc.)
-          */
         bool removeText3D (const std::string &id = "cloud");
         bool removeAllPointClouds ();
         bool removeAllShapes ();
 
-        void setBackgroundColor (const double &r, const double &g, const double &b);
+        void setBackgroundColor (const cv::Scalar& color = cv::Scalar::all(0));
 
         bool addText (const std::string &text, int xpos, int ypos, const cv::Scalar& color = cv::Scalar(255, 255, 255), int fontsize = 10, const std::string &id = "");
         bool updateText (const std::string &text, int xpos, int ypos, const cv::Scalar& color  = cv::Scalar(255, 255, 255), int fontsize = 10, const std::string &id = "");
 
-        /** \brief Set the pose of an existing shape.
-          *
-          * Returns false if the shape doesn't exist, true if the pose was succesfully
-          * updated.
-          *
-          * \param[in] id the shape or cloud object id (i.e., given on \a addLine etc.)
-          * \param[in] pose the new pose
-          * \return false if no shape or cloud with the specified ID was found
-          */
+        /** \brief Set the pose of an existing shape. Returns false if the shape doesn't exist, true if the pose was succesfully updated. */
         bool updateShapePose (const std::string &id, const cv::Affine3f& pose);
 
-        bool addText3D (const std::string &text, const cv::Point3f &position, double textScale = 1.0,
-                   double r = 1.0, double g = 1.0, double b = 1.0, const std::string &id = "");
+        bool addText3D (const std::string &text, const cv::Point3f &position, double textScale = 1.0, double r = 1.0, double g = 1.0, double b = 1.0, const std::string &id = "");
 
         bool addPointCloudNormals (const cv::Mat &cloud, const cv::Mat& normals, int level = 100, float scale = 0.02f, const std::string &id = "cloud");
         void addPointCloud(const cv::Mat& cloud, const cv::Mat& colors, const std::string& id = "cloud", const cv::Mat& mask = cv::Mat());
         bool updatePointCloud (const cv::Mat& cloud, const cv::Mat& colors, const std::string& id = "cloud", const cv::Mat& mask = cv::Mat());
 
-
         bool addPolygonMesh (const cv::Mat& cloud, const cv::Mat& colors, const cv::Mat& mask, const std::vector<temp_viz::Vertices> &vertices, const std::string &id = "polygon");
         bool updatePolygonMesh (const cv::Mat& cloud, const cv::Mat& colors, const cv::Mat& mask, const std::vector<temp_viz::Vertices> &vertices, const std::string &id = "polygon");
 
-
-        /** \brief Add a Polygonline from a polygonMesh object to screen
-          * \param[in] polymesh the polygonal mesh from where the polylines will be extracted
-          * \param[in] id the polygon object id (default: "polygon")
-          */
         bool addPolylineFromPolygonMesh (const cv::Mat& cloud, const std::vector<temp_viz::Vertices> &vertices, const std::string &id = "polyline");
 
-        /** \brief Set the rendering properties of a PointCloud (3x values - e.g., RGB)
-          * \param[in] property the property type
-          * \param[in] val1 the first value to be set
-          * \param[in] val2 the second value to be set
-          * \param[in] val3 the third value to be set
-          * \param[in] id the point cloud object id (default: cloud)
-          */
         bool setPointCloudRenderingProperties (int property, double val1, double val2, double val3, const std::string &id = "cloud");
-
-       /** \brief Set the rendering properties of a PointCloud
-         * \param[in] property the property type
-         * \param[in] value the value to be set
-         * \param[in] id the point cloud object id (default: cloud)
-         */
         bool setPointCloudRenderingProperties (int property, double value, const std::string &id = "cloud");
-
-       /** \brief Get the rendering properties of a PointCloud
-         * \param[in] property the property type
-         * \param[in] value the resultant property value
-         * \param[in] id the point cloud object id (default: cloud)
-         */
         bool getPointCloudRenderingProperties (int property, double &value, const std::string &id = "cloud");
+
+        bool setShapeRenderingProperties (int property, double value, const std::string &id);
+        bool setShapeRenderingProperties (int property, double val1, double val2, double val3, const std::string &id);
 
         /** \brief Set whether the point cloud is selected or not
          *  \param[in] selected whether the cloud is selected or not (true = selected)
@@ -232,26 +183,8 @@ namespace temp_viz
          */
         bool setPointCloudSelected (const bool selected, const std::string &id = "cloud" );
 
-       /** \brief Set the rendering properties of a shape
-         * \param[in] property the property type
-         * \param[in] value the value to be set
-         * \param[in] id the shape object id
-
-         */
-        bool setShapeRenderingProperties (int property, double value, const std::string &id);
-
-        /** \brief Set the rendering properties of a shape (3x values - e.g., RGB)
-          * \param[in] property the property type
-          * \param[in] val1 the first value to be set
-          * \param[in] val2 the second value to be set
-          * \param[in] val3 the third value to be set
-          * \param[in] id the shape object id
-
-          */
-         bool setShapeRenderingProperties (int property, double val1, double val2, double val3, const std::string &id);
-
         /** \brief Returns true when the user tried to close the window */
-        bool wasStopped () const { if (interactor_ != NULL) return (stopped_); else return (true); }
+        bool wasStopped () const { if (interactor_ != NULL) return (stopped_); else return true; }
 
         /** \brief Set the stopped flag back to false */
         void resetStoppedFlag () { if (interactor_ != NULL) stopped_ = false; }
@@ -264,7 +197,7 @@ namespace temp_viz
           interactor_->TerminateApp ();
         }
 
-     void createViewPortCamera ();
+        //void createViewPortCamera ();
 
         bool addPolygon(const cv::Mat& cloud, const cv::Scalar& color = cv::Scalar(255, 255, 255), const std::string &id = "polygon");
 
@@ -530,9 +463,6 @@ namespace temp_viz
         void setPosition (int x, int y);
         void setSize (int xw, int yw);
 
-        /** \brief Create the internal Interactor object. */
-        void createInteractor ();
-
       protected:
         /** \brief The render window interactor. */
 
@@ -577,6 +507,8 @@ namespace temp_viz
 
         /** \brief Set to false if the interaction loop is running. */
         bool stopped_;
+
+        double s_lastDone_;
 
         /** \brief Global timer ID. Used in destructor only. */
         int timer_id_;
@@ -656,12 +588,6 @@ namespace temp_viz
           * \param[out] polydata the resultant poly data
           */
         void allocVtkUnstructuredGrid (vtkSmartPointer<vtkUnstructuredGrid> &polydata);
-
-        /** \brief Transform the point cloud viewpoint to a transformation matrix
-          * \param[in] origin the camera origin
-          * \param[in] orientation the camera orientation
-          * \param[out] transformation the camera transformation matrix
-          */
 
     };
 

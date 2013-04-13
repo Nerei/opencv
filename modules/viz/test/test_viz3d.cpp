@@ -137,6 +137,9 @@ void mesh_load(std::vector<temp_viz::Vertices>& polygons, cv::Mat& cloud, cv::Ma
 TEST(Viz_viz3d, accuracy)
 {
     temp_viz::VizImpl v;
+    //v.spin();
+
+    v.setBackgroundColor(cv::Scalar(50, 0, 0));
 
     v.addCoordinateSystem(1.0, cv::Affine3f::Identity());
 
