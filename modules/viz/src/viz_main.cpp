@@ -33,7 +33,7 @@ temp_viz::VizImpl::VizImpl (const std::string &name, const bool create_interacto
     , timer_id_ ()
     , exit_main_loop_timer_callback_ ()
     , exit_callback_ ()
-    , rens_ (vtkSmartPointer<vtkRendererCollection>::New ())
+    //, rens_ (vtkSmartPointer<vtkRendererCollection>::New ())
     , win_ ()
     , style_ (vtkSmartPointer<temp_viz::PCLVisualizerInteractorStyle>::New ())
     , cloud_actor_map_ (new CloudActorMap)
@@ -42,9 +42,9 @@ temp_viz::VizImpl::VizImpl (const std::string &name, const bool create_interacto
     , camera_set_ ()
 {
     // Create a Renderer
-    vtkSmartPointer<vtkRenderer> ren = vtkSmartPointer<vtkRenderer>::New ();
+    ren_ = vtkSmartPointer<vtkRenderer>::New ();
     // Add it to the list of renderers
-    rens_->AddItem (ren);
+    //rens_->AddItem (ren);
 
     // Create a RendererWindow
     win_ = vtkSmartPointer<vtkRenderWindow>::New ();
@@ -56,15 +56,11 @@ temp_viz::VizImpl::VizImpl (const std::string &name, const bool create_interacto
     win_->SetSize (scr_size[0] / 2, scr_size[1] / 2);
 
 
-    // Add all renderers to the window
-    rens_->InitTraversal ();
-    vtkRenderer* renderer = NULL;
-    while ((renderer = rens_->GetNextItem ()) != NULL)
-        win_->AddRenderer (renderer);
+    win_->AddRenderer (ren_);
 
     // Create the interactor style
     style_->Initialize ();
-    style_->setRendererCollection (rens_);
+    style_->setRenderer (ren_);
     style_->setCloudActorMap (cloud_actor_map_);
     style_->UseTimersOn ();
 
@@ -135,7 +131,8 @@ temp_viz::VizImpl::~VizImpl ()
     if (interactor_ != NULL)
         interactor_->DestroyTimer (timer_id_);
     // Clear the collections
-    rens_->RemoveAllItems ();
+    //ren_->RemoveAllItems ();
+    ren_->Clear();
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
@@ -444,37 +441,25 @@ temp_viz::VizImpl::removeActorFromRenderer (const vtkSmartPointer<vtkLODActor> &
     vtkLODActor* actor_to_remove = vtkLODActor::SafeDownCast (actor);
 
     // Add it to all renderers
-    rens_->InitTraversal ();
-    vtkRenderer* renderer = NULL;
-    int i = 0;
-    while ((renderer = rens_->GetNextItem ()) != NULL)
+
+    vtkRenderer* renderer = ren_;
+
+    // Iterate over all actors in this renderer
+    vtkPropCollection* actors = renderer->GetViewProps ();
+    actors->InitTraversal ();
+
+    vtkProp* current_actor = NULL;
+    while ((current_actor = actors->GetNextProp ()) != NULL)
     {
-        // Should we remove the actor from all renderers?
-        if (viewport == 0)
-        {
-            renderer->RemoveActor (actor);
-            //      renderer->Render ();
-        }
-        else if (viewport == i)               // add the actor only to the specified viewport
-        {
-            // Iterate over all actors in this renderer
-            vtkPropCollection* actors = renderer->GetViewProps ();
-            actors->InitTraversal ();
-            vtkProp* current_actor = NULL;
-            while ((current_actor = actors->GetNextProp ()) != NULL)
-            {
-                if (current_actor != actor_to_remove)
-                    continue;
-                renderer->RemoveActor (actor);
-                //        renderer->Render ();
-                // Found the correct viewport and removed the actor
-                return (true);
-            }
-        }
-        ++i;
+        if (current_actor != actor_to_remove)
+            continue;
+        renderer->RemoveActor (actor);
+        //        renderer->Render ();
+        // Found the correct viewport and removed the actor
+        return (true);
     }
-    if (viewport == 0) return (true);
-    return (false);
+
+    return false;
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -483,61 +468,32 @@ bool temp_viz::VizImpl::removeActorFromRenderer (const vtkSmartPointer<vtkActor>
     vtkActor* actor_to_remove = vtkActor::SafeDownCast (actor);
 
     // Add it to all renderers
-    rens_->InitTraversal ();
-    vtkRenderer* renderer = NULL;
-    int i = 1;
-    while ((renderer = rens_->GetNextItem ()) != NULL)
+    //rens_->InitTraversal ();
+    vtkRenderer* renderer = ren_;
+
+        // Iterate over all actors in this renderer
+    vtkPropCollection* actors = renderer->GetViewProps ();
+    actors->InitTraversal ();
+    vtkProp* current_actor = NULL;
+    while ((current_actor = actors->GetNextProp ()) != NULL)
     {
-        // Should we remove the actor from all renderers?
-        if (viewport == 0)
-        {
-            renderer->RemoveActor (actor);
-            //      renderer->Render ();
-        }
-        else if (viewport == i)               // add the actor only to the specified viewport
-        {
-            // Iterate over all actors in this renderer
-            vtkPropCollection* actors = renderer->GetViewProps ();
-            actors->InitTraversal ();
-            vtkProp* current_actor = NULL;
-            while ((current_actor = actors->GetNextProp ()) != NULL)
-            {
-                if (current_actor != actor_to_remove)
-                    continue;
-                renderer->RemoveActor (actor);
-                //        renderer->Render ();
-                // Found the correct viewport and removed the actor
-                return (true);
-            }
-        }
-        ++i;
+        if (current_actor != actor_to_remove)
+            continue;
+        renderer->RemoveActor (actor);
+        //        renderer->Render ();
+        // Found the correct viewport and removed the actor
+        return (true);
     }
-    if (viewport == 0) return (true);
-    return (false);
+    return false;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 void temp_viz::VizImpl::addActorToRenderer (const vtkSmartPointer<vtkProp> &actor, int viewport)
 {
     // Add it to all renderers
-    rens_->InitTraversal ();
-    vtkRenderer* renderer = NULL;
-    int i = 0;
-    while ((renderer = rens_->GetNextItem ()) != NULL)
-    {
-        // Should we add the actor to all renderers?
-        if (viewport == 0)
-        {
-            renderer->AddActor (actor);
-            //      renderer->Render ();
-        }
-        else if (viewport == i)               // add the actor only to the specified viewport
-        {
-            renderer->AddActor (actor);
-            //      renderer->Render ();
-        }
-        ++i;
-    }
+    //rens_->InitTraversal ();
+    vtkRenderer* renderer = ren_;
+    renderer->AddActor (actor);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
@@ -546,37 +502,24 @@ bool temp_viz::VizImpl::removeActorFromRenderer (const vtkSmartPointer<vtkProp> 
     vtkProp* actor_to_remove = vtkProp::SafeDownCast (actor);
 
     // Initialize traversal
-    rens_->InitTraversal ();
-    vtkRenderer* renderer = NULL;
-    int i = 0;
-    while ((renderer = rens_->GetNextItem ()) != NULL)
+    //rens_->InitTraversal ();
+    vtkRenderer* renderer = ren_;
+
+    // Iterate over all actors in this renderer
+    vtkPropCollection* actors = renderer->GetViewProps ();
+    actors->InitTraversal ();
+    vtkProp* current_actor = NULL;
+    while ((current_actor = actors->GetNextProp ()) != NULL)
     {
-        // Should we remove the actor from all renderers?
-        if (viewport == 0)
-        {
-            renderer->RemoveActor (actor);
-            //      renderer->Render ();
-        }
-        else if (viewport == i)               // add the actor only to the specified viewport
-        {
-            // Iterate over all actors in this renderer
-            vtkPropCollection* actors = renderer->GetViewProps ();
-            actors->InitTraversal ();
-            vtkProp* current_actor = NULL;
-            while ((current_actor = actors->GetNextProp ()) != NULL)
-            {
-                if (current_actor != actor_to_remove)
-                    continue;
-                renderer->RemoveActor (actor);
-                //        renderer->Render ();
-                // Found the correct viewport and removed the actor
-                return (true);
-            }
-        }
-        ++i;
+        if (current_actor != actor_to_remove)
+            continue;
+        renderer->RemoveActor (actor);
+        //        renderer->Render ();
+        // Found the correct viewport and removed the actor
+        return (true);
     }
-    if (viewport == 0) return (true);
-    return (false);
+
+    return false;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
@@ -676,24 +619,9 @@ void temp_viz::VizImpl::createActorFromVTKDataSet (const vtkSmartPointer<vtkData
 //////////////////////////////////////////////////////////////////////////////////////////////
 void temp_viz::VizImpl::setBackgroundColor (const double &r, const double &g, const double &b, int viewport)
 {
-    rens_->InitTraversal ();
-    vtkRenderer* renderer = NULL;
-    int i = 1;
-    while ((renderer = rens_->GetNextItem ()) != NULL)
-    {
-        // Should we add the actor to all renderers?
-        if (viewport == 0)
-        {
-            renderer->SetBackground (r, g, b);
-            //      renderer->Render ();
-        }
-        else if (viewport == i)               // add the actor only to the specified viewport
-        {
-            renderer->SetBackground (r, g, b);
-            //      renderer->Render ();
-        }
-        ++i;
-    }
+    //rens_->InitTraversal ();
+    vtkRenderer* renderer = ren_;
+    renderer->SetBackground (r, g, b);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
@@ -1046,11 +974,10 @@ bool temp_viz::VizImpl::cameraParamsSet () const { return (camera_set_); }
 void temp_viz::VizImpl::updateCamera ()
 {
     std::cout << "[temp_viz::PCLVisualizer::updateCamera()] This method was deprecated, just re-rendering all scenes now." << std::endl;
-    rens_->InitTraversal ();
+    //rens_->InitTraversal ();
     // Update the camera parameters
-    vtkRenderer* renderer = NULL;
-    while ((renderer = rens_->GetNextItem ()) != NULL)
-        renderer->Render ();
+    vtkRenderer* renderer = ren_;
+    renderer->Render ();
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
@@ -1079,28 +1006,27 @@ bool temp_viz::VizImpl::updateShapePose (const std::string &id, const cv::Affine
 void temp_viz::VizImpl::getCameras (std::vector<temp_viz::Camera>& cameras)
 {
     cameras.clear ();
-    rens_->InitTraversal ();
-    vtkRenderer* renderer = NULL;
-    while ((renderer = rens_->GetNextItem ()) != NULL)
-    {
-        cameras.push_back(Camera());
-        cameras.back ().pos[0] = renderer->GetActiveCamera ()->GetPosition ()[0];
-        cameras.back ().pos[1] = renderer->GetActiveCamera ()->GetPosition ()[1];
-        cameras.back ().pos[2] = renderer->GetActiveCamera ()->GetPosition ()[2];
-        cameras.back ().focal[0] = renderer->GetActiveCamera ()->GetFocalPoint ()[0];
-        cameras.back ().focal[1] = renderer->GetActiveCamera ()->GetFocalPoint ()[1];
-        cameras.back ().focal[2] = renderer->GetActiveCamera ()->GetFocalPoint ()[2];
-        cameras.back ().clip[0] = renderer->GetActiveCamera ()->GetClippingRange ()[0];
-        cameras.back ().clip[1] = renderer->GetActiveCamera ()->GetClippingRange ()[1];
-        cameras.back ().view_up[0] = renderer->GetActiveCamera ()->GetViewUp ()[0];
-        cameras.back ().view_up[1] = renderer->GetActiveCamera ()->GetViewUp ()[1];
-        cameras.back ().view_up[2] = renderer->GetActiveCamera ()->GetViewUp ()[2];
-        cameras.back ().fovy = renderer->GetActiveCamera ()->GetViewAngle () / 180.0 * M_PI;
-        cameras.back ().window_size[0] = renderer->GetRenderWindow ()->GetSize ()[0];
-        cameras.back ().window_size[1] = renderer->GetRenderWindow ()->GetSize ()[1];
-        cameras.back ().window_pos[0] = 0;
-        cameras.back ().window_pos[1] = 0;
-    }
+    //rens_->InitTraversal ();
+    vtkRenderer* renderer = ren_;
+
+    cameras.push_back(Camera());
+    cameras.back ().pos[0] = renderer->GetActiveCamera ()->GetPosition ()[0];
+    cameras.back ().pos[1] = renderer->GetActiveCamera ()->GetPosition ()[1];
+    cameras.back ().pos[2] = renderer->GetActiveCamera ()->GetPosition ()[2];
+    cameras.back ().focal[0] = renderer->GetActiveCamera ()->GetFocalPoint ()[0];
+    cameras.back ().focal[1] = renderer->GetActiveCamera ()->GetFocalPoint ()[1];
+    cameras.back ().focal[2] = renderer->GetActiveCamera ()->GetFocalPoint ()[2];
+    cameras.back ().clip[0] = renderer->GetActiveCamera ()->GetClippingRange ()[0];
+    cameras.back ().clip[1] = renderer->GetActiveCamera ()->GetClippingRange ()[1];
+    cameras.back ().view_up[0] = renderer->GetActiveCamera ()->GetViewUp ()[0];
+    cameras.back ().view_up[1] = renderer->GetActiveCamera ()->GetViewUp ()[1];
+    cameras.back ().view_up[2] = renderer->GetActiveCamera ()->GetViewUp ()[2];
+    cameras.back ().fovy = renderer->GetActiveCamera ()->GetViewAngle () / 180.0 * M_PI;
+    cameras.back ().window_size[0] = renderer->GetRenderWindow ()->GetSize ()[0];
+    cameras.back ().window_size[1] = renderer->GetRenderWindow ()->GetSize ()[1];
+    cameras.back ().window_pos[0] = 0;
+    cameras.back ().window_pos[1] = 0;
+
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
@@ -1108,44 +1034,33 @@ cv::Affine3f temp_viz::VizImpl::getViewerPose (int viewport)
 {
     cv::Affine3f ret  = cv::Affine3f::Identity();
 
-    rens_->InitTraversal ();
-    vtkRenderer* renderer = NULL;
-    if (viewport == 0)
-        viewport = 1;
-    int viewport_i = 1;
-    while ((renderer = rens_->GetNextItem ()) != NULL)
-    {
-        if (viewport_i == viewport)
-        {
-            vtkCamera& camera = *renderer->GetActiveCamera ();
-            Eigen::Vector3d pos, x_axis, y_axis, z_axis;
-            camera.GetPosition (pos[0], pos[1], pos[2]);
-            camera.GetViewUp (y_axis[0], y_axis[1], y_axis[2]);
-            camera.GetFocalPoint (z_axis[0], z_axis[1], z_axis[2]);
+    //rens_->InitTraversal ();
+    vtkRenderer* renderer = ren_;
 
-            z_axis = (z_axis - pos).normalized ();
-            x_axis = y_axis.cross (z_axis).normalized ();
+    vtkCamera& camera = *renderer->GetActiveCamera ();
+    Eigen::Vector3d pos, x_axis, y_axis, z_axis;
+    camera.GetPosition (pos[0], pos[1], pos[2]);
+    camera.GetViewUp (y_axis[0], y_axis[1], y_axis[2]);
+    camera.GetFocalPoint (z_axis[0], z_axis[1], z_axis[2]);
 
-            /// TODO replace this ugly thing with matrix.block () = vector3f
-            ret.matrix (0, 0) = static_cast<float> (x_axis[0]);
-            ret.matrix (0, 1) = static_cast<float> (y_axis[0]);
-            ret.matrix (0, 2) = static_cast<float> (z_axis[0]);
-            ret.matrix (0, 3) = static_cast<float> (pos[0]);
+    z_axis = (z_axis - pos).normalized ();
+    x_axis = y_axis.cross (z_axis).normalized ();
 
-            ret.matrix (1, 0) = static_cast<float> (x_axis[1]);
-            ret.matrix (1, 1) = static_cast<float> (y_axis[1]);
-            ret.matrix (1, 2) = static_cast<float> (z_axis[1]);
-            ret.matrix (1, 3) = static_cast<float> (pos[1]);
+    /// TODO replace this ugly thing with matrix.block () = vector3f
+    ret.matrix (0, 0) = static_cast<float> (x_axis[0]);
+    ret.matrix (0, 1) = static_cast<float> (y_axis[0]);
+    ret.matrix (0, 2) = static_cast<float> (z_axis[0]);
+    ret.matrix (0, 3) = static_cast<float> (pos[0]);
 
-            ret.matrix (2, 0) = static_cast<float> (x_axis[2]);
-            ret.matrix (2, 1) = static_cast<float> (y_axis[2]);
-            ret.matrix (2, 2) = static_cast<float> (z_axis[2]);
-            ret.matrix (2, 3) = static_cast<float> (pos[2]);
+    ret.matrix (1, 0) = static_cast<float> (x_axis[1]);
+    ret.matrix (1, 1) = static_cast<float> (y_axis[1]);
+    ret.matrix (1, 2) = static_cast<float> (z_axis[1]);
+    ret.matrix (1, 3) = static_cast<float> (pos[1]);
 
-            return ret;
-        }
-        viewport_i ++;
-    }
+    ret.matrix (2, 0) = static_cast<float> (x_axis[2]);
+    ret.matrix (2, 1) = static_cast<float> (y_axis[2]);
+    ret.matrix (2, 2) = static_cast<float> (z_axis[2]);
+    ret.matrix (2, 3) = static_cast<float> (pos[2]);
 
     return ret;
 }
@@ -1154,52 +1069,34 @@ cv::Affine3f temp_viz::VizImpl::getViewerPose (int viewport)
 void temp_viz::VizImpl::resetCamera ()
 {
     // Update the camera parameters
-    rens_->InitTraversal ();
-    vtkRenderer* renderer = NULL;
-    while ((renderer = rens_->GetNextItem ()) != NULL)
-        renderer->ResetCamera ();
+    //rens_->InitTraversal ();
+    vtkRenderer* renderer = ren_;
+    renderer->ResetCamera ();
 }
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 void temp_viz::VizImpl::setCameraPosition (const cv::Vec3d& pos, const cv::Vec3d& view, const cv::Vec3d& up, int viewport)
 {
-    rens_->InitTraversal ();
-    vtkRenderer* renderer = NULL;
-    int i = 1;
-    while ((renderer = rens_->GetNextItem ()) != NULL)
-    {
-        // Modify all renderer's cameras
-        if (viewport == 0 || viewport == i)
-        {
-            vtkSmartPointer<vtkCamera> cam = renderer->GetActiveCamera ();
-            cam->SetPosition (pos[0], pos[1], pos[2]);
-            cam->SetFocalPoint (view[0], view[1], view[2]);
-            cam->SetViewUp (up[0], up[1], up[2]);
-            renderer->Render ();
-        }
-        ++i;
-    }
+    vtkRenderer* renderer = ren_;
+    vtkSmartPointer<vtkCamera> cam = renderer->GetActiveCamera ();
+    cam->SetPosition (pos[0], pos[1], pos[2]);
+    cam->SetFocalPoint (view[0], view[1], view[2]);
+    cam->SetViewUp (up[0], up[1], up[2]);
+    renderer->Render ();
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 void temp_viz::VizImpl::setCameraPosition (double pos_x, double pos_y, double pos_z, double up_x, double up_y, double up_z, int viewport)
 {
-    rens_->InitTraversal ();
-    vtkRenderer* renderer = NULL;
-    int i = 1;
-    while ((renderer = rens_->GetNextItem ()) != NULL)
-    {
-        // Modify all renderer's cameras
-        if (viewport == 0 || viewport == i)
-        {
-            vtkSmartPointer<vtkCamera> cam = renderer->GetActiveCamera ();
-            cam->SetPosition (pos_x, pos_y, pos_z);
-            cam->SetViewUp (up_x, up_y, up_z);
-            renderer->Render ();
-        }
-        ++i;
-    }
+    //rens_->InitTraversal ();
+    vtkRenderer* renderer = ren_;
+
+    vtkSmartPointer<vtkCamera> cam = renderer->GetActiveCamera ();
+    cam->SetPosition (pos_x, pos_y, pos_z);
+    cam->SetViewUp (up_x, up_y, up_z);
+    renderer->Render ();
+
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
@@ -1226,87 +1123,56 @@ void temp_viz::VizImpl::setCameraParameters (const cv::Matx33f& intrinsics, cons
     // Compute the vertical field of view based on the focal length and image heigh
     double fovy = 2 * atan (window_size[1] / (2. * intrinsics (1, 1))) * 180.0 / M_PI;
 
+    //rens_->InitTraversal ();
+    vtkRenderer* renderer = ren_;
 
-    rens_->InitTraversal ();
-    vtkRenderer* renderer = NULL;
-    int i = 1;
-    while ((renderer = rens_->GetNextItem ()) != NULL)
-    {
-        // Modify all renderer's cameras
-        if (viewport == 0 || viewport == i)
-        {
-            vtkSmartPointer<vtkCamera> cam = renderer->GetActiveCamera ();
-            cam->SetPosition (pos_vec[0], pos_vec[1], pos_vec[2]);
-            cam->SetFocalPoint (focal_vec[0], focal_vec[1], focal_vec[2]);
-            cam->SetViewUp (up_vec[0], up_vec[1], up_vec[2]);
-            cam->SetUseHorizontalViewAngle (0);
-            cam->SetViewAngle (fovy);
-            cam->SetClippingRange (0.01, 1000.01);
-            win_->SetSize (window_size[0], window_size[1]);
+    vtkSmartPointer<vtkCamera> cam = renderer->GetActiveCamera ();
+    cam->SetPosition (pos_vec[0], pos_vec[1], pos_vec[2]);
+    cam->SetFocalPoint (focal_vec[0], focal_vec[1], focal_vec[2]);
+    cam->SetViewUp (up_vec[0], up_vec[1], up_vec[2]);
+    cam->SetUseHorizontalViewAngle (0);
+    cam->SetViewAngle (fovy);
+    cam->SetClippingRange (0.01, 1000.01);
+    win_->SetSize (window_size[0], window_size[1]);
 
-            renderer->Render ();
-        }
-    }
+    renderer->Render ();
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 void temp_viz::VizImpl::setCameraParameters (const temp_viz::Camera &camera, int viewport)
 {
-    rens_->InitTraversal ();
-    vtkRenderer* renderer = NULL;
-    int i = 1;
-    while ((renderer = rens_->GetNextItem ()) != NULL)
-    {
-        // Modify all renderer's cameras
-        if (viewport == 0 || viewport == i)
-        {
-            vtkSmartPointer<vtkCamera> cam = renderer->GetActiveCamera ();
-            cam->SetPosition (camera.pos[0], camera.pos[1], camera.pos[2]);
-            cam->SetFocalPoint (camera.focal[0], camera.focal[1], camera.focal[2]);
-            cam->SetViewUp (camera.view_up[0], camera.view_up[1], camera.view_up[2]);
-            cam->SetClippingRange (camera.clip);
-            cam->SetUseHorizontalViewAngle (0);
-            cam->SetViewAngle (camera.fovy * 180.0 / M_PI);
+    //rens_->InitTraversal ();
+    vtkRenderer* renderer = ren_;
 
-            win_->SetSize (static_cast<int> (camera.window_size[0]),
-                    static_cast<int> (camera.window_size[1]));
-        }
-    }
+    vtkSmartPointer<vtkCamera> cam = renderer->GetActiveCamera ();
+    cam->SetPosition (camera.pos[0], camera.pos[1], camera.pos[2]);
+    cam->SetFocalPoint (camera.focal[0], camera.focal[1], camera.focal[2]);
+    cam->SetViewUp (camera.view_up[0], camera.view_up[1], camera.view_up[2]);
+    cam->SetClippingRange (camera.clip);
+    cam->SetUseHorizontalViewAngle (0);
+    cam->SetViewAngle (camera.fovy * 180.0 / M_PI);
+
+    win_->SetSize (static_cast<int> (camera.window_size[0]), static_cast<int> (camera.window_size[1]));
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 void temp_viz::VizImpl::setCameraClipDistances (double near, double far, int viewport)
 {
-    rens_->InitTraversal ();
-    vtkRenderer* renderer = NULL;
-    int i = 1;
-    while ((renderer = rens_->GetNextItem ()) != NULL)
-    {
-        // Modify all renderer's cameras
-        if (viewport == 0 || viewport == i)
-        {
-            vtkSmartPointer<vtkCamera> cam = renderer->GetActiveCamera ();
-            cam->SetClippingRange (near, far);
-        }
-    }
+    //rens_->InitTraversal ();
+    vtkRenderer* renderer = ren_;
+    vtkSmartPointer<vtkCamera> cam = renderer->GetActiveCamera ();
+    cam->SetClippingRange (near, far);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 void temp_viz::VizImpl::setCameraFieldOfView (double fovy, int viewport)
 {
-    rens_->InitTraversal ();
-    vtkRenderer* renderer = NULL;
-    int i = 1;
-    while ((renderer = rens_->GetNextItem ()) != NULL)
-    {
-        // Modify all renderer's cameras
-        if (viewport == 0 || viewport == i)
-        {
-            vtkSmartPointer<vtkCamera> cam = renderer->GetActiveCamera ();
-            cam->SetUseHorizontalViewAngle (0);
-            cam->SetViewAngle (fovy * 180.0 / M_PI);
-        }
-    }
+    //rens_->InitTraversal ();
+    vtkRenderer* renderer = ren_;
+    vtkSmartPointer<vtkCamera> cam = renderer->GetActiveCamera ();
+    cam->SetUseHorizontalViewAngle (0);
+    cam->SetViewAngle (fovy * 180.0 / M_PI);
+
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
@@ -1324,27 +1190,25 @@ void temp_viz::VizImpl::resetCameraViewpoint (const std::string &id)
         return;
 
     // set all renderer to this viewpoint
-    rens_->InitTraversal ();
-    vtkRenderer* renderer = NULL;
-    while ((renderer = rens_->GetNextItem ()) != NULL)
-    {
-        vtkSmartPointer<vtkCamera> cam = renderer->GetActiveCamera ();
-        cam->SetPosition (camera_pose->GetElement (0, 3),
-                          camera_pose->GetElement (1, 3),
-                          camera_pose->GetElement (2, 3));
+    //rens_->InitTraversal ();
+    vtkRenderer* renderer = ren_;
 
-        cam->SetFocalPoint (camera_pose->GetElement (0, 3) - camera_pose->GetElement (0, 2),
-                            camera_pose->GetElement (1, 3) - camera_pose->GetElement (1, 2),
-                            camera_pose->GetElement (2, 3) - camera_pose->GetElement (2, 2));
+    vtkSmartPointer<vtkCamera> cam = renderer->GetActiveCamera ();
+    cam->SetPosition (camera_pose->GetElement (0, 3),
+                      camera_pose->GetElement (1, 3),
+                      camera_pose->GetElement (2, 3));
 
-        cam->SetViewUp (camera_pose->GetElement (0, 1),
-                        camera_pose->GetElement (1, 1),
-                        camera_pose->GetElement (2, 1));
+    cam->SetFocalPoint (camera_pose->GetElement (0, 3) - camera_pose->GetElement (0, 2),
+                        camera_pose->GetElement (1, 3) - camera_pose->GetElement (1, 2),
+                        camera_pose->GetElement (2, 3) - camera_pose->GetElement (2, 2));
 
-        renderer->SetActiveCamera (cam);
-        renderer->ResetCameraClippingRange ();
-        renderer->Render ();
-    }
+    cam->SetViewUp (camera_pose->GetElement (0, 1),
+                    camera_pose->GetElement (1, 1),
+                    camera_pose->GetElement (2, 1));
+
+    renderer->SetActiveCamera (cam);
+    renderer->ResetCameraClippingRange ();
+    renderer->Render ();
 }
 
 
@@ -1635,44 +1499,34 @@ bool temp_viz::VizImpl::addCircle (const temp_viz::ModelCoefficients &coefficien
 /////////////////////////////////////////////////////////////////////////////////////////////
 void temp_viz::VizImpl::createViewPort (double xmin, double ymin, double xmax, double ymax, int &viewport)
 {
-    // Create a new renderer
-    vtkSmartPointer<vtkRenderer> ren = vtkSmartPointer<vtkRenderer>::New ();
-    ren->SetViewport (xmin, ymin, xmax, ymax);
+//    // Create a new renderer
+//    vtkSmartPointer<vtkRenderer> ren = vtkSmartPointer<vtkRenderer>::New ();
+//    ren->SetViewport (xmin, ymin, xmax, ymax);
 
-    if (rens_->GetNumberOfItems () > 0)
-        ren->SetActiveCamera (rens_->GetFirstRenderer ()->GetActiveCamera ());
-    ren->ResetCamera ();
+//    if (rens_->GetNumberOfItems () > 0)
+//        ren->SetActiveCamera (rens_->GetFirstRenderer ()->GetActiveCamera ());
+//    ren->ResetCamera ();
 
-    // Add it to the list of renderers
-    rens_->AddItem (ren);
+//    // Add it to the list of renderers
+//    rens_->AddItem (ren);
 
-    if (rens_->GetNumberOfItems () <= 1)          // If only one renderer
-        viewport = 0;                               // set viewport to 'all'
-    else
-        viewport = rens_->GetNumberOfItems () - 1;
+//    if (rens_->GetNumberOfItems () <= 1)          // If only one renderer
+//        viewport = 0;                               // set viewport to 'all'
+//    else
+//        viewport = rens_->GetNumberOfItems () - 1;
 
-    win_->AddRenderer (ren);
-    win_->Modified ();
+//    win_->AddRenderer (ren);
+//    win_->Modified ();
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////
 void temp_viz::VizImpl::createViewPortCamera (const int viewport)
 {
     vtkSmartPointer<vtkCamera> cam = vtkSmartPointer<vtkCamera>::New ();
-    rens_->InitTraversal ();
-    vtkRenderer* renderer = NULL;
-    int i = 0;
-    while ((renderer = rens_->GetNextItem ()) != NULL)
-    {
-        if (viewport == 0)
-            continue;
-        else if (viewport == i)
-        {
-            renderer->SetActiveCamera (cam);
-            renderer->ResetCamera ();
-        }
-        ++i;
-    }
+    //rens_->InitTraversal ();
+    vtkRenderer* renderer = ren_;
+    renderer->SetActiveCamera (cam);
+    renderer->ResetCamera ();
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
@@ -1790,55 +1644,43 @@ bool temp_viz::VizImpl::addPolylineFromPolygonMesh (const cv::Mat& cloud, const 
 ///////////////////////////////////////////////////////////////////////////////////
 void temp_viz::VizImpl::setRepresentationToSurfaceForAllActors ()
 {
-    ShapeActorMap::iterator am_it;
-    rens_->InitTraversal ();
-    vtkRenderer* renderer = NULL;
-    while ((renderer = rens_->GetNextItem ()) != NULL)
-    {
-        vtkActorCollection * actors = renderer->GetActors ();
-        actors->InitTraversal ();
-        vtkActor * actor;
-        while ((actor = actors->GetNextActor ()) != NULL)
-        {
-            actor->GetProperty ()->SetRepresentationToSurface ();
-        }
-    }
+    //ShapeActorMap::iterator am_it;
+    //rens_->InitTraversal ();
+    vtkRenderer* renderer = ren_;
+
+    vtkActorCollection * actors = renderer->GetActors ();
+    actors->InitTraversal ();
+    vtkActor * actor;
+    while ((actor = actors->GetNextActor ()) != NULL)
+        actor->GetProperty ()->SetRepresentationToSurface ();
 }
 
 ///////////////////////////////////////////////////////////////////////////////////
 void temp_viz::VizImpl::setRepresentationToPointsForAllActors ()
 {
-    ShapeActorMap::iterator am_it;
-    rens_->InitTraversal ();
-    vtkRenderer* renderer = NULL;
-    while ((renderer = rens_->GetNextItem ()) != NULL)
-    {
-        vtkActorCollection * actors = renderer->GetActors ();
-        actors->InitTraversal ();
-        vtkActor * actor;
-        while ((actor = actors->GetNextActor ()) != NULL)
-        {
-            actor->GetProperty ()->SetRepresentationToPoints ();
-        }
-    }
+    //ShapeActorMap::iterator am_it;
+    //rens_->InitTraversal ();
+    vtkRenderer* renderer = ren_;
+
+    vtkActorCollection * actors = renderer->GetActors ();
+    actors->InitTraversal ();
+    vtkActor * actor;
+    while ((actor = actors->GetNextActor ()) != NULL)
+        actor->GetProperty ()->SetRepresentationToPoints ();
 }
 
 ///////////////////////////////////////////////////////////////////////////////////
 void temp_viz::VizImpl::setRepresentationToWireframeForAllActors ()
 {
-    ShapeActorMap::iterator am_it;
-    rens_->InitTraversal ();
-    vtkRenderer* renderer = NULL;
-    while ((renderer = rens_->GetNextItem ()) != NULL)
-    {
-        vtkActorCollection * actors = renderer->GetActors ();
-        actors->InitTraversal ();
-        vtkActor * actor;
-        while ((actor = actors->GetNextActor ()) != NULL)
-        {
-            actor->GetProperty ()->SetRepresentationToWireframe ();
-        }
-    }
+    //ShapeActorMap::iterator am_it;
+    //rens_->InitTraversal ();
+    vtkRenderer* renderer = ren_;
+
+    vtkActorCollection * actors = renderer->GetActors ();
+    actors->InitTraversal ();
+    vtkActor * actor;
+    while ((actor = actors->GetNextActor ()) != NULL)
+        actor->GetProperty ()->SetRepresentationToWireframe ();
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////

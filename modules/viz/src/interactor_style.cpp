@@ -170,7 +170,7 @@ temp_viz::PCLVisualizerInteractorStyle::OnKeyDown ()
         return;
     }
 
-    if (!rens_)
+    if (!ren_)
     {
         std::cout << "[PCLVisualizerInteractorStyle] No renderer collection given! Use SetRendererCollection () before continuing." << std::endl;
         return;
@@ -537,7 +537,7 @@ temp_viz::PCLVisualizerInteractorStyle::OnKeyDown ()
     KeyboardEvent event (true, Interactor->GetKeySym (), Interactor->GetKeyCode (), Interactor->GetAltKey (), Interactor->GetControlKey (), Interactor->GetShiftKey ());
     keyboard_signal_ (event);
 
-    rens_->Render ();
+    ren_->Render ();
     Interactor->Render ();
 }
 
@@ -678,7 +678,7 @@ temp_viz::PCLVisualizerInteractorStyle::OnMouseWheelForward ()
         CurrentRenderer->ResetCameraClippingRange ();
         CurrentRenderer->Modified ();
         CurrentRenderer->Render ();
-        rens_->Render ();
+        ren_->Render ();
         Interactor->Render ();
     }
     else
@@ -710,7 +710,7 @@ temp_viz::PCLVisualizerInteractorStyle::OnMouseWheelBackward ()
         CurrentRenderer->ResetCameraClippingRange ();
         CurrentRenderer->Modified ();
         CurrentRenderer->Render ();
-        rens_->Render ();
+        ren_->Render ();
         Interactor->Render ();
     }
     else
@@ -727,12 +727,12 @@ temp_viz::PCLVisualizerInteractorStyle::OnTimer ()
         return;
     }
 
-    if (!rens_)
+    if (!ren_)
     {
         std::cout <<  "[PCLVisualizerInteractorStyle] No renderer collection given! Use SetRendererCollection () before continuing." << std::endl;
         return;
     }
-    rens_->Render ();
+    ren_->Render ();
     Interactor->Render ();
 }
 

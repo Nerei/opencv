@@ -644,7 +644,8 @@ namespace temp_viz
         vtkSmartPointer<ExitCallback> exit_callback_;
 
         /** \brief The collection of renderers used. */
-        vtkSmartPointer<vtkRendererCollection> rens_;
+        //vtkSmartPointer<vtkRendererCollection> rens_;
+        vtkSmartPointer<vtkRenderer> ren_;
 
         /** \brief The render window. */
         vtkSmartPointer<vtkRenderWindow> win_;

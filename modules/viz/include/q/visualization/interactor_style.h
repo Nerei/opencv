@@ -68,7 +68,7 @@ namespace temp_viz
             /** \brief Pass a set of renderers to the interactor style.
                   * \param[in] rens the vtkRendererCollection to use
                   */
-            void setRendererCollection (vtkSmartPointer<vtkRendererCollection> &rens) { rens_ = rens; }
+            void setRenderer (vtkSmartPointer<vtkRenderer>& ren) { ren_ = ren; }
 
             /** \brief Register a callback function for mouse events
                   * \param[in] cb a boost function that will be registered as a callback for a mouse event
@@ -106,7 +106,8 @@ namespace temp_viz
             bool init_;
 
             /** \brief Collection of vtkRenderers stored internally. */
-            vtkSmartPointer<vtkRendererCollection> rens_;
+            //vtkSmartPointer<vtkRendererCollection> rens_;
+            vtkSmartPointer<vtkRenderer> ren_;
 
             /** \brief Actor map stored internally. */
             CloudActorMapPtr actors_;
