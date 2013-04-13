@@ -24,17 +24,21 @@ namespace temp_viz
         std::vector<unsigned int> vertices;
     };
 
-//    class Viz3d
-//    {
-//    public:
-//        typedef cv::Ptr<Viz3d> Ptr;
+    class Viz3d
+    {
+    public:
+        typedef cv::Ptr<Viz3d> Ptr;
 
 
 
 
-//    private:
+    private:
+        Viz3d(const Viz3d&);
+        Viz3d& operator=(const Viz3d&);
 
-//    };
+        struct Impl;
+        Impl impl_;
+    };
 
 
 
