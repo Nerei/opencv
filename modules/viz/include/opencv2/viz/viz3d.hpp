@@ -24,15 +24,28 @@ namespace temp_viz
         std::vector<unsigned int> vertices;
     };
 
+//    class Viz3d
+//    {
+//    public:
+//        typedef cv::Ptr<Viz3d> Ptr;
 
-    class CV_EXPORTS Viz3d
+
+
+
+//    private:
+
+//    };
+
+
+
+    class CV_EXPORTS VizImpl
     {
       public:
-        typedef cv::Ptr<Viz3d> Ptr;
+        typedef cv::Ptr<VizImpl> Ptr;
 
-        Viz3d (const std::string &name = "Viz", const bool create_interactor = true);
+        VizImpl (const std::string &name = "Viz", const bool create_interactor = true);
 
-        virtual ~Viz3d ();
+        virtual ~VizImpl ();
         void setFullScreen (bool mode);
         void setWindowName (const std::string &name);
 
@@ -41,11 +54,8 @@ namespace temp_viz
           * \return a connection object that allows to disconnect the callback function.
           */
         boost::signals2::connection registerKeyboardCallback (boost::function<void (const cv::KeyboardEvent&)> cb);
-        inline boost::signals2::connection
-        registerKeyboardCallback (void (*callback) (const cv::KeyboardEvent&, void*), void* cookie = NULL)
-        {
-          return (registerKeyboardCallback (boost::bind (callback, _1, cookie)));
-        }
+        inline boost::signals2::connection registerKeyboardCallback (void (*callback) (const cv::KeyboardEvent&, void*), void* cookie = NULL)
+        { return (registerKeyboardCallback (boost::bind (callback, _1, cookie))); }
 
         /** \brief Register a callback function for keyboard events
           * \param[in] callback  the member function that will be registered as a callback for a keyboard event
@@ -53,23 +63,16 @@ namespace temp_viz
           * \param[in] cookie    user data that is passed to the callback
           * \return a connection object that allows to disconnect the callback function.
           */
-        template<typename T> inline boost::signals2::connection
-        registerKeyboardCallback (void (T::*callback) (const cv::KeyboardEvent&, void*), T& instance, void* cookie = NULL)
-        {
-          return (registerKeyboardCallback (boost::bind (callback,  boost::ref (instance), _1, cookie)));
-        }
+        template<typename T> inline boost::signals2::connection registerKeyboardCallback (void (T::*callback) (const cv::KeyboardEvent&, void*), T& instance, void* cookie = NULL)
+        { return (registerKeyboardCallback (boost::bind (callback,  boost::ref (instance), _1, cookie))); }
 
         /** \brief Register a callback function for mouse events
           * \param[in] cb a boost function that will be registered as a callback for a mouse event
           * \return a connection object that allows to disconnect the callback function.
           */
-        boost::signals2::connection
-        registerMouseCallback (boost::function<void (const cv::MouseEvent&)> cb);
-        inline boost::signals2::connection
-        registerMouseCallback (void (*callback) (const cv::MouseEvent&, void*), void* cookie = NULL)
-        {
-          return (registerMouseCallback (boost::bind (callback, _1, cookie)));
-        }
+        boost::signals2::connection registerMouseCallback (boost::function<void (const cv::MouseEvent&)> cb);
+        inline boost::signals2::connection registerMouseCallback (void (*callback) (const cv::MouseEvent&, void*), void* cookie = NULL)
+        { return (registerMouseCallback (boost::bind (callback, _1, cookie))); }
 
         /** \brief Register a callback function for mouse events
           * \param[in] callback  the member function that will be registered as a callback for a mouse event
@@ -77,11 +80,8 @@ namespace temp_viz
           * \param[in] cookie    user data that is passed to the callback
           * \return a connection object that allows to disconnect the callback function.
           */
-        template<typename T> inline boost::signals2::connection
-        registerMouseCallback (void (T::*callback) (const cv::MouseEvent&, void*), T& instance, void* cookie = NULL)
-        {
-          return (registerMouseCallback (boost::bind (callback, boost::ref (instance), _1, cookie)));
-        }
+        template<typename T> inline boost::signals2::connection registerMouseCallback (void (T::*callback) (const cv::MouseEvent&, void*), T& instance, void* cookie = NULL)
+        { return (registerMouseCallback (boost::bind (callback, boost::ref (instance), _1, cookie))); }
 
         /** \brief Register a callback function for point picking events
           * \param[in] cb a boost function that will be registered as a callback for a point picking event
@@ -89,9 +89,7 @@ namespace temp_viz
           */
         boost::signals2::connection registerPointPickingCallback (boost::function<void (const cv::PointPickingEvent&)> cb);
         inline boost::signals2::connection registerPointPickingCallback (void (*callback) (const cv::PointPickingEvent&, void*), void* cookie = NULL)
-        {
-          return (registerPointPickingCallback (boost::bind (callback, _1, cookie)));
-        }
+        { return (registerPointPickingCallback (boost::bind (callback, _1, cookie))); }
 
         /** \brief Register a callback function for point picking events
           * \param[in] callback  the member function that will be registered as a callback for a point picking event
@@ -101,9 +99,7 @@ namespace temp_viz
           */
         template<typename T> inline boost::signals2::connection
         registerPointPickingCallback (void (T::*callback) (const cv::PointPickingEvent&, void*), T& instance, void* cookie = NULL)
-        {
-          return (registerPointPickingCallback (boost::bind (callback, boost::ref (instance), _1, cookie)));
-        }
+        { return (registerPointPickingCallback (boost::bind (callback, boost::ref (instance), _1, cookie))); }
 
         void spin ();
         void spinOnce (int time = 1, bool force_redraw = false);
@@ -158,8 +154,7 @@ namespace temp_viz
           * \param[in] id the polygon object id (i.e., given on \a addPolygonMesh)
           * \param[in] viewport view port from where the PolygonMesh should be removed (default: all)
           */
-        inline bool
-        removePolygonMesh (const std::string &id = "polygon", int viewport = 0)
+        inline bool removePolygonMesh (const std::string &id = "polygon", int viewport = 0)
         {
           // Polygon Meshes are represented internally as point clouds with special cell array structures since 1.4
           return (removePointCloud (id, viewport));
@@ -228,8 +223,6 @@ namespace temp_viz
           * \param[in] viewport the view port where the PolygonMesh should be added (default: all)
           */
         bool addPolylineFromPolygonMesh (const cv::Mat& cloud, const std::vector<temp_viz::Vertices> &vertices, const std::string &id = "polyline", int viewport = 0);
-
-
 
         /** \brief Set the rendering properties of a PointCloud (3x values - e.g., RGB)
           * \param[in] property the property type
@@ -543,7 +536,7 @@ namespace temp_viz
           * \param[in] up_z the y component of the view up direction of the camera
           * \param[in] viewport the viewport to modify camera of (0 modifies all cameras)
           */
-        void setCameraPosition (double pos_x, double pos_y, double pos_z, double view_x, double view_y, double view_z, double up_x, double up_y, double up_z, int viewport = 0);
+        void setCameraPosition (const cv::Vec3d& pos, const cv::Vec3d& view, const cv::Vec3d& up, int viewport = 0);
 
         /** \brief Set the camera location and viewup according to the given arguments
           * \param[in] pos_x the x coordinate of the camera location
@@ -621,7 +614,7 @@ namespace temp_viz
             pcl_visualizer->interactor_->TerminateApp ();
           }
           int right_timer_id;
-          Viz3d* pcl_visualizer;
+          VizImpl* pcl_visualizer;
         };
         struct ExitCallback : public vtkCommand
         {
@@ -637,7 +630,7 @@ namespace temp_viz
             // This tends to close the window...
             pcl_visualizer->interactor_->TerminateApp ();
           }
-          Viz3d* pcl_visualizer;
+          VizImpl* pcl_visualizer;
         };
 
         /** \brief Set to false if the interaction loop is running. */

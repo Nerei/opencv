@@ -11,22 +11,22 @@
 #include <q/shapes.h>
 #include <vtkAlgorithmOutput.h>
 
-void temp_viz::Viz3d::setFullScreen (bool mode)
+void temp_viz::VizImpl::setFullScreen (bool mode)
 {
   if (win_)
     win_->SetFullScreen (mode);
 }
 
-void temp_viz::Viz3d::setWindowName (const std::string &name)
+void temp_viz::VizImpl::setWindowName (const std::string &name)
 {
   if (win_)
     win_->SetWindowName (name.c_str ());
 }
 
-void temp_viz::Viz3d::setPosition (int x, int y) { win_->SetPosition (x, y); }
-void temp_viz::Viz3d::setSize (int xw, int yw) { win_->SetSize (xw, yw); }
+void temp_viz::VizImpl::setPosition (int x, int y) { win_->SetPosition (x, y); }
+void temp_viz::VizImpl::setSize (int xw, int yw) { win_->SetSize (xw, yw); }
 
-void temp_viz::Viz3d::addPointCloud(const cv::Mat& cloud, const cv::Mat& colors, const std::string& id, const cv::Mat& mask, int viewport)
+void temp_viz::VizImpl::addPointCloud(const cv::Mat& cloud, const cv::Mat& colors, const std::string& id, const cv::Mat& mask, int viewport)
 {
     CV_Assert(cloud.type() == CV_32FC3 && colors.type() == CV_8UC3 && colors.size() == cloud.size());
     CV_Assert(mask.empty() || (mask.type() == CV_8U && mask.size() == cloud.size()));
@@ -156,7 +156,7 @@ void temp_viz::Viz3d::addPointCloud(const cv::Mat& cloud, const cv::Mat& colors,
 }
 
 
-bool temp_viz::Viz3d::updatePointCloud (const cv::Mat& cloud, const cv::Mat& colors, const std::string& id, const cv::Mat& mask)
+bool temp_viz::VizImpl::updatePointCloud (const cv::Mat& cloud, const cv::Mat& colors, const std::string& id, const cv::Mat& mask)
 {
     // Check to see if this ID entry already exists (has it been already added to the visualizer?)
     CloudActorMap::iterator am_it = cloud_actor_map_->find (id);
@@ -288,7 +288,7 @@ bool temp_viz::Viz3d::updatePointCloud (const cv::Mat& cloud, const cv::Mat& col
 
 
 
-bool temp_viz::Viz3d::addPointCloudNormals (const cv::Mat &cloud, const cv::Mat& normals, int level, float scale, const std::string &id, int viewport)
+bool temp_viz::VizImpl::addPointCloudNormals (const cv::Mat &cloud, const cv::Mat& normals, int level, float scale, const std::string &id, int viewport)
 {
     CV_Assert(cloud.size() == normals.size() && cloud.type() == CV_32FC3 && normals.type() == CV_32FC3);
 
@@ -382,7 +382,7 @@ bool temp_viz::Viz3d::addPointCloudNormals (const cv::Mat &cloud, const cv::Mat&
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////
-bool temp_viz::Viz3d::addLine (const cv::Point3f &pt1, const cv::Point3f &pt2, double r, double g, double b, const std::string &id, int viewport)
+bool temp_viz::VizImpl::addLine (const cv::Point3f &pt1, const cv::Point3f &pt2, double r, double g, double b, const std::string &id, int viewport)
 {
   // Check to see if this ID entry already exists (has it been already added to the visualizer?)
   ShapeActorMap::iterator am_it = shape_actor_map_->find (id);
@@ -406,7 +406,7 @@ bool temp_viz::Viz3d::addLine (const cv::Point3f &pt1, const cv::Point3f &pt2, d
 
 
 
-inline bool temp_viz::Viz3d::addPolygonMesh (const cv::Mat& cloud, const cv::Mat& colors, const cv::Mat& mask, const std::vector<temp_viz::Vertices> &vertices, const std::string &id, int viewport)
+inline bool temp_viz::VizImpl::addPolygonMesh (const cv::Mat& cloud, const cv::Mat& colors, const cv::Mat& mask, const std::vector<temp_viz::Vertices> &vertices, const std::string &id, int viewport)
 {
     CV_Assert(cloud.type() == CV_32FC3 && cloud.rows == 1 && !vertices.empty ());
     CV_Assert(colors.empty() || (!colors.empty() && colors.size() == cloud.size() && colors.type() == CV_8UC3));
@@ -595,7 +595,7 @@ inline bool temp_viz::Viz3d::addPolygonMesh (const cv::Mat& cloud, const cv::Mat
 }
 
 
-inline bool temp_viz::Viz3d::updatePolygonMesh (const cv::Mat& cloud, const cv::Mat& colors, const cv::Mat& mask, const std::vector<temp_viz::Vertices> &vertices, const std::string &id)
+inline bool temp_viz::VizImpl::updatePolygonMesh (const cv::Mat& cloud, const cv::Mat& colors, const cv::Mat& mask, const std::vector<temp_viz::Vertices> &vertices, const std::string &id)
 {
     CV_Assert(cloud.type() == CV_32FC3 && cloud.rows == 1 && !vertices.empty ());
     CV_Assert(colors.empty() || (!colors.empty() && colors.size() == cloud.size() && colors.type() == CV_8UC3));
@@ -717,7 +717,7 @@ inline bool temp_viz::Viz3d::updatePolygonMesh (const cv::Mat& cloud, const cv::
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////
-bool temp_viz::Viz3d::addArrow (const cv::Point3f &pt1, const cv::Point3f &pt2, double r, double g, double b, const std::string &id, int viewport)
+bool temp_viz::VizImpl::addArrow (const cv::Point3f &pt1, const cv::Point3f &pt2, double r, double g, double b, const std::string &id, int viewport)
 {
   // Check to see if this ID entry already exists (has it been already added to the visualizer?)
   ShapeActorMap::iterator am_it = shape_actor_map_->find (id);
@@ -743,7 +743,7 @@ bool temp_viz::Viz3d::addArrow (const cv::Point3f &pt1, const cv::Point3f &pt2, 
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////
-bool temp_viz::Viz3d::addArrow (const cv::Point3f &pt1, const cv::Point3f &pt2, double r, double g, double b, bool display_length, const std::string &id, int viewport)
+bool temp_viz::VizImpl::addArrow (const cv::Point3f &pt1, const cv::Point3f &pt2, double r, double g, double b, bool display_length, const std::string &id, int viewport)
 {
   // Check to see if this ID entry already exists (has it been already added to the visualizer?)
   ShapeActorMap::iterator am_it = shape_actor_map_->find (id);
@@ -773,7 +773,7 @@ bool temp_viz::Viz3d::addArrow (const cv::Point3f &pt1, const cv::Point3f &pt2, 
 }
 ////////////////////////////////////////////////////////////////////////////////////////////
 bool
-temp_viz::Viz3d::addArrow (const cv::Point3f &pt1, const cv::Point3f &pt2, double r_line, double g_line, double b_line,
+temp_viz::VizImpl::addArrow (const cv::Point3f &pt1, const cv::Point3f &pt2, double r_line, double g_line, double b_line,
                          double r_text, double g_text, double b_text, const std::string &id, int viewport)
 {
   // Check to see if this ID entry already exists (has it been already added to the visualizer?)
@@ -804,7 +804,7 @@ temp_viz::Viz3d::addArrow (const cv::Point3f &pt1, const cv::Point3f &pt2, doubl
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////
-inline bool temp_viz::Viz3d::addSphere (const cv::Point3f& center, double radius, double r, double g, double b, const std::string &id, int viewport)
+inline bool temp_viz::VizImpl::addSphere (const cv::Point3f& center, double radius, double r, double g, double b, const std::string &id, int viewport)
 {
   // Check to see if this ID entry already exists (has it been already added to the visualizer?)
   ShapeActorMap::iterator am_it = shape_actor_map_->find (id);
@@ -846,7 +846,7 @@ inline bool temp_viz::Viz3d::addSphere (const cv::Point3f& center, double radius
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////
-inline bool temp_viz::Viz3d::updateSphere (const cv::Point3f &center, double radius, double r, double g, double b, const std::string &id)
+inline bool temp_viz::VizImpl::updateSphere (const cv::Point3f &center, double radius, double r, double g, double b, const std::string &id)
 {
   // Check to see if this ID entry already exists (has it been already added to the visualizer?)
   ShapeActorMap::iterator am_it = shape_actor_map_->find (id);
@@ -869,7 +869,7 @@ inline bool temp_viz::Viz3d::updateSphere (const cv::Point3f &center, double rad
 }
 
 //////////////////////////////////////////////////
-inline bool temp_viz::Viz3d::addText3D (const std::string &text, const cv::Point3f& position,
+inline bool temp_viz::VizImpl::addText3D (const std::string &text, const cv::Point3f& position,
   double textScale, double r, double g, double b, const std::string &id, int viewport)
 {
   std::string tid;
@@ -928,7 +928,7 @@ inline bool temp_viz::Viz3d::addText3D (const std::string &text, const cv::Point
 
 
 
-inline bool temp_viz::Viz3d::addPolygon (const cv::Mat& cloud, const cv::Scalar& color, const std::string &id, int viewport)
+inline bool temp_viz::VizImpl::addPolygon (const cv::Mat& cloud, const cv::Scalar& color, const std::string &id, int viewport)
 {
     CV_Assert(cloud.type() == CV_32FC3 && cloud.rows == 1);
 
