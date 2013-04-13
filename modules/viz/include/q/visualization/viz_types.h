@@ -30,15 +30,11 @@ namespace temp_viz
         vtkSmartPointer<vtkIdTypeArray> cells;
     };
 
-    typedef boost::unordered_map<std::string, CloudActor> CloudActorMap;
+    typedef std::map<std::string, CloudActor> CloudActorMap;
     typedef cv::Ptr<CloudActorMap> CloudActorMapPtr;
 
-    typedef boost::unordered_map<std::string, vtkSmartPointer<vtkProp> > ShapeActorMap;
+    typedef std::map<std::string, vtkSmartPointer<vtkProp> > ShapeActorMap;
     typedef cv::Ptr<ShapeActorMap> ShapeActorMapPtr;
-
-    typedef std::map<int, vtkSmartPointer<vtkProp> > CoordinateActorMap;
-
-
 
 
     class RenWinInteract

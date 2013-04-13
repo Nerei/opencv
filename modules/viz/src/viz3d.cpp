@@ -26,7 +26,7 @@ void temp_viz::VizImpl::setWindowName (const std::string &name)
 void temp_viz::VizImpl::setPosition (int x, int y) { win_->SetPosition (x, y); }
 void temp_viz::VizImpl::setSize (int xw, int yw) { win_->SetSize (xw, yw); }
 
-void temp_viz::VizImpl::addPointCloud(const cv::Mat& cloud, const cv::Mat& colors, const std::string& id, const cv::Mat& mask, int viewport)
+void temp_viz::VizImpl::addPointCloud(const cv::Mat& cloud, const cv::Mat& colors, const std::string& id, const cv::Mat& mask)
 {
     CV_Assert(cloud.type() == CV_32FC3 && colors.type() == CV_8UC3 && colors.size() == cloud.size());
     CV_Assert(mask.empty() || (mask.type() == CV_8U && mask.size() == cloud.size()));
@@ -140,7 +140,7 @@ void temp_viz::VizImpl::addPointCloud(const cv::Mat& cloud, const cv::Mat& color
         actor->GetMapper ()->SetScalarRange (minmax);
 
     // Add it to all renderers
-    addActorToRenderer (actor, viewport);
+    addActorToRenderer (actor);
 
     // Save the pointer/ID pair to the global actor map
     (*cloud_actor_map_)[id].actor = actor;
@@ -288,7 +288,7 @@ bool temp_viz::VizImpl::updatePointCloud (const cv::Mat& cloud, const cv::Mat& c
 
 
 
-bool temp_viz::VizImpl::addPointCloudNormals (const cv::Mat &cloud, const cv::Mat& normals, int level, float scale, const std::string &id, int viewport)
+bool temp_viz::VizImpl::addPointCloudNormals (const cv::Mat &cloud, const cv::Mat& normals, int level, float scale, const std::string &id)
 {
     CV_Assert(cloud.size() == normals.size() && cloud.type() == CV_32FC3 && normals.type() == CV_32FC3);
 
@@ -373,7 +373,7 @@ bool temp_viz::VizImpl::addPointCloudNormals (const cv::Mat &cloud, const cv::Ma
   actor->SetMapper (mapper);
 
   // Add it to all renderers
-  addActorToRenderer (actor, viewport);
+  addActorToRenderer (actor);
 
   // Save the pointer/ID pair to the global actor map
   (*cloud_actor_map_)[id].actor = actor;
@@ -382,7 +382,7 @@ bool temp_viz::VizImpl::addPointCloudNormals (const cv::Mat &cloud, const cv::Ma
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////
-bool temp_viz::VizImpl::addLine (const cv::Point3f &pt1, const cv::Point3f &pt2, double r, double g, double b, const std::string &id, int viewport)
+bool temp_viz::VizImpl::addLine (const cv::Point3f &pt1, const cv::Point3f &pt2, double r, double g, double b, const std::string &id)
 {
   // Check to see if this ID entry already exists (has it been already added to the visualizer?)
   ShapeActorMap::iterator am_it = shape_actor_map_->find (id);
@@ -397,7 +397,7 @@ bool temp_viz::VizImpl::addLine (const cv::Point3f &pt1, const cv::Point3f &pt2,
   actor->GetProperty ()->SetRepresentationToWireframe ();
   actor->GetProperty ()->SetColor (r, g, b);
   actor->GetMapper ()->ScalarVisibilityOff ();
-  addActorToRenderer (actor, viewport);
+  addActorToRenderer (actor);
 
   // Save the pointer/ID pair to the global actor map
   (*shape_actor_map_)[id] = actor;
@@ -406,7 +406,7 @@ bool temp_viz::VizImpl::addLine (const cv::Point3f &pt1, const cv::Point3f &pt2,
 
 
 
-inline bool temp_viz::VizImpl::addPolygonMesh (const cv::Mat& cloud, const cv::Mat& colors, const cv::Mat& mask, const std::vector<temp_viz::Vertices> &vertices, const std::string &id, int viewport)
+inline bool temp_viz::VizImpl::addPolygonMesh (const cv::Mat& cloud, const cv::Mat& colors, const cv::Mat& mask, const std::vector<temp_viz::Vertices> &vertices, const std::string &id)
 {
     CV_Assert(cloud.type() == CV_32FC3 && cloud.rows == 1 && !vertices.empty ());
     CV_Assert(colors.empty() || (!colors.empty() && colors.size() == cloud.size() && colors.type() == CV_8UC3));
@@ -568,7 +568,7 @@ inline bool temp_viz::VizImpl::addPolygonMesh (const cv::Mat& cloud, const cv::M
 
       createActorFromVTKDataSet (poly_grid, actor, false);
     }
-    addActorToRenderer (actor, viewport);
+    addActorToRenderer (actor);
     actor->GetProperty ()->SetRepresentationToSurface ();
     // Backface culling renders the visualization slower, but guarantees that we see all triangles
     actor->GetProperty ()->BackfaceCullingOff ();
@@ -717,7 +717,7 @@ inline bool temp_viz::VizImpl::updatePolygonMesh (const cv::Mat& cloud, const cv
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////
-bool temp_viz::VizImpl::addArrow (const cv::Point3f &pt1, const cv::Point3f &pt2, double r, double g, double b, const std::string &id, int viewport)
+bool temp_viz::VizImpl::addArrow (const cv::Point3f &pt1, const cv::Point3f &pt2, double r, double g, double b, const std::string &id)
 {
   // Check to see if this ID entry already exists (has it been already added to the visualizer?)
   ShapeActorMap::iterator am_it = shape_actor_map_->find (id);
@@ -735,7 +735,7 @@ bool temp_viz::VizImpl::addArrow (const cv::Point3f &pt1, const cv::Point3f &pt2
   leader->AutoLabelOn ();
 
   leader->GetProperty ()->SetColor (r, g, b);
-  addActorToRenderer (leader, viewport);
+  addActorToRenderer (leader);
 
   // Save the pointer/ID pair to the global actor map
   (*shape_actor_map_)[id] = leader;
@@ -743,7 +743,7 @@ bool temp_viz::VizImpl::addArrow (const cv::Point3f &pt1, const cv::Point3f &pt2
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////
-bool temp_viz::VizImpl::addArrow (const cv::Point3f &pt1, const cv::Point3f &pt2, double r, double g, double b, bool display_length, const std::string &id, int viewport)
+bool temp_viz::VizImpl::addArrow (const cv::Point3f &pt1, const cv::Point3f &pt2, double r, double g, double b, bool display_length, const std::string &id)
 {
   // Check to see if this ID entry already exists (has it been already added to the visualizer?)
   ShapeActorMap::iterator am_it = shape_actor_map_->find (id);
@@ -765,7 +765,7 @@ bool temp_viz::VizImpl::addArrow (const cv::Point3f &pt1, const cv::Point3f &pt2
     leader->AutoLabelOff ();
 
   leader->GetProperty ()->SetColor (r, g, b);
-  addActorToRenderer (leader, viewport);
+  addActorToRenderer (leader);
 
   // Save the pointer/ID pair to the global actor map
   (*shape_actor_map_)[id] = leader;
@@ -774,7 +774,7 @@ bool temp_viz::VizImpl::addArrow (const cv::Point3f &pt1, const cv::Point3f &pt2
 ////////////////////////////////////////////////////////////////////////////////////////////
 bool
 temp_viz::VizImpl::addArrow (const cv::Point3f &pt1, const cv::Point3f &pt2, double r_line, double g_line, double b_line,
-                         double r_text, double g_text, double b_text, const std::string &id, int viewport)
+                         double r_text, double g_text, double b_text, const std::string &id)
 {
   // Check to see if this ID entry already exists (has it been already added to the visualizer?)
   ShapeActorMap::iterator am_it = shape_actor_map_->find (id);
@@ -796,7 +796,7 @@ temp_viz::VizImpl::addArrow (const cv::Point3f &pt1, const cv::Point3f &pt2, dou
   leader->GetLabelTextProperty()->SetColor(r_text, g_text, b_text);
 
   leader->GetProperty ()->SetColor (r_line, g_line, b_line);
-  addActorToRenderer (leader, viewport);
+  addActorToRenderer (leader);
 
   // Save the pointer/ID pair to the global actor map
   (*shape_actor_map_)[id] = leader;
@@ -804,7 +804,7 @@ temp_viz::VizImpl::addArrow (const cv::Point3f &pt1, const cv::Point3f &pt2, dou
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////
-inline bool temp_viz::VizImpl::addSphere (const cv::Point3f& center, double radius, double r, double g, double b, const std::string &id, int viewport)
+inline bool temp_viz::VizImpl::addSphere (const cv::Point3f& center, double radius, double r, double g, double b, const std::string &id)
 {
   // Check to see if this ID entry already exists (has it been already added to the visualizer?)
   ShapeActorMap::iterator am_it = shape_actor_map_->find (id);
@@ -838,7 +838,7 @@ inline bool temp_viz::VizImpl::addSphere (const cv::Point3f& center, double radi
   actor->GetMapper ()->StaticOn ();
   actor->GetMapper ()->ScalarVisibilityOff ();
   actor->GetMapper ()->Update ();
-  addActorToRenderer (actor, viewport);
+  addActorToRenderer (actor);
 
   // Save the pointer/ID pair to the global actor map
   (*shape_actor_map_)[id] = actor;
@@ -870,7 +870,7 @@ inline bool temp_viz::VizImpl::updateSphere (const cv::Point3f &center, double r
 
 //////////////////////////////////////////////////
 inline bool temp_viz::VizImpl::addText3D (const std::string &text, const cv::Point3f& position,
-  double textScale, double r, double g, double b, const std::string &id, int viewport)
+  double textScale, double r, double g, double b, const std::string &id)
 {
   std::string tid;
   if (id.empty ())
@@ -916,7 +916,7 @@ inline bool temp_viz::VizImpl::addText3D (const std::string &text, const cv::Poi
 
 
 
-inline bool temp_viz::VizImpl::addPolygon (const cv::Mat& cloud, const cv::Scalar& color, const std::string &id, int viewport)
+inline bool temp_viz::VizImpl::addPolygon (const cv::Mat& cloud, const cv::Scalar& color, const std::string &id)
 {
     CV_Assert(cloud.type() == CV_32FC3 && cloud.rows == 1);
 
@@ -971,8 +971,8 @@ inline bool temp_viz::VizImpl::addPolygon (const cv::Mat& cloud, const cv::Scala
         actor->GetMapper ()->ScalarVisibilityOff ();
         actor->GetProperty ()->BackfaceCullingOff ();
 
-        removeActorFromRenderer (am_it->second, viewport);
-        addActorToRenderer (actor, viewport);
+        removeActorFromRenderer (am_it->second);
+        addActorToRenderer (actor);
 
         // Save the pointer/ID pair to the global actor map
         (*shape_actor_map_)[id] = actor;
@@ -986,7 +986,7 @@ inline bool temp_viz::VizImpl::addPolygon (const cv::Mat& cloud, const cv::Scala
         actor->GetProperty ()->SetColor (color[2]/255, color[1]/255, color[0]/255);
         actor->GetMapper ()->ScalarVisibilityOff ();
         actor->GetProperty ()->BackfaceCullingOff ();
-        addActorToRenderer (actor, viewport);
+        addActorToRenderer (actor);
 
         // Save the pointer/ID pair to the global actor map
         (*shape_actor_map_)[id] = actor;

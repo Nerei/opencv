@@ -163,6 +163,8 @@ TEST(Viz_viz3d, accuracy)
 
     v.spinOnce(1000, true);
 
+    v.removeCoordinateSystem();
+
 
     for(int i = 0; i < me_cl.cols; ++i)
         me_cl.ptr<cv::Point3f>()[i] += cv::Point3f(1, 1, 1);

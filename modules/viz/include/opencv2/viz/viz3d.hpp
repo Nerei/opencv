@@ -108,7 +108,6 @@ namespace temp_viz
            *
            * \param[in] scale the scale of the axes (default: 1)
            * \param[in] t transformation matrix
-           * \param[in] viewport the view port where the 3D axes should be added (default: all)
            *
            * RPY Angles
            * Rotate the reference frame by the angle roll about axis x
@@ -135,63 +134,44 @@ namespace temp_viz
            *         |
            *         y
            */
-        void addCoordinateSystem (double scale, const cv::Affine3f& t, int viewport = 0);
+        void addCoordinateSystem (double scale, const cv::Affine3f& t, const std::string &id = "coordinate");
 
         /** \brief Removes a previously added 3D axes (coordinate system)
-          * \param[in] viewport view port where the 3D axes should be removed from (default: all)
           */
-        bool removeCoordinateSystem (int viewport = 0);
+        bool removeCoordinateSystem (const std::string &id = "coordinate");
 
         /** \brief Removes a Point Cloud from screen, based on a given ID.
           * \param[in] id the point cloud object id (i.e., given on \a addPointCloud)
-          * \param[in] viewport view port from where the Point Cloud should be removed (default: all)
           * \return true if the point cloud is successfully removed and false if the point cloud is
           * not actually displayed
           */
-        bool removePointCloud (const std::string &id = "cloud", int viewport = 0);
+        bool removePointCloud (const std::string &id = "cloud");
 
         /** \brief Removes a PolygonMesh from screen, based on a given ID.
           * \param[in] id the polygon object id (i.e., given on \a addPolygonMesh)
-          * \param[in] viewport view port from where the PolygonMesh should be removed (default: all)
           */
-        inline bool removePolygonMesh (const std::string &id = "polygon", int viewport = 0)
+        inline bool removePolygonMesh (const std::string &id = "polygon")
         {
           // Polygon Meshes are represented internally as point clouds with special cell array structures since 1.4
-          return (removePointCloud (id, viewport));
+          return removePointCloud (id);
         }
 
         /** \brief Removes an added shape from screen (line, polygon, etc.), based on a given ID
           * \note This methods also removes PolygonMesh objects and PointClouds, if they match the ID
           * \param[in] id the shape object id (i.e., given on \a addLine etc.)
-          * \param[in] viewport view port from where the Point Cloud should be removed (default: all)
           */
-        bool removeShape (const std::string &id = "cloud", int viewport = 0);
+        bool removeShape (const std::string &id = "cloud");
 
         /** \brief Removes an added 3D text from the scene, based on a given ID
           * \param[in] id the 3D text id (i.e., given on \a addText3D etc.)
-          * \param[in] viewport view port from where the 3D text should be removed (default: all)
           */
-        bool removeText3D (const std::string &id = "cloud", int viewport = 0);
+        bool removeText3D (const std::string &id = "cloud");
+        bool removeAllPointClouds ();
+        bool removeAllShapes ();
 
-        /** \brief Remove all point cloud data on screen from the given viewport.
-          * \param[in] viewport view port from where the clouds should be removed (default: all)
-          */
-        bool removeAllPointClouds (int viewport = 0);
+        void setBackgroundColor (const double &r, const double &g, const double &b);
 
-        /** \brief Remove all 3D shape data on screen from the given viewport.
-          * \param[in] viewport view port from where the shapes should be removed (default: all)
-          */
-        bool removeAllShapes (int viewport = 0);
-
-        /** \brief Set the viewport's background color.
-          * \param[in] r the red component of the RGB color
-          * \param[in] g the green component of the RGB color
-          * \param[in] b the blue component of the RGB color
-          * \param[in] viewport the view port (default: all)
-          */
-        void setBackgroundColor (const double &r, const double &g, const double &b, int viewport = 0);
-
-        bool addText (const std::string &text, int xpos, int ypos, const cv::Scalar& color = cv::Scalar(255, 255, 255), int fontsize = 10, const std::string &id = "", int viewport = 0);
+        bool addText (const std::string &text, int xpos, int ypos, const cv::Scalar& color = cv::Scalar(255, 255, 255), int fontsize = 10, const std::string &id = "");
         bool updateText (const std::string &text, int xpos, int ypos, const cv::Scalar& color  = cv::Scalar(255, 255, 255), int fontsize = 10, const std::string &id = "");
 
         /** \brief Set the pose of an existing shape.
@@ -206,23 +186,22 @@ namespace temp_viz
         bool updateShapePose (const std::string &id, const cv::Affine3f& pose);
 
         bool addText3D (const std::string &text, const cv::Point3f &position, double textScale = 1.0,
-                   double r = 1.0, double g = 1.0, double b = 1.0, const std::string &id = "", int viewport = 0);
+                   double r = 1.0, double g = 1.0, double b = 1.0, const std::string &id = "");
 
-        bool addPointCloudNormals (const cv::Mat &cloud, const cv::Mat& normals, int level = 100, float scale = 0.02f, const std::string &id = "cloud", int viewport = 0);
-        void addPointCloud(const cv::Mat& cloud, const cv::Mat& colors, const std::string& id = "cloud", const cv::Mat& mask = cv::Mat(), int viewport = 0);
+        bool addPointCloudNormals (const cv::Mat &cloud, const cv::Mat& normals, int level = 100, float scale = 0.02f, const std::string &id = "cloud");
+        void addPointCloud(const cv::Mat& cloud, const cv::Mat& colors, const std::string& id = "cloud", const cv::Mat& mask = cv::Mat());
         bool updatePointCloud (const cv::Mat& cloud, const cv::Mat& colors, const std::string& id = "cloud", const cv::Mat& mask = cv::Mat());
 
 
-        bool addPolygonMesh (const cv::Mat& cloud, const cv::Mat& colors, const cv::Mat& mask, const std::vector<temp_viz::Vertices> &vertices, const std::string &id = "polygon", int viewport = 0);
+        bool addPolygonMesh (const cv::Mat& cloud, const cv::Mat& colors, const cv::Mat& mask, const std::vector<temp_viz::Vertices> &vertices, const std::string &id = "polygon");
         bool updatePolygonMesh (const cv::Mat& cloud, const cv::Mat& colors, const cv::Mat& mask, const std::vector<temp_viz::Vertices> &vertices, const std::string &id = "polygon");
 
 
         /** \brief Add a Polygonline from a polygonMesh object to screen
           * \param[in] polymesh the polygonal mesh from where the polylines will be extracted
           * \param[in] id the polygon object id (default: "polygon")
-          * \param[in] viewport the view port where the PolygonMesh should be added (default: all)
           */
-        bool addPolylineFromPolygonMesh (const cv::Mat& cloud, const std::vector<temp_viz::Vertices> &vertices, const std::string &id = "polyline", int viewport = 0);
+        bool addPolylineFromPolygonMesh (const cv::Mat& cloud, const std::vector<temp_viz::Vertices> &vertices, const std::string &id = "polyline");
 
         /** \brief Set the rendering properties of a PointCloud (3x values - e.g., RGB)
           * \param[in] property the property type
@@ -230,17 +209,15 @@ namespace temp_viz
           * \param[in] val2 the second value to be set
           * \param[in] val3 the third value to be set
           * \param[in] id the point cloud object id (default: cloud)
-          * \param[in] viewport the view port where the Point Cloud's rendering properties should be modified (default: all)
           */
-        bool setPointCloudRenderingProperties (int property, double val1, double val2, double val3, const std::string &id = "cloud", int viewport = 0);
+        bool setPointCloudRenderingProperties (int property, double val1, double val2, double val3, const std::string &id = "cloud");
 
        /** \brief Set the rendering properties of a PointCloud
          * \param[in] property the property type
          * \param[in] value the value to be set
          * \param[in] id the point cloud object id (default: cloud)
-         * \param[in] viewport the view port where the Point Cloud's rendering properties should be modified (default: all)
          */
-        bool setPointCloudRenderingProperties (int property, double value, const std::string &id = "cloud", int viewport = 0);
+        bool setPointCloudRenderingProperties (int property, double value, const std::string &id = "cloud");
 
        /** \brief Get the rendering properties of a PointCloud
          * \param[in] property the property type
@@ -259,9 +236,9 @@ namespace temp_viz
          * \param[in] property the property type
          * \param[in] value the value to be set
          * \param[in] id the shape object id
-         * \param[in] viewport the view port where the shape's properties should be modified (default: all)
+
          */
-        bool setShapeRenderingProperties (int property, double value, const std::string &id, int viewport = 0);
+        bool setShapeRenderingProperties (int property, double value, const std::string &id);
 
         /** \brief Set the rendering properties of a shape (3x values - e.g., RGB)
           * \param[in] property the property type
@@ -269,9 +246,9 @@ namespace temp_viz
           * \param[in] val2 the second value to be set
           * \param[in] val3 the third value to be set
           * \param[in] id the shape object id
-          * \param[in] viewport the view port where the shape's properties should be modified (default: all)
+
           */
-         bool setShapeRenderingProperties (int property, double val1, double val2, double val3, const std::string &id, int viewport = 0);
+         bool setShapeRenderingProperties (int property, double val1, double val2, double val3, const std::string &id);
 
         /** \brief Returns true when the user tried to close the window */
         bool wasStopped () const { if (interactor_ != NULL) return (stopped_); else return (true); }
@@ -287,25 +264,9 @@ namespace temp_viz
           interactor_->TerminateApp ();
         }
 
-        /** \brief Create a new viewport from [xmin,ymin] -> [xmax,ymax].
-          * \param[in] xmin the minimum X coordinate for the viewport (0.0 <= 1.0)
-          * \param[in] ymin the minimum Y coordinate for the viewport (0.0 <= 1.0)
-          * \param[in] xmax the maximum X coordinate for the viewport (0.0 <= 1.0)
-          * \param[in] ymax the maximum Y coordinate for the viewport (0.0 <= 1.0)
-          * \param[in] viewport the id of the new viewport
-          *
-          * \note If no renderer for the current window exists, one will be created, and
-          * the viewport will be set to 0 ('all'). In case one or multiple renderers do
-          * exist, the viewport ID will be set to the total number of renderers - 1.
-          */
-        void createViewPort (double xmin, double ymin, double xmax, double ymax, int &viewport);
+     void createViewPortCamera ();
 
-        /** \brief Create a new separate camera for the given viewport.
-          * \param[in] viewport the viewport to create a new camera for.
-          */
-        void createViewPortCamera (const int viewport);
-
-        bool addPolygon(const cv::Mat& cloud, const cv::Scalar& color = cv::Scalar(255, 255, 255), const std::string &id = "polygon", int viewport = 0);
+        bool addPolygon(const cv::Mat& cloud, const cv::Scalar& color = cv::Scalar(255, 255, 255), const std::string &id = "polygon");
 
         /** \brief Add a line segment from two points
           * \param[in] pt1 the first (start) point on the line
@@ -314,9 +275,8 @@ namespace temp_viz
           * \param[in] g the green channel of the color that the line should be rendered with
           * \param[in] b the blue channel of the color that the line should be rendered with
           * \param[in] id the line id/name (default: "line")
-          * \param[in] viewport (optional) the id of the new viewport (default: 0)
           */
-        bool addLine (const cv::Point3f &pt1, const cv::Point3f &pt2, double r, double g, double b, const std::string &id = "line", int viewport = 0);
+        bool addLine (const cv::Point3f &pt1, const cv::Point3f &pt2, double r, double g, double b, const std::string &id = "line");
 
         /** \brief Add a line arrow segment between two points, and display the distance between them
           * \param[in] pt1 the first (start) point on the line
@@ -325,9 +285,8 @@ namespace temp_viz
           * \param[in] g the green channel of the color that the line should be rendered with
           * \param[in] b the blue channel of the color that the line should be rendered with
           * \param[in] id the arrow id/name (default: "arrow")
-          * \param[in] viewport (optional) the id of the new viewport (default: 0)
           */
-        bool addArrow (const cv::Point3f &pt1, const cv::Point3f &pt2, double r, double g, double b, const std::string &id = "arrow", int viewport = 0);
+        bool addArrow (const cv::Point3f &pt1, const cv::Point3f &pt2, double r, double g, double b, const std::string &id = "arrow");
 
         /** \brief Add a line arrow segment between two points, and display the distance between them
           * \param[in] pt1 the first (start) point on the line
@@ -337,9 +296,8 @@ namespace temp_viz
           * \param[in] b the blue channel of the color that the line should be rendered with
           * \param[in] display_length true if the length should be displayed on the arrow as text
           * \param[in] id the line id/name (default: "arrow")
-          * \param[in] viewport (optional) the id of the new viewport (default: 0)
           */
-        bool addArrow (const cv::Point3f &pt1, const cv::Point3f &pt2, double r, double g, double b, bool display_length, const std::string &id = "arrow", int viewport = 0);
+        bool addArrow (const cv::Point3f &pt1, const cv::Point3f &pt2, double r, double g, double b, bool display_length, const std::string &id = "arrow");
 
         /** \brief Add a line arrow segment between two points, and display the distance between them in a given color
           * \param[in] pt1 the first (start) point on the line
@@ -351,49 +309,43 @@ namespace temp_viz
           * \param[in] g_text the green channel of the color that the text should be rendered with
           * \param[in] b_text the blue channel of the color that the text should be rendered with
           * \param[in] id the line id/name (default: "arrow")
-          * \param[in] viewport (optional) the id of the new viewport (default: 0)
           */
         bool addArrow (const cv::Point3f &pt1, const cv::Point3f &pt2, double r_line, double g_line, double b_line,
-                      double r_text, double g_text, double b_text, const std::string &id = "arrow", int viewport = 0);
+                      double r_text, double g_text, double b_text, const std::string &id = "arrow");
 
 
-        bool addSphere (const cv::Point3f &center, double radius, double r, double g, double b, const std::string &id = "sphere", int viewport = 0);
+        bool addSphere (const cv::Point3f &center, double radius, double r, double g, double b, const std::string &id = "sphere");
         bool updateSphere (const cv::Point3f &center, double radius, double r, double g, double b, const std::string &id = "sphere");
 
          /** \brief Add a vtkPolydata as a mesh
           * \param[in] polydata vtkPolyData
           * \param[in] id the model id/name (default: "PolyData")
-          * \param[in] viewport (optional) the id of the new viewport (default: 0)
           */
-        bool addModelFromPolyData (vtkSmartPointer<vtkPolyData> polydata, const std::string & id = "PolyData", int viewport = 0);
+        bool addModelFromPolyData (vtkSmartPointer<vtkPolyData> polydata, const std::string & id = "PolyData");
 
         /** \brief Add a vtkPolydata as a mesh
           * \param[in] polydata vtkPolyData
           * \param[in] transform transformation to apply
           * \param[in] id the model id/name (default: "PolyData")
-          * \param[in] viewport (optional) the id of the new viewport (default: 0)
           */
-        bool addModelFromPolyData (vtkSmartPointer<vtkPolyData> polydata, vtkSmartPointer<vtkTransform> transform, const std::string &id = "PolyData", int viewport = 0);
+        bool addModelFromPolyData (vtkSmartPointer<vtkPolyData> polydata, vtkSmartPointer<vtkTransform> transform, const std::string &id = "PolyData");
 
         /** \brief Add a PLYmodel as a mesh
           * \param[in] filename of the ply file
           * \param[in] id the model id/name (default: "PLYModel")
-          * \param[in] viewport (optional) the id of the new viewport (default: 0)
           */
-        bool addModelFromPLYFile (const std::string &filename, const std::string &id = "PLYModel", int viewport = 0);
+        bool addModelFromPLYFile (const std::string &filename, const std::string &id = "PLYModel");
 
         /** \brief Add a PLYmodel as a mesh and applies given transformation
           * \param[in] filename of the ply file
           * \param[in] transform transformation to apply
           * \param[in] id the model id/name (default: "PLYModel")
-          * \param[in] viewport (optional) the id of the new viewport (default: 0)
           */
-        bool addModelFromPLYFile (const std::string &filename, vtkSmartPointer<vtkTransform> transform, const std::string &id = "PLYModel", int viewport = 0);
+        bool addModelFromPLYFile (const std::string &filename, vtkSmartPointer<vtkTransform> transform, const std::string &id = "PLYModel");
 
         /** \brief Add a cylinder from a set of given model coefficients
           * \param[in] coefficients the model coefficients (point_on_axis, axis_direction, radius)
           * \param[in] id the cylinder id/name (default: "cylinder")
-          * \param[in] viewport (optional) the id of the new viewport (default: 0)
           *
           * \code
           * // The following are given (or computed using sample consensus techniques)
@@ -415,12 +367,11 @@ namespace temp_viz
           * addCylinder (cylinder_coeff);
           * \endcode
           */
-        bool addCylinder (const temp_viz::ModelCoefficients &coefficients, const std::string &id = "cylinder", int viewport = 0);
+        bool addCylinder (const temp_viz::ModelCoefficients &coefficients, const std::string &id = "cylinder");
 
         /** \brief Add a plane from a set of given model coefficients
           * \param[in] coefficients the model coefficients (a, b, c, d with ax+by+cz+d=0)
           * \param[in] id the plane id/name (default: "plane")
-          * \param[in] viewport (optional) the id of the new viewport (default: 0)
           *
           * \code
           * // The following are given (or computed using sample consensus techniques)
@@ -437,13 +388,12 @@ namespace temp_viz
           * addPlane (plane_coeff);
           * \endcode
           */
-        bool addPlane (const temp_viz::ModelCoefficients &coefficients, const std::string &id = "plane", int viewport = 0);
-        bool addPlane (const temp_viz::ModelCoefficients &coefficients, double x, double y, double z, const std::string &id = "plane", int viewport = 0);
+        bool addPlane (const temp_viz::ModelCoefficients &coefficients, const std::string &id = "plane");
+        bool addPlane (const temp_viz::ModelCoefficients &coefficients, double x, double y, double z, const std::string &id = "plane");
 
         /** \brief Add a circle from a set of given model coefficients
           * \param[in] coefficients the model coefficients (x, y, radius)
           * \param[in] id the circle id/name (default: "circle")
-          * \param[in] viewport (optional) the id of the new viewport (default: 0)
           *
           * \code
           * // The following are given (or computed using sample consensus techniques)
@@ -459,14 +409,13 @@ namespace temp_viz
           * vtkSmartPointer<vtkDataSet> data = temp_viz::create2DCircle (circle_coeff, z);
           * \endcode
            */
-        bool addCircle (const temp_viz::ModelCoefficients &coefficients, const std::string &id = "circle", int viewport = 0);
+        bool addCircle (const temp_viz::ModelCoefficients &coefficients, const std::string &id = "circle");
 
         /** \brief Add a cube from a set of given model coefficients
           * \param[in] coefficients the model coefficients (Tx, Ty, Tz, Qx, Qy, Qz, Qw, width, height, depth)
           * \param[in] id the cube id/name (default: "cube")
-          * \param[in] viewport (optional) the id of the new viewport (default: 0)
           */
-        bool addCube (const temp_viz::ModelCoefficients &coefficients, const std::string &id = "cube", int viewport = 0);
+        bool addCube (const temp_viz::ModelCoefficients &coefficients, const std::string &id = "cube");
 
         /** \brief Add a cube from a set of given model coefficients
           * \param[in] translation a translation to apply to the cube from 0,0,0
@@ -475,9 +424,8 @@ namespace temp_viz
           * \param[in] height the cube's height
           * \param[in] depth the cube's depth
           * \param[in] id the cube id/name (default: "cube")
-          * \param[in] viewport (optional) the id of the new viewport (default: 0)
           */
-        bool addCube (const cv::Vec3f& translation, const cv::Vec3f quaternion, double width, double height, double depth, const std::string &id = "cube", int viewport = 0);
+        bool addCube (const cv::Vec3f& translation, const cv::Vec3f quaternion, double width, double height, double depth, const std::string &id = "cube");
 
         /** \brief Add a cube
           * \param[in] x_min the min X coordinate
@@ -490,10 +438,9 @@ namespace temp_viz
           * \param[in] g how much green (0.0 -> 1.0)
           * \param[in] b how much blue (0.0 -> 1.0)
           * \param[in] id the cube id/name (default: "cube")
-          * \param[in] viewport (optional) the id of the new viewport (default: 0)
           */
         bool addCube (float x_min, float x_max, float y_min, float y_max, float z_min, float z_max,
-                 double r = 1.0, double g = 1.0, double b = 1.0, const std::string &id = "cube", int viewport = 0);
+                 double r = 1.0, double g = 1.0, double b = 1.0, const std::string &id = "cube");
 
         /** \brief Changes the visual representation for all actors to surface representation. */
         void setRepresentationToSurfaceForAllActors ();
@@ -534,9 +481,8 @@ namespace temp_viz
           * \param[in] up_x the x component of the view up direction of the camera
           * \param[in] up_y the y component of the view up direction of the camera
           * \param[in] up_z the y component of the view up direction of the camera
-          * \param[in] viewport the viewport to modify camera of (0 modifies all cameras)
           */
-        void setCameraPosition (const cv::Vec3d& pos, const cv::Vec3d& view, const cv::Vec3d& up, int viewport = 0);
+        void setCameraPosition (const cv::Vec3d& pos, const cv::Vec3d& view, const cv::Vec3d& up);
 
         /** \brief Set the camera location and viewup according to the given arguments
           * \param[in] pos_x the x coordinate of the camera location
@@ -545,41 +491,37 @@ namespace temp_viz
           * \param[in] up_x the x component of the view up direction of the camera
           * \param[in] up_y the y component of the view up direction of the camera
           * \param[in] up_z the z component of the view up direction of the camera
-          * \param[in] viewport the viewport to modify camera of (0 modifies all cameras)
           */
-        void setCameraPosition (double pos_x, double pos_y, double pos_z, double up_x, double up_y, double up_z, int viewport = 0);
+        void setCameraPosition (double pos_x, double pos_y, double pos_z, double up_x, double up_y, double up_z);
 
         /** \brief Set the camera parameters via an intrinsics and and extrinsics matrix
           * \note This assumes that the pixels are square and that the center of the image is at the center of the sensor.
           * \param[in] intrinsics the intrinsics that will be used to compute the VTK camera parameters
           * \param[in] extrinsics the extrinsics that will be used to compute the VTK camera parameters
-          * \param[in] viewport the viewport to modify camera of (0 modifies all cameras)
           */
-        void setCameraParameters (const cv::Matx33f& intrinsics, const cv::Affine3f& extrinsics, int viewport = 0);
+        void setCameraParameters (const cv::Matx33f& intrinsics, const cv::Affine3f& extrinsics);
 
         /** \brief Set the camera parameters by given a full camera data structure.
           * \param[in] camera camera structure containing all the camera parameters.
-          * \param[in] viewport the viewport to modify camera of (0 modifies all cameras)
           */
-        void setCameraParameters (const Camera &camera, int viewport = 0);
+        void setCameraParameters (const Camera &camera);
 
         /** \brief Set the camera clipping distances.
           * \param[in] near the near clipping distance (no objects closer than this to the camera will be drawn)
           * \param[in] far the far clipping distance (no objects further away than this to the camera will be drawn)
           */
-        void setCameraClipDistances (double near, double far, int viewport = 0);
+        void setCameraClipDistances (double near, double far);
 
         /** \brief Set the camera vertical field of view.
           * \param[in] fovy vertical field of view in radians
-          * \param[in] viewport the viewport to modify camera of (0 modifies all cameras)
           */
-        void setCameraFieldOfView (double fovy, int viewport = 0);
+        void setCameraFieldOfView (double fovy);
 
         /** \brief Get the current camera parameters. */
         void getCameras (std::vector<Camera>& cameras);
 
         /** \brief Get the current viewing pose. */
-        cv::Affine3f getViewerPose (int viewport = 0);
+        cv::Affine3f getViewerPose ();
         void saveScreenshot (const std::string &file);
 
         /** \brief Return a pointer to the underlying VTK Render Window used. */
@@ -644,7 +586,6 @@ namespace temp_viz
         vtkSmartPointer<ExitCallback> exit_callback_;
 
         /** \brief The collection of renderers used. */
-        //vtkSmartPointer<vtkRendererCollection> rens_;
         vtkSmartPointer<vtkRenderer> ren_;
 
         /** \brief The render window. */
@@ -659,9 +600,6 @@ namespace temp_viz
         /** \brief Internal list with actor pointers and name IDs for shapes. */
         ShapeActorMapPtr shape_actor_map_;
 
-        /** \brief Internal list with actor pointers and viewpoint for coordinates. */
-        CoordinateActorMap coordinate_actor_map_;
-
         /** \brief Internal pointer to widget which contains a set of axes */
         vtkSmartPointer<vtkOrientationMarkerWidget> axes_widget_;
 
@@ -670,30 +608,22 @@ namespace temp_viz
 
         /** \brief Internal method. Removes a vtk actor from the screen.
           * \param[in] actor a pointer to the vtk actor object
-          * \param[in] viewport the view port where the actor should be removed from (default: all)
           */
-        bool removeActorFromRenderer (const vtkSmartPointer<vtkLODActor> &actor, int viewport = 0);
+        bool removeActorFromRenderer (const vtkSmartPointer<vtkLODActor> &actor);
 
         /** \brief Internal method. Removes a vtk actor from the screen.
           * \param[in] actor a pointer to the vtk actor object
-          * \param[in] viewport the view port where the actor should be removed from (default: all)
           */
-        bool removeActorFromRenderer (const vtkSmartPointer<vtkActor> &actor, int viewport = 0);
+        bool removeActorFromRenderer (const vtkSmartPointer<vtkActor> &actor);
+
+        /** \brief Internal method. Adds a vtk actor to screen.
+          * \param[in] actor a pointer to the vtk actor object */
+        void addActorToRenderer (const vtkSmartPointer<vtkProp> &actor);
 
         /** \brief Internal method. Adds a vtk actor to screen.
           * \param[in] actor a pointer to the vtk actor object
-          * \param[in] viewport port where the actor should be added to (default: 0/all)
-          *
-          * \note If viewport is set to 0, the actor will be added to all existing
-          * renders. To select a specific viewport use an integer between 1 and N.
           */
-        void addActorToRenderer (const vtkSmartPointer<vtkProp> &actor, int viewport = 0);
-
-        /** \brief Internal method. Adds a vtk actor to screen.
-          * \param[in] actor a pointer to the vtk actor object
-          * \param[in] viewport the view port where the actor should be added to (default: all)
-          */
-        bool removeActorFromRenderer (const vtkSmartPointer<vtkProp> &actor, int viewport = 0);
+        bool removeActorFromRenderer (const vtkSmartPointer<vtkProp> &actor);
 
         /** \brief Internal method. Creates a vtk actor from a vtk polydata object.
           * \param[in] data the vtk polydata object to create an actor for
