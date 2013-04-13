@@ -91,7 +91,7 @@ set(BUILD_opencv_viz_INIT OFF)
 
 include_directories(src)
 set(the_description "Viz")
-ocv_define_module(viz opencv_core)
+ocv_define_module(viz opencv_core opencv_calib3d)
 #${PCL_LIBRARIES}
 
 target_link_libraries(opencv_viz vtkCommon vtkWidgets vtkHybrid vtkCharts vtkFiltering vtkRendering ${OPENGL_LIBRARIES})

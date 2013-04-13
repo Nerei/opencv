@@ -138,7 +138,7 @@ TEST(Viz_viz3d, accuracy)
 {
     temp_viz::Viz3d v;
 
-    v.addCoordinateSystem(1.0, Eigen::Affine3f::Identity());
+    v.addCoordinateSystem(1.0, cv::Affine3f::Identity());
 
     cv::Mat cloud = cvcloud_load();
 

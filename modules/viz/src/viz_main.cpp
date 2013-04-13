@@ -16,6 +16,7 @@
 
 #include <vtkHardwareSelector.h>
 #include <vtkSelectionNode.h>
+#include <opencv2/calib3d.hpp>
 
 
 #include <vtkSelection.h>
@@ -223,32 +224,32 @@ void temp_viz::Viz3d::spinOnce (int time, bool force_redraw)
 
 int feq (double a, double b) { return fabs (a - b) < 1e-9; }
 
-void quat_to_angle_axis (const Eigen::Quaternionf &qx, double &theta, double axis[3])
-{
-    double q[4];
-    q[0] = qx.w();
-    q[1] = qx.x();
-    q[2] = qx.y();
-    q[3] = qx.z();
+//void quat_to_angle_axis (const Eigen::Quaternionf &qx, double &theta, double axis[3])
+//{
+//    double q[4];
+//    q[0] = qx.w();
+//    q[1] = qx.x();
+//    q[2] = qx.y();
+//    q[3] = qx.z();
 
-    double halftheta = acos (q[0]);
-    theta = halftheta * 2;
-    double sinhalftheta = sin (halftheta);
-    if (feq (halftheta, 0)) {
-        axis[0] = 0;
-        axis[1] = 0;
-        axis[2] = 1;
-        theta = 0;
-    } else {
-        axis[0] = q[1] / sinhalftheta;
-        axis[1] = q[2] / sinhalftheta;
-        axis[2] = q[3] / sinhalftheta;
-    }
-}
+//    double halftheta = acos (q[0]);
+//    theta = halftheta * 2;
+//    double sinhalftheta = sin (halftheta);
+//    if (feq (halftheta, 0)) {
+//        axis[0] = 0;
+//        axis[1] = 0;
+//        axis[2] = 1;
+//        theta = 0;
+//    } else {
+//        axis[0] = q[1] / sinhalftheta;
+//        axis[1] = q[2] / sinhalftheta;
+//        axis[2] = q[3] / sinhalftheta;
+//    }
+//}
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////
-void temp_viz::Viz3d::addCoordinateSystem (double scale, const Eigen::Affine3f& t, int viewport)
+void temp_viz::Viz3d::addCoordinateSystem (double scale, const cv::Affine3f& affine, int viewport)
 {
     vtkSmartPointer<vtkAxes> axes = vtkSmartPointer<vtkAxes>::New ();
     axes->SetOrigin (0, 0, 0);
@@ -279,18 +280,25 @@ void temp_viz::Viz3d::addCoordinateSystem (double scale, const Eigen::Affine3f& 
     vtkSmartPointer<vtkLODActor> axes_actor = vtkSmartPointer<vtkLODActor>::New ();
     axes_actor->SetMapper (axes_mapper);
 
-    axes_actor->SetPosition (t(0, 3), t(1, 3), t(2, 3));
+    cv::Vec3f t = affine.translation();
+    axes_actor->SetPosition (t[0], t[1], t[2]);
 
-    Eigen::Matrix3f m;
-    m =t.rotation();
-    Eigen::Quaternionf rf;
-    rf = Eigen::Quaternionf(m);
-    double r_angle;
-    double r_axis[3];
-    quat_to_angle_axis(rf,r_angle,r_axis);
+    cv::Matx33f m = affine.rotation();
+
+    cv::Vec3f rvec;
+    cv::Rodrigues(m, rvec);
+
+    float r_angle = cv::norm(rvec);
+    rvec *= 1.f/r_angle;
+
+//    Eigen::Quaternionf rf;
+//    rf = Eigen::Quaternionf(m);
+//    double r_angle;
+//    double r_axis[3];
+//    quat_to_angle_axis(rf,r_angle,r_axis);
     //
     axes_actor->SetOrientation(0,0,0);
-    axes_actor->RotateWXYZ(r_angle*180/M_PI,r_axis[0],r_axis[1],r_axis[2]);
+    axes_actor->RotateWXYZ(r_angle*180/CV_PI,rvec[0], rvec[1], rvec[2]);
     //WAS:  axes_actor->SetOrientation (roll, pitch, yaw);
 
     // Save the ID and actor pair to the global actor map
@@ -1046,7 +1054,7 @@ void temp_viz::Viz3d::updateCamera ()
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
-bool temp_viz::Viz3d::updateShapePose (const std::string &id, const Eigen::Affine3f& pose)
+bool temp_viz::Viz3d::updateShapePose (const std::string &id, const cv::Affine3f& pose)
 {
     ShapeActorMap::iterator am_it = shape_actor_map_->find (id);
 
@@ -1059,7 +1067,7 @@ bool temp_viz::Viz3d::updateShapePose (const std::string &id, const Eigen::Affin
 
     vtkSmartPointer<vtkMatrix4x4> matrix = vtkSmartPointer<vtkMatrix4x4>::New ();
 
-    convertToVtkMatrix (pose.matrix (), matrix);
+    convertToVtkMatrix (pose.matrix, matrix);
 
     actor->SetUserMatrix (matrix);
     actor->Modified ();
@@ -1096,9 +1104,9 @@ void temp_viz::Viz3d::getCameras (std::vector<temp_viz::Camera>& cameras)
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
-Eigen::Affine3f temp_viz::Viz3d::getViewerPose (int viewport)
+cv::Affine3f temp_viz::Viz3d::getViewerPose (int viewport)
 {
-    Eigen::Affine3f ret (Eigen::Affine3f::Identity ());
+    cv::Affine3f ret  = cv::Affine3f::Identity();
 
     rens_->InitTraversal ();
     vtkRenderer* renderer = NULL;
@@ -1119,20 +1127,20 @@ Eigen::Affine3f temp_viz::Viz3d::getViewerPose (int viewport)
             x_axis = y_axis.cross (z_axis).normalized ();
 
             /// TODO replace this ugly thing with matrix.block () = vector3f
-            ret (0, 0) = static_cast<float> (x_axis[0]);
-            ret (0, 1) = static_cast<float> (y_axis[0]);
-            ret (0, 2) = static_cast<float> (z_axis[0]);
-            ret (0, 3) = static_cast<float> (pos[0]);
+            ret.matrix (0, 0) = static_cast<float> (x_axis[0]);
+            ret.matrix (0, 1) = static_cast<float> (y_axis[0]);
+            ret.matrix (0, 2) = static_cast<float> (z_axis[0]);
+            ret.matrix (0, 3) = static_cast<float> (pos[0]);
 
-            ret (1, 0) = static_cast<float> (x_axis[1]);
-            ret (1, 1) = static_cast<float> (y_axis[1]);
-            ret (1, 2) = static_cast<float> (z_axis[1]);
-            ret (1, 3) = static_cast<float> (pos[1]);
+            ret.matrix (1, 0) = static_cast<float> (x_axis[1]);
+            ret.matrix (1, 1) = static_cast<float> (y_axis[1]);
+            ret.matrix (1, 2) = static_cast<float> (z_axis[1]);
+            ret.matrix (1, 3) = static_cast<float> (pos[1]);
 
-            ret (2, 0) = static_cast<float> (x_axis[2]);
-            ret (2, 1) = static_cast<float> (y_axis[2]);
-            ret (2, 2) = static_cast<float> (z_axis[2]);
-            ret (2, 3) = static_cast<float> (pos[2]);
+            ret.matrix (2, 0) = static_cast<float> (x_axis[2]);
+            ret.matrix (2, 1) = static_cast<float> (y_axis[2]);
+            ret.matrix (2, 2) = static_cast<float> (z_axis[2]);
+            ret.matrix (2, 3) = static_cast<float> (pos[2]);
 
             return ret;
         }
@@ -1196,24 +1204,25 @@ void temp_viz::Viz3d::setCameraPosition (double pos_x, double pos_y, double pos_
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
-void temp_viz::Viz3d::setCameraParameters (const Eigen::Matrix3f &intrinsics, const Eigen::Matrix4f &extrinsics, int viewport)
+void temp_viz::Viz3d::setCameraParameters (const cv::Matx33f& intrinsics, const cv::Affine3f& extrinsics, int viewport)
 {
     // Position = extrinsic translation
-    Eigen::Vector3f pos_vec = extrinsics.block<3, 1> (0, 3);
+    cv::Vec3f pos_vec = extrinsics.translation();
+
 
     // Rotate the view vector
-    Eigen::Matrix3f rotation = extrinsics.block<3, 3> (0, 0);
-    Eigen::Vector3f y_axis (0.f, 1.f, 0.f);
-    Eigen::Vector3f up_vec (rotation * y_axis);
+    cv::Matx33f rotation = extrinsics.rotation();
+    cv::Vec3f y_axis (0.f, 1.f, 0.f);
+    cv::Vec3f up_vec (rotation * y_axis);
 
     // Compute the new focal point
-    Eigen::Vector3f z_axis (0.f, 0.f, 1.f);
-    Eigen::Vector3f focal_vec = pos_vec + rotation * z_axis;
+    cv::Vec3f z_axis (0.f, 0.f, 1.f);
+    cv::Vec3f focal_vec = pos_vec + rotation * z_axis;
 
     // Get the width and height of the image - assume the calibrated centers are at the center of the image
     Eigen::Vector2i window_size;
-    window_size[0] = static_cast<int> (intrinsics (0, 2));
-    window_size[1] = static_cast<int> (intrinsics (1, 2));
+    window_size[0] = static_cast<int> (intrinsics(0, 2));
+    window_size[1] = static_cast<int> (intrinsics(1, 2));
 
     // Compute the vertical field of view based on the focal length and image heigh
     double fovy = 2 * atan (window_size[1] / (2. * intrinsics (1, 1))) * 180.0 / M_PI;
@@ -1892,13 +1901,13 @@ void temp_viz::Viz3d::allocVtkUnstructuredGrid (vtkSmartPointer<vtkUnstructuredG
     polydata = vtkSmartPointer<vtkUnstructuredGrid>::New ();
 }
 
-//////////////////////////////////////////////////////////////////////////////////////////////
-void temp_viz::Viz3d::getTransformationMatrix (const Eigen::Vector4f &origin, const Eigen::Quaternion<float> &orientation, Eigen::Matrix4f &transformation)
-{
-    transformation.setIdentity ();
-    transformation.block<3,3>(0,0) = orientation.toRotationMatrix ();
-    transformation.block<3,1>(0,3) = origin.head (3);
-}
+////////////////////////////////////////////////////////////////////////////////////////////////
+//void temp_viz::Viz3d::getTransformationMatrix (const Eigen::Vector4f &origin, const Eigen::Quaternion<float> &orientation, Eigen::Matrix4f &transformation)
+//{
+//    transformation.setIdentity ();
+//    transformation.block<3,3>(0,0) = orientation.toRotationMatrix ();
+//    transformation.block<3,1>(0,3) = origin.head (3);
+//}
 
 //////////////////////////////////////////////////////////////////////////////////////////////
 void temp_viz::convertToVtkMatrix (const Eigen::Vector4f &origin, const Eigen::Quaternion<float> &orientation, vtkSmartPointer<vtkMatrix4x4> &vtk_matrix)
@@ -1917,7 +1926,14 @@ void temp_viz::convertToVtkMatrix (const Eigen::Vector4f &origin, const Eigen::Q
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////
-void temp_viz::convertToVtkMatrix (const Eigen::Matrix4f &m, vtkSmartPointer<vtkMatrix4x4> &vtk_matrix)
+//void temp_viz::convertToVtkMatrix (const Eigen::Matrix4f &m, vtkSmartPointer<vtkMatrix4x4> &vtk_matrix)
+//{
+//    for (int i = 0; i < 4; i++)
+//        for (int k = 0; k < 4; k++)
+//            vtk_matrix->SetElement (i, k, m (i, k));
+//}
+
+void temp_viz::convertToVtkMatrix (const cv::Matx44f &m, vtkSmartPointer<vtkMatrix4x4> &vtk_matrix)
 {
     for (int i = 0; i < 4; i++)
         for (int k = 0; k < 4; k++)

@@ -8,11 +8,12 @@
 #include <q/visualization/viz_types.h>
 #include <q/visualization/common.h>
 #include <opencv2/viz/types.hpp>
+#include <opencv2/core/affine.hpp>
 
 // VTK includes
 #include <q/visualization/3rdparty.h>
 
-#include <Eigen/Geometry>
+//#include <Eigen/Geometry>
 
 namespace temp_viz
 {
@@ -138,7 +139,7 @@ namespace temp_viz
            *         |
            *         y
            */
-        void addCoordinateSystem (double scale, const Eigen::Affine3f& t, int viewport = 0);
+        void addCoordinateSystem (double scale, const cv::Affine3f& t, int viewport = 0);
 
         /** \brief Removes a previously added 3D axes (coordinate system)
           * \param[in] viewport view port where the 3D axes should be removed from (default: all)
@@ -207,7 +208,7 @@ namespace temp_viz
           * \param[in] pose the new pose
           * \return false if no shape or cloud with the specified ID was found
           */
-        bool updateShapePose (const std::string &id, const Eigen::Affine3f& pose);
+        bool updateShapePose (const std::string &id, const cv::Affine3f& pose);
 
         bool addText3D (const std::string &text, const cv::Point3f &position, double textScale = 1.0,
                    double r = 1.0, double g = 1.0, double b = 1.0, const std::string &id = "", int viewport = 0);
@@ -561,7 +562,7 @@ namespace temp_viz
           * \param[in] extrinsics the extrinsics that will be used to compute the VTK camera parameters
           * \param[in] viewport the viewport to modify camera of (0 modifies all cameras)
           */
-        void setCameraParameters (const Eigen::Matrix3f &intrinsics, const Eigen::Matrix4f &extrinsics, int viewport = 0);
+        void setCameraParameters (const cv::Matx33f& intrinsics, const cv::Affine3f& extrinsics, int viewport = 0);
 
         /** \brief Set the camera parameters by given a full camera data structure.
           * \param[in] camera camera structure containing all the camera parameters.
@@ -585,7 +586,7 @@ namespace temp_viz
         void getCameras (std::vector<Camera>& cameras);
 
         /** \brief Get the current viewing pose. */
-        Eigen::Affine3f getViewerPose (int viewport = 0);        
+        cv::Affine3f getViewerPose (int viewport = 0);
         void saveScreenshot (const std::string &file);
 
         /** \brief Return a pointer to the underlying VTK Render Window used. */
@@ -737,10 +738,14 @@ namespace temp_viz
           * \param[in] orientation the camera orientation
           * \param[out] transformation the camera transformation matrix
           */
-        void getTransformationMatrix (const Eigen::Vector4f &origin, const Eigen::Quaternion<float> &orientation, Eigen::Matrix4f &transformation);
+
     };
 
-    void convertToVtkMatrix (const Eigen::Matrix4f &m, vtkSmartPointer<vtkMatrix4x4> &vtk_matrix);
+    //void getTransformationMatrix (const Eigen::Vector4f &origin, const Eigen::Quaternionf& orientation, Eigen::Matrix4f &transformation);
+
+    //void convertToVtkMatrix (const Eigen::Matrix4f &m, vtkSmartPointer<vtkMatrix4x4> &vtk_matrix);
+
+    void convertToVtkMatrix (const cv::Matx44f& m, vtkSmartPointer<vtkMatrix4x4> &vtk_matrix);
 
     /** \brief Convert origin and orientation to vtkMatrix4x4
       * \param[in] origin the point cloud origin
