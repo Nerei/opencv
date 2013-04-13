@@ -1025,9 +1025,9 @@ void temp_viz::Viz3d::initCameraParameters ()
     camera_temp.pos[2] = 0.;
 
     // Set the up-vector of the camera to be the y-axis
-    camera_temp.view[0] = 0.;
-    camera_temp.view[1] = 1.;
-    camera_temp.view[2] = 0.;
+    camera_temp.view_up[0] = 0.;
+    camera_temp.view_up[1] = 1.;
+    camera_temp.view_up[2] = 0.;
 
     // Set the camera field of view to about
     camera_temp.fovy = 0.8575;
@@ -1092,9 +1092,9 @@ void temp_viz::Viz3d::getCameras (std::vector<temp_viz::Camera>& cameras)
         cameras.back ().focal[2] = renderer->GetActiveCamera ()->GetFocalPoint ()[2];
         cameras.back ().clip[0] = renderer->GetActiveCamera ()->GetClippingRange ()[0];
         cameras.back ().clip[1] = renderer->GetActiveCamera ()->GetClippingRange ()[1];
-        cameras.back ().view[0] = renderer->GetActiveCamera ()->GetViewUp ()[0];
-        cameras.back ().view[1] = renderer->GetActiveCamera ()->GetViewUp ()[1];
-        cameras.back ().view[2] = renderer->GetActiveCamera ()->GetViewUp ()[2];
+        cameras.back ().view_up[0] = renderer->GetActiveCamera ()->GetViewUp ()[0];
+        cameras.back ().view_up[1] = renderer->GetActiveCamera ()->GetViewUp ()[1];
+        cameras.back ().view_up[2] = renderer->GetActiveCamera ()->GetViewUp ()[2];
         cameras.back ().fovy = renderer->GetActiveCamera ()->GetViewAngle () / 180.0 * M_PI;
         cameras.back ().window_size[0] = renderer->GetRenderWindow ()->GetSize ()[0];
         cameras.back ().window_size[1] = renderer->GetRenderWindow ()->GetSize ()[1];
@@ -1264,7 +1264,7 @@ void temp_viz::Viz3d::setCameraParameters (const temp_viz::Camera &camera, int v
             vtkSmartPointer<vtkCamera> cam = renderer->GetActiveCamera ();
             cam->SetPosition (camera.pos[0], camera.pos[1], camera.pos[2]);
             cam->SetFocalPoint (camera.focal[0], camera.focal[1], camera.focal[2]);
-            cam->SetViewUp (camera.view[0], camera.view[1], camera.view[2]);
+            cam->SetViewUp (camera.view_up[0], camera.view_up[1], camera.view_up[2]);
             cam->SetClippingRange (camera.clip);
             cam->SetUseHorizontalViewAngle (0);
             cam->SetViewAngle (camera.fovy * 180.0 / M_PI);

@@ -3,103 +3,103 @@
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 
-Eigen::Matrix4d temp_viz::vtkToEigen (vtkMatrix4x4* vtk_matrix)
-{
-    Eigen::Matrix4d eigen_matrix = Eigen::Matrix4d::Identity ();
-    for (int i=0; i < 4; i++)
-        for (int j=0; j < 4; j++)
-            eigen_matrix (i, j) = vtk_matrix->GetElement (i, j);
+//Eigen::Matrix4d temp_viz::vtkToEigen (vtkMatrix4x4* vtk_matrix)
+//{
+//    Eigen::Matrix4d eigen_matrix = Eigen::Matrix4d::Identity ();
+//    for (int i=0; i < 4; i++)
+//        for (int j=0; j < 4; j++)
+//            eigen_matrix (i, j) = vtk_matrix->GetElement (i, j);
 
-    return eigen_matrix;
-}
+//    return eigen_matrix;
+//}
+
+///////////////////////////////////////////////////////////////////////////////////////////////
+//Eigen::Vector2i temp_viz::worldToView (const Eigen::Vector4d &world_pt, const Eigen::Matrix4d &view_projection_matrix, int width, int height)
+//{
+//    // Transform world to clipping coordinates
+//    Eigen::Vector4d world (view_projection_matrix * world_pt);
+//    // Normalize w-component
+//    world /= world.w ();
+
+//    // X/Y screen space coordinate
+//    int screen_x = int (floor (double (((world.x () + 1) / 2.0) * width) + 0.5));
+//    int screen_y = int (floor (double (((world.y () + 1) / 2.0) * height) + 0.5));
+
+//    // Calculate -world_pt.y () because the screen Y axis is oriented top->down, ie 0 is top-left
+//    //int winY = (int) floor ( (double) (((1 - world_pt.y ()) / 2.0) * height) + 0.5); // top left
+
+//    return (Eigen::Vector2i (screen_x, screen_y));
+//}
 
 /////////////////////////////////////////////////////////////////////////////////////////////
-Eigen::Vector2i temp_viz::worldToView (const Eigen::Vector4d &world_pt, const Eigen::Matrix4d &view_projection_matrix, int width, int height)
-{
-    // Transform world to clipping coordinates
-    Eigen::Vector4d world (view_projection_matrix * world_pt);
-    // Normalize w-component
-    world /= world.w ();
+//void temp_viz::getViewFrustum (const Eigen::Matrix4d &view_projection_matrix, double planes[24])
+//{
+//    // Set up the normals
+//    Eigen::Vector4d normals[6];
+//    for (int i=0; i < 6; i++)
+//    {
+//        normals[i] = Eigen::Vector4d (0.0, 0.0, 0.0, 1.0);
 
-    // X/Y screen space coordinate
-    int screen_x = int (floor (double (((world.x () + 1) / 2.0) * width) + 0.5));
-    int screen_y = int (floor (double (((world.y () + 1) / 2.0) * height) + 0.5));
+//        // if i is even set to -1, if odd set to +1
+//        normals[i] (i/2) = 1 - (i%2)*2;
+//    }
 
-    // Calculate -world_pt.y () because the screen Y axis is oriented top->down, ie 0 is top-left
-    //int winY = (int) floor ( (double) (((1 - world_pt.y ()) / 2.0) * height) + 0.5); // top left
+//    // Transpose the matrix for use with normals
+//    Eigen::Matrix4d view_matrix = view_projection_matrix.transpose ();
 
-    return (Eigen::Vector2i (screen_x, screen_y));
-}
+//    // Transform the normals to world coordinates
+//    for (int i=0; i < 6; i++)
+//    {
+//        normals[i] = view_matrix * normals[i];
 
-/////////////////////////////////////////////////////////////////////////////////////////////
-void temp_viz::getViewFrustum (const Eigen::Matrix4d &view_projection_matrix, double planes[24])
-{
-    // Set up the normals
-    Eigen::Vector4d normals[6];
-    for (int i=0; i < 6; i++)
-    {
-        normals[i] = Eigen::Vector4d (0.0, 0.0, 0.0, 1.0);
+//        double f = 1.0/sqrt (normals[i].x () * normals[i].x () +
+//                             normals[i].y () * normals[i].y () +
+//                             normals[i].z () * normals[i].z ());
 
-        // if i is even set to -1, if odd set to +1
-        normals[i] (i/2) = 1 - (i%2)*2;
-    }
+//        planes[4*i + 0] = normals[i].x ()*f;
+//        planes[4*i + 1] = normals[i].y ()*f;
+//        planes[4*i + 2] = normals[i].z ()*f;
+//        planes[4*i + 3] = normals[i].w ()*f;
+//    }
+//}
 
-    // Transpose the matrix for use with normals
-    Eigen::Matrix4d view_matrix = view_projection_matrix.transpose ();
+//int temp_viz::cullFrustum (double frustum[24], const Eigen::Vector3d &min_bb, const Eigen::Vector3d &max_bb)
+//{
+//    int result = PCL_INSIDE_FRUSTUM;
 
-    // Transform the normals to world coordinates
-    for (int i=0; i < 6; i++)
-    {
-        normals[i] = view_matrix * normals[i];
+//    for(int i =0; i < 6; i++){
+//        double a = frustum[(i*4)];
+//        double b = frustum[(i*4)+1];
+//        double c = frustum[(i*4)+2];
+//        double d = frustum[(i*4)+3];
 
-        double f = 1.0/sqrt (normals[i].x () * normals[i].x () +
-                             normals[i].y () * normals[i].y () +
-                             normals[i].z () * normals[i].z ());
+//        //cout << i << ": " << a << "x + " << b << "y + " << c << "z + " << d << endl;
 
-        planes[4*i + 0] = normals[i].x ()*f;
-        planes[4*i + 1] = normals[i].y ()*f;
-        planes[4*i + 2] = normals[i].z ()*f;
-        planes[4*i + 3] = normals[i].w ()*f;
-    }
-}
+//        //  Basic VFC algorithm
+//        Eigen::Vector3d center ((max_bb.x () - min_bb.x ()) / 2 + min_bb.x (),
+//                                (max_bb.y () - min_bb.y ()) / 2 + min_bb.y (),
+//                                (max_bb.z () - min_bb.z ()) / 2 + min_bb.z ());
 
-int temp_viz::cullFrustum (double frustum[24], const Eigen::Vector3d &min_bb, const Eigen::Vector3d &max_bb)
-{
-    int result = PCL_INSIDE_FRUSTUM;
+//        Eigen::Vector3d radius (fabs (static_cast<double> (max_bb.x () - center.x ())),
+//                                fabs (static_cast<double> (max_bb.y () - center.y ())),
+//                                fabs (static_cast<double> (max_bb.z () - center.z ())));
 
-    for(int i =0; i < 6; i++){
-        double a = frustum[(i*4)];
-        double b = frustum[(i*4)+1];
-        double c = frustum[(i*4)+2];
-        double d = frustum[(i*4)+3];
+//        double m = (center.x () * a) + (center.y () * b) + (center.z () * c) + d;
+//        double n = (radius.x () * fabs(a)) + (radius.y () * fabs(b)) + (radius.z () * fabs(c));
 
-        //cout << i << ": " << a << "x + " << b << "y + " << c << "z + " << d << endl;
+//        if (m + n < 0){
+//            result = PCL_OUTSIDE_FRUSTUM;
+//            break;
+//        }
 
-        //  Basic VFC algorithm
-        Eigen::Vector3d center ((max_bb.x () - min_bb.x ()) / 2 + min_bb.x (),
-                                (max_bb.y () - min_bb.y ()) / 2 + min_bb.y (),
-                                (max_bb.z () - min_bb.z ()) / 2 + min_bb.z ());
+//        if (m - n < 0)
+//        {
+//            result = PCL_INTERSECT_FRUSTUM;
+//        }
+//    }
 
-        Eigen::Vector3d radius (fabs (static_cast<double> (max_bb.x () - center.x ())),
-                                fabs (static_cast<double> (max_bb.y () - center.y ())),
-                                fabs (static_cast<double> (max_bb.z () - center.z ())));
-
-        double m = (center.x () * a) + (center.y () * b) + (center.z () * c) + d;
-        double n = (radius.x () * fabs(a)) + (radius.y () * fabs(b)) + (radius.z () * fabs(c));
-
-        if (m + n < 0){
-            result = PCL_OUTSIDE_FRUSTUM;
-            break;
-        }
-
-        if (m - n < 0)
-        {
-            result = PCL_INTERSECT_FRUSTUM;
-        }
-    }
-
-    return result;
-}
+//    return result;
+//}
 
 //void
 //temp_viz::getModelViewPosition (Eigen::Matrix4d model_view_matrix, Eigen::Vector3d &position)
@@ -171,107 +171,107 @@ int hull_vertex_table[43][7] = {
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////////
-float
-temp_viz::viewScreenArea (
-        const Eigen::Vector3d &eye,
-        const Eigen::Vector3d &min_bb, const Eigen::Vector3d &max_bb,
-        const Eigen::Matrix4d &view_projection_matrix, int width, int height)
-{
-    Eigen::Vector4d bounding_box[8];
-    bounding_box[0] = Eigen::Vector4d(min_bb.x (), min_bb.y (), min_bb.z (), 1.0);
-    bounding_box[1] = Eigen::Vector4d(max_bb.x (), min_bb.y (), min_bb.z (), 1.0);
-    bounding_box[2] = Eigen::Vector4d(max_bb.x (), max_bb.y (), min_bb.z (), 1.0);
-    bounding_box[3] = Eigen::Vector4d(min_bb.x (), max_bb.y (), min_bb.z (), 1.0);
-    bounding_box[4] = Eigen::Vector4d(min_bb.x (), min_bb.y (), max_bb.z (), 1.0);
-    bounding_box[5] = Eigen::Vector4d(max_bb.x (), min_bb.y (), max_bb.z (), 1.0);
-    bounding_box[6] = Eigen::Vector4d(max_bb.x (), max_bb.y (), max_bb.z (), 1.0);
-    bounding_box[7] = Eigen::Vector4d(min_bb.x (), max_bb.y (), max_bb.z (), 1.0);
+//float
+//temp_viz::viewScreenArea (
+//        const Eigen::Vector3d &eye,
+//        const Eigen::Vector3d &min_bb, const Eigen::Vector3d &max_bb,
+//        const Eigen::Matrix4d &view_projection_matrix, int width, int height)
+//{
+//    Eigen::Vector4d bounding_box[8];
+//    bounding_box[0] = Eigen::Vector4d(min_bb.x (), min_bb.y (), min_bb.z (), 1.0);
+//    bounding_box[1] = Eigen::Vector4d(max_bb.x (), min_bb.y (), min_bb.z (), 1.0);
+//    bounding_box[2] = Eigen::Vector4d(max_bb.x (), max_bb.y (), min_bb.z (), 1.0);
+//    bounding_box[3] = Eigen::Vector4d(min_bb.x (), max_bb.y (), min_bb.z (), 1.0);
+//    bounding_box[4] = Eigen::Vector4d(min_bb.x (), min_bb.y (), max_bb.z (), 1.0);
+//    bounding_box[5] = Eigen::Vector4d(max_bb.x (), min_bb.y (), max_bb.z (), 1.0);
+//    bounding_box[6] = Eigen::Vector4d(max_bb.x (), max_bb.y (), max_bb.z (), 1.0);
+//    bounding_box[7] = Eigen::Vector4d(min_bb.x (), max_bb.y (), max_bb.z (), 1.0);
 
-    // Compute 6-bit code to classify eye with respect to the 6 defining planes
-    int pos = ((eye.x () < bounding_box[0].x ()) )  // 1 = left
-            + ((eye.x () > bounding_box[6].x ()) << 1)  // 2 = right
-            + ((eye.y () < bounding_box[0].y ()) << 2)  // 4 = bottom
-            + ((eye.y () > bounding_box[6].y ()) << 3)  // 8 = top
-            + ((eye.z () < bounding_box[0].z ()) << 4)  // 16 = front
-            + ((eye.z () > bounding_box[6].z ()) << 5); // 32 = back
+//    // Compute 6-bit code to classify eye with respect to the 6 defining planes
+//    int pos = ((eye.x () < bounding_box[0].x ()) )  // 1 = left
+//            + ((eye.x () > bounding_box[6].x ()) << 1)  // 2 = right
+//            + ((eye.y () < bounding_box[0].y ()) << 2)  // 4 = bottom
+//            + ((eye.y () > bounding_box[6].y ()) << 3)  // 8 = top
+//            + ((eye.z () < bounding_box[0].z ()) << 4)  // 16 = front
+//            + ((eye.z () > bounding_box[6].z ()) << 5); // 32 = back
 
-    // Look up number of vertices
-    int num = hull_vertex_table[pos][6];
-    if (num == 0)
-    {
-        return (float (width * height));
-    }
-    //return 0.0;
+//    // Look up number of vertices
+//    int num = hull_vertex_table[pos][6];
+//    if (num == 0)
+//    {
+//        return (float (width * height));
+//    }
+//    //return 0.0;
 
 
-    //  cout << "eye: " << eye.x() << " " << eye.y() << " " << eye.z() << endl;
-    //  cout << "min: " << bounding_box[0].x() << " " << bounding_box[0].y() << " " << bounding_box[0].z() << endl;
-    //
-    //  cout << "pos: " << pos << " ";
-    //  switch(pos){
-    //    case 0:  cout << "inside" << endl; break;
-    //    case 1:  cout << "left" << endl; break;
-    //    case 2:  cout << "right" << endl; break;
-    //    case 3:
-    //    case 4:  cout << "bottom" << endl; break;
-    //    case 5:  cout << "bottom, left" << endl; break;
-    //    case 6:  cout << "bottom, right" << endl; break;
-    //    case 7:
-    //    case 8:  cout << "top" << endl; break;
-    //    case 9:  cout << "top, left" << endl; break;
-    //    case 10:  cout << "top, right" << endl; break;
-    //    case 11:
-    //    case 12:
-    //    case 13:
-    //    case 14:
-    //    case 15:
-    //    case 16:  cout << "front" << endl; break;
-    //    case 17:  cout << "front, left" << endl; break;
-    //    case 18:  cout << "front, right" << endl; break;
-    //    case 19:
-    //    case 20:  cout << "front, bottom" << endl; break;
-    //    case 21:  cout << "front, bottom, left" << endl; break;
-    //    case 22:
-    //    case 23:
-    //    case 24:  cout << "front, top" << endl; break;
-    //    case 25:  cout << "front, top, left" << endl; break;
-    //    case 26:  cout << "front, top, right" << endl; break;
-    //    case 27:
-    //    case 28:
-    //    case 29:
-    //    case 30:
-    //    case 31:
-    //    case 32:  cout << "back" << endl; break;
-    //    case 33:  cout << "back, left" << endl; break;
-    //    case 34:  cout << "back, right" << endl; break;
-    //    case 35:
-    //    case 36:  cout << "back, bottom" << endl; break;
-    //    case 37:  cout << "back, bottom, left" << endl; break;
-    //    case 38:  cout << "back, bottom, right" << endl; break;
-    //    case 39:
-    //    case 40:  cout << "back, top" << endl; break;
-    //    case 41:  cout << "back, top, left" << endl; break;
-    //    case 42:  cout << "back, top, right" << endl; break;
-    //  }
+//    //  cout << "eye: " << eye.x() << " " << eye.y() << " " << eye.z() << endl;
+//    //  cout << "min: " << bounding_box[0].x() << " " << bounding_box[0].y() << " " << bounding_box[0].z() << endl;
+//    //
+//    //  cout << "pos: " << pos << " ";
+//    //  switch(pos){
+//    //    case 0:  cout << "inside" << endl; break;
+//    //    case 1:  cout << "left" << endl; break;
+//    //    case 2:  cout << "right" << endl; break;
+//    //    case 3:
+//    //    case 4:  cout << "bottom" << endl; break;
+//    //    case 5:  cout << "bottom, left" << endl; break;
+//    //    case 6:  cout << "bottom, right" << endl; break;
+//    //    case 7:
+//    //    case 8:  cout << "top" << endl; break;
+//    //    case 9:  cout << "top, left" << endl; break;
+//    //    case 10:  cout << "top, right" << endl; break;
+//    //    case 11:
+//    //    case 12:
+//    //    case 13:
+//    //    case 14:
+//    //    case 15:
+//    //    case 16:  cout << "front" << endl; break;
+//    //    case 17:  cout << "front, left" << endl; break;
+//    //    case 18:  cout << "front, right" << endl; break;
+//    //    case 19:
+//    //    case 20:  cout << "front, bottom" << endl; break;
+//    //    case 21:  cout << "front, bottom, left" << endl; break;
+//    //    case 22:
+//    //    case 23:
+//    //    case 24:  cout << "front, top" << endl; break;
+//    //    case 25:  cout << "front, top, left" << endl; break;
+//    //    case 26:  cout << "front, top, right" << endl; break;
+//    //    case 27:
+//    //    case 28:
+//    //    case 29:
+//    //    case 30:
+//    //    case 31:
+//    //    case 32:  cout << "back" << endl; break;
+//    //    case 33:  cout << "back, left" << endl; break;
+//    //    case 34:  cout << "back, right" << endl; break;
+//    //    case 35:
+//    //    case 36:  cout << "back, bottom" << endl; break;
+//    //    case 37:  cout << "back, bottom, left" << endl; break;
+//    //    case 38:  cout << "back, bottom, right" << endl; break;
+//    //    case 39:
+//    //    case 40:  cout << "back, top" << endl; break;
+//    //    case 41:  cout << "back, top, left" << endl; break;
+//    //    case 42:  cout << "back, top, right" << endl; break;
+//    //  }
 
-    //return -1 if inside
-    Eigen::Vector2d dst[8];
-    for (int i = 0; i < num; i++)
-    {
-        Eigen::Vector4d world_pt = bounding_box[hull_vertex_table[pos][i]];
-        Eigen::Vector2i screen_pt = temp_viz::worldToView(world_pt, view_projection_matrix, width, height);
-        //    cout << "point[" << i << "]: " << screen_pt.x() << " " << screen_pt.y() << endl;
-        dst[i] = Eigen::Vector2d(screen_pt.x (), screen_pt.y ());
-    }
+//    //return -1 if inside
+//    Eigen::Vector2d dst[8];
+//    for (int i = 0; i < num; i++)
+//    {
+//        Eigen::Vector4d world_pt = bounding_box[hull_vertex_table[pos][i]];
+//        Eigen::Vector2i screen_pt = temp_viz::worldToView(world_pt, view_projection_matrix, width, height);
+//        //    cout << "point[" << i << "]: " << screen_pt.x() << " " << screen_pt.y() << endl;
+//        dst[i] = Eigen::Vector2d(screen_pt.x (), screen_pt.y ());
+//    }
 
-    double sum = 0.0;
-    for (int i = 0; i < num; ++i)
-    {
-        sum += (dst[i].x () - dst[(i+1) % num].x ()) * (dst[i].y () + dst[(i+1) % num].y ());
-    }
+//    double sum = 0.0;
+//    for (int i = 0; i < num; ++i)
+//    {
+//        sum += (dst[i].x () - dst[(i+1) % num].x ()) * (dst[i].y () + dst[(i+1) % num].y ());
+//    }
 
-    return (fabsf (float (sum * 0.5f)));
-}
+//    return (fabsf (float (sum * 0.5f)));
+//}
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 void temp_viz::Camera::computeViewMatrix (Eigen::Matrix4d &view_mat) const
@@ -280,7 +280,7 @@ void temp_viz::Camera::computeViewMatrix (Eigen::Matrix4d &view_mat) const
     //this code is based off of gluLookAt http://www.opengl.org/wiki/GluLookAt_code
     Eigen::Vector3d focal_point (focal[0], focal[1], focal[2]);
     Eigen::Vector3d posv        (pos[0]  , pos[1]  , pos[2]);
-    Eigen::Vector3d up          (view[0] , view[1] , view[2]);
+    Eigen::Vector3d up          (view_up[0] , view_up[1] , view_up[2]);
 
     Eigen::Vector3d zAxis = (focal_point - posv).normalized();
     Eigen::Vector3d xAxis = zAxis.cross(up).normalized();

@@ -7,9 +7,9 @@
 
 namespace temp_viz
 {
-    CV_EXPORTS Eigen::Matrix4d vtkToEigen (vtkMatrix4x4* vtk_matrix);
-    CV_EXPORTS Eigen::Vector2i worldToView (const Eigen::Vector4d &world_pt, const Eigen::Matrix4d &view_projection_matrix, int width, int height);
-    CV_EXPORTS void getViewFrustum (const Eigen::Matrix4d &view_projection_matrix, double planes[24]);
+    //CV_EXPORTS Eigen::Matrix4d vtkToEigen (vtkMatrix4x4* vtk_matrix);
+    //CV_EXPORTS Eigen::Vector2i worldToView (const Eigen::Vector4d &world_pt, const Eigen::Matrix4d &view_projection_matrix, int width, int height);
+    //CV_EXPORTS void getViewFrustum (const Eigen::Matrix4d &view_projection_matrix, double planes[24]);
 
     enum FrustumCull
     {
@@ -18,8 +18,8 @@ namespace temp_viz
         PCL_OUTSIDE_FRUSTUM
     };
 
-    CV_EXPORTS int cullFrustum (double planes[24], const Eigen::Vector3d &min_bb, const Eigen::Vector3d &max_bb);
-    CV_EXPORTS float viewScreenArea (const Eigen::Vector3d &eye, const Eigen::Vector3d &min_bb, const Eigen::Vector3d &max_bb, const Eigen::Matrix4d &view_projection_matrix, int width, int height);
+    //CV_EXPORTS int cullFrustum (double planes[24], const Eigen::Vector3d &min_bb, const Eigen::Vector3d &max_bb);
+    //CV_EXPORTS float viewScreenArea (const Eigen::Vector3d &eye, const Eigen::Vector3d &min_bb, const Eigen::Vector3d &max_bb, const Eigen::Matrix4d &view_projection_matrix, int width, int height);
 
     enum RenderingProperties
     {
@@ -48,25 +48,20 @@ namespace temp_viz
     };
 
     //////////////////////////////////////////////////////////////////////////////////////////////
-    /** \brief Camera class holds a set of camera parameters together with the window pos/size. */
+    /** Camera class holds a set of camera parameters together with the window pos/size. */
     class CV_EXPORTS Camera
     {
     public:
-        /** \brief Focal point or lookAt.
-                      * \note The view direction can be obtained by (focal-pos).normalized ()
-                      */
-        double focal[3];
+        /** Focal point or lookAt. The view direction can be obtained by (focal-pos).normalized () */
+        cv::Vec3d focal;
 
         /** \brief Position of the camera. */
-        double pos[3];
+        cv::Vec3d pos;
 
-        /** \brief Up vector of the camera.
-                      * \note Not to be confused with the view direction, bad naming here. */
-        double view[3];
+        /** \brief Up vector of the camera. */
+        cv::Vec3d view_up;
 
-        /** \brief Clipping planes depths.
-                      * clip[0] is near clipping plane, and clip [1] is the far clipping plane
-                      */
+        /** \brief Clipping planes depths. clip[0] is near clipping plane, and clip [1] is the far clipping plane */
         double clip[2];
 
         /** \brief Field of view angle in y direction (radians). */
@@ -79,22 +74,22 @@ namespace temp_viz
 
 
         /** \brief Computes View matrix for Camera (Based on gluLookAt)
-                      * \param[out] view_mat the resultant matrix
-                      */
+          * \param[out] view_mat the resultant matrix
+          */
         void computeViewMatrix (Eigen::Matrix4d& view_mat) const;
 
         /** \brief Computes Projection Matrix for Camera
-                      *  \param[out] proj the resultant matrix
-                      */
+          *  \param[out] proj the resultant matrix
+          */
         void computeProjectionMatrix (Eigen::Matrix4d& proj) const;
 
         /** \brief converts point to window coordiantes
-                      * \param[in] pt xyz point to be converted
-                      * \param[out] window_cord vector containing the pts' window X,Y, Z and 1
-                      *
-                      * This function computes the projection and view matrix every time.
-                      * It is very inefficient to use this for every point in the point cloud!
-                      */
+          * \param[in] pt xyz point to be converted
+          * \param[out] window_cord vector containing the pts' window X,Y, Z and 1
+          *
+          * This function computes the projection and view matrix every time.
+          * It is very inefficient to use this for every point in the point cloud!
+          */
         void cvtWindowCoordinates (const cv::Point3f& pt, Eigen::Vector4d& window_cord) const
         {
             Eigen::Matrix4d proj, view;
@@ -105,15 +100,15 @@ namespace temp_viz
         }
 
         /** \brief converts point to window coordiantes
-                      * \param[in] pt xyz point to be converted
-                      * \param[out] window_cord vector containing the pts' window X,Y, Z and 1
-                      * \param[in] composite_mat composite transformation matrix (proj*view)
-                      *
-                      * Use this function to compute window coordinates with a precomputed
-                      * transformation function.  The typical composite matrix will be
-                      * the projection matrix * the view matrix.  However, additional
-                      * matrices like a camera disortion matrix can also be added.
-                      */
+          * \param[in] pt xyz point to be converted
+          * \param[out] window_cord vector containing the pts' window X,Y, Z and 1
+          * \param[in] composite_mat composite transformation matrix (proj*view)
+          *
+          * Use this function to compute window coordinates with a precomputed
+          * transformation function.  The typical composite matrix will be
+          * the projection matrix * the view matrix.  However, additional
+          * matrices like a camera disortion matrix can also be added.
+          */
         void cvtWindowCoordinates (const cv::Point3f& pt, Eigen::Vector4d& window_cord, const Eigen::Matrix4d& composite_mat) const
         {
             Eigen::Vector4d pte (pt.x, pt.y, pt.z, 1);
