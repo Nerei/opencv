@@ -17,7 +17,7 @@
 #include <vtkSelectionNode.h>
 #include <opencv2/calib3d.hpp>
 
-#include <opencv2/viz/viz3d_impl.hpp>
+#include <q/viz3d_impl.hpp>
 
 #include <vtkSelection.h>
 #include <vtkPointPicker.h>

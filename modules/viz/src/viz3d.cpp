@@ -1,5 +1,5 @@
 #include <opencv2/viz/viz3d.hpp>
-#include <opencv2/viz/viz3d_impl.hpp>
+#include <q/viz3d_impl.hpp>
 
 
 temp_viz::Viz3d::Viz3d(const std::string& name) : impl_(new VizImpl(name))

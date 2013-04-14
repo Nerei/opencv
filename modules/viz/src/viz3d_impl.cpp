@@ -10,7 +10,7 @@
 #include <q/shapes.h>
 #include <vtkAlgorithmOutput.h>
 
-#include <opencv2/viz/viz3d_impl.hpp>
+#include <q/viz3d_impl.hpp>
 
 void temp_viz::Viz3d::VizImpl::setFullScreen (bool mode)
 {
