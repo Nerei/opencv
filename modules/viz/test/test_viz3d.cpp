@@ -50,6 +50,7 @@
 #include <opencv2/viz/types.hpp>
 #include <opencv2/viz/mesh_load.hpp>
 
+
 cv::Mat cvcloud_load()
 {
     cv::Mat cloud(1, 20000, CV_32FC3);
@@ -71,7 +72,7 @@ TEST(Viz_viz3d, accuracy)
     temp_viz::Viz3d v;
     //v.spin();
 
-    v.setBackgroundColor(cv::Scalar(50, 0, 0));
+    v.setBackgroundColor();
 
     v.addCoordinateSystem(1.0, cv::Affine3f::Identity());
 
@@ -90,30 +91,23 @@ TEST(Viz_viz3d, accuracy)
     mc.values[0] = mc.values[1] = mc.values[2] = mc.values[3] = 1;
     v.addPlane(mc);
 
-    std::vector<temp_viz::Vertices> polygons;
-    cv::Mat me_cl, me_co;
-    mesh_load(polygons, me_cl, me_co, "d:/horse.ply");
 
-    v.addPolygonMesh(me_cl, me_co, cv::Mat(), polygons, "pq");
-
+    temp_viz::Mesh3d::Ptr mesh = temp_viz::mesh_load("d:/horse.ply");
+    v.addPolygonMesh(*mesh, "pq");
 
     v.spinOnce(1000, true);
 
     v.removeCoordinateSystem();
 
+    for(int i = 0; i < mesh->cloud.cols; ++i)
+        mesh->cloud.ptr<cv::Point3f>()[i] += cv::Point3f(1, 1, 1);
 
-    for(int i = 0; i < me_cl.cols; ++i)
-        me_cl.ptr<cv::Point3f>()[i] += cv::Point3f(1, 1, 1);
-
-
-    v.updatePolygonMesh(me_cl, me_co, cv::Mat(), polygons, "pq");
+    v.updatePolygonMesh(*mesh, "pq");
 
 
-    for(int i = 0; i < me_cl.cols; ++i)
-        me_cl.ptr<cv::Point3f>()[i] -= cv::Point3f(2, 2, 2);
-
-
-    v.addPolylineFromPolygonMesh (me_cl, polygons);
+    for(int i = 0; i < mesh->cloud.cols; ++i)
+        mesh->cloud.ptr<cv::Point3f>()[i] -= cv::Point3f(2, 2, 2);
+    v.addPolylineFromPolygonMesh (mesh->cloud, mesh->polygons);
 
 
     v.addText("===Abd sadfljsadlk", 100, 100, cv::Scalar(255, 0, 0), 15);

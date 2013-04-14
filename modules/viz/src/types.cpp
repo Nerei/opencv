@@ -6,7 +6,9 @@
 /// cv::Color
 
 temp_viz::Color::Color() : Scalar(0, 0, 0) {}
+temp_viz::Color::Color(double gray) : Scalar(gray, gray, gray) {}
 temp_viz::Color::Color(double red, double green, double blue) : Scalar(blue, green, red) {}
+temp_viz::Color::Color(const Scalar& color) : Scalar(color) {}
 
 temp_viz::Color temp_viz::Color::black()   { return Color(0,   0,   0); }
 temp_viz::Color temp_viz::Color::blue()    { return Color(0,   0, 255); }

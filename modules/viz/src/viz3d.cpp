@@ -13,7 +13,7 @@ temp_viz::Viz3d::~Viz3d()
 }
 
 
-void temp_viz::Viz3d::setBackgroundColor(const Scalar& color)
+void temp_viz::Viz3d::setBackgroundColor(const Color& color)
 {
     impl_->setBackgroundColor(color);
 }
@@ -38,14 +38,14 @@ bool temp_viz::Viz3d::updatePointCloud(const Mat& cloud, const Mat& colors, cons
     return impl_->updatePointCloud(cloud, colors, id, mask);
 }
 
-bool temp_viz::Viz3d::addPolygonMesh(const Mat& cloud, const Mat& colors, const Mat& mask, const std::vector<temp_viz::Vertices> &vertices, const String &id)
+bool temp_viz::Viz3d::addPolygonMesh (const Mesh3d& mesh, const String &id)
 {
-    return impl_->addPolygonMesh(cloud, colors, mask, vertices, id);
+    return impl_->addPolygonMesh(mesh.cloud, mesh.colors, Mat(), mesh.polygons, id);
 }
 
-bool temp_viz::Viz3d::updatePolygonMesh(const Mat& cloud, const Mat& colors, const Mat& mask, const std::vector<temp_viz::Vertices> &vertices, const String& id)
+bool temp_viz::Viz3d::updatePolygonMesh (const Mesh3d& mesh, const String &id)
 {
-    return impl_->updatePolygonMesh(cloud, colors, mask, vertices, id);
+    return impl_->updatePolygonMesh(mesh.cloud, mesh.colors, Mat(), mesh.polygons, id);
 }
 
 bool temp_viz::Viz3d::addPolylineFromPolygonMesh (const Mat& cloud, const std::vector<temp_viz::Vertices> &vertices, const String &id)

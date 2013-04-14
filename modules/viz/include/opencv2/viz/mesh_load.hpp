@@ -6,5 +6,5 @@
 
 namespace temp_viz
 {
-    CV_EXPORTS void mesh_load(std::vector<temp_viz::Vertices>& polygons, cv::Mat& cloud, cv::Mat& colors, const std::string& file);
+    CV_EXPORTS Mesh3d::Ptr mesh_load(const String& file);
 }

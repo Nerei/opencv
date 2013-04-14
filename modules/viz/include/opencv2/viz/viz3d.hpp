@@ -39,7 +39,7 @@ namespace temp_viz
         Viz3d(const std::string& name = "Viz");
         ~Viz3d();
 
-        void setBackgroundColor(const Scalar& color = Scalar::all(0));
+        void setBackgroundColor(const Color& color = Color::black());
 
         void addCoordinateSystem(double scale, const Affine3f& t, const String &id = "coordinate");
 
@@ -57,8 +57,9 @@ namespace temp_viz
 
         bool updatePointCloud (const Mat& cloud, const Mat& colors, const String& id = "cloud", const Mat& mask = Mat());
 
-        bool addPolygonMesh (const Mat& cloud, const Mat& colors, const Mat& mask, const std::vector<temp_viz::Vertices> &vertices, const String &id = "polygon");
-        bool updatePolygonMesh (const Mat& cloud, const Mat& colors, const Mat& mask, const std::vector<temp_viz::Vertices> &vertices, const String &id = "polygon");
+
+        bool addPolygonMesh (const Mesh3d& mesh, const String &id = "polygon");
+        bool updatePolygonMesh (const Mesh3d& mesh, const String &id = "polygon");
 
         bool addPolylineFromPolygonMesh (const Mat& cloud, const std::vector<temp_viz::Vertices> &vertices, const String &id = "polyline");
 

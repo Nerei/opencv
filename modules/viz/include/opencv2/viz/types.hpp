@@ -9,12 +9,8 @@ namespace temp_viz
 {
     //qt creator hack
     typedef cv::Scalar Scalar;
-
-
-    struct CV_EXPORTS Vertices
-    {
-        std::vector<unsigned int> vertices;
-    };
+    typedef cv::Mat Mat;
+    typedef std::string String;
 
 
     struct CV_EXPORTS ModelCoefficients
@@ -23,10 +19,14 @@ namespace temp_viz
     };
 
 
-    class Color : public Scalar
+    class CV_EXPORTS Color : public Scalar
     {
+    public:
         Color();
+        Color(double gray);
         Color(double red, double green, double blue);
+
+        Color(const Scalar& color);
 
         static Color black();
         static Color blue();
@@ -40,4 +40,20 @@ namespace temp_viz
 
         static Color gray();
     };
+
+
+    struct CV_EXPORTS Vertices
+    {
+        std::vector<unsigned int> vertices;
+    };
+
+    class CV_EXPORTS Mesh3d
+    {
+    public:
+        typedef cv::Ptr<Mesh3d> Ptr;
+
+        Mat cloud, colors;
+        std::vector<Vertices> polygons;
+    };
+
 }
