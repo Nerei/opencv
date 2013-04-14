@@ -1,34 +1,10 @@
+#include "precomp.hpp"
 
-#include <q/shapes.h>
-#include <vtkTextActor.h>
-#include <vtkTextProperty.h>
-#include <vtkCellData.h>
-#include <vtkWorldPointPicker.h>
-#include <vtkPropPicker.h>
-#include <vtkPlatonicSolidSource.h>
-#include <vtkLoopSubdivisionFilter.h>
-#include <vtkTriangle.h>
-#include <vtkTransform.h>
-#include <vtkPolyDataNormals.h>
-#include <vtkMapper.h>
-#include <vtkDataSetMapper.h>
-
-#include <vtkHardwareSelector.h>
-#include <vtkSelectionNode.h>
 #include <opencv2/calib3d.hpp>
-
+#include <q/shapes.h>
 #include <q/viz3d_impl.hpp>
 
-#include <vtkSelection.h>
-#include <vtkPointPicker.h>
-
-#include <q/3rdparty.h>
-//#include <q/visualization/vtk/vtkVertexBufferObjectMapper.h>
-//#include <q/visualization/vtk/vtkRenderWindowInteractorFix.h>
-
 #include <vtkRenderWindowInteractor.h>
-
-//vtkRenderWindowInteractor* vtkRenderWindowInteractorFixNew ()
 #ifndef __APPLE__
 vtkRenderWindowInteractor* vtkRenderWindowInteractorFixNew ()
 {
@@ -38,61 +14,42 @@ vtkRenderWindowInteractor* vtkRenderWindowInteractorFixNew ()
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 temp_viz::Viz3d::VizImpl::VizImpl (const std::string &name)
-    : interactor_ ()
-    , stopped_ ()
-    , timer_id_ ()
-    , exit_main_loop_timer_callback_ ()
-    , exit_callback_ ()
-    //, rens_ (vtkSmartPointer<vtkRendererCollection>::New ())
-    , win_ ()
-    , style_ (vtkSmartPointer<temp_viz::PCLVisualizerInteractorStyle>::New ())
+    :  style_ (vtkSmartPointer<temp_viz::PCLVisualizerInteractorStyle>::New ())
     , cloud_actor_map_ (new CloudActorMap)
     , shape_actor_map_ (new ShapeActorMap)
-    //, coordinate_actor_map_ ()
-    , camera_set_ ()
-    , ren_()
     , s_lastDone_(0.0)
 {
-    // Create a Renderer
-    ren_ = vtkSmartPointer<vtkRenderer>::New ();
-    // Add it to the list of renderers
-    //rens_->AddItem (ren);
+    renderer_ = vtkSmartPointer<vtkRenderer>::New ();
 
     // Create a RendererWindow
-    win_ = vtkSmartPointer<vtkRenderWindow>::New ();
-    win_->SetWindowName (name.c_str ());
+    window_ = vtkSmartPointer<vtkRenderWindow>::New ();
 
-    // Get screen size
-    int *scr_size = win_->GetScreenSize ();
     // Set the window size as 1/2 of the screen size
-    win_->SetSize (scr_size[0] / 2, scr_size[1] / 2);
+    cv::Vec2i window_size = cv::Vec2i(window_->GetScreenSize()) / 2;
+    window_->SetSize (window_size.val);
 
-
-    win_->AddRenderer (ren_);
+    window_->AddRenderer (renderer_);
 
     // Create the interactor style
     style_->Initialize ();
-    style_->setRenderer (ren_);
+    style_->setRenderer (renderer_);
     style_->setCloudActorMap (cloud_actor_map_);
     style_->UseTimersOn ();
 
-
-
     /////////////////////////////////////////////////
-
     interactor_ = vtkSmartPointer <vtkRenderWindowInteractor>::Take (vtkRenderWindowInteractorFixNew ());
 
     //win_->PointSmoothingOn ();
     //win_->LineSmoothingOn ();
     //win_->PolygonSmoothingOn ();
-    win_->AlphaBitPlanesOff ();
-    win_->PointSmoothingOff ();
-    win_->LineSmoothingOff ();
-    win_->PolygonSmoothingOff ();
-    win_->SwapBuffersOn ();
-    win_->SetStereoTypeToAnaglyph ();
+    window_->AlphaBitPlanesOff ();
+    window_->PointSmoothingOff ();
+    window_->LineSmoothingOff ();
+    window_->PolygonSmoothingOff ();
+    window_->SwapBuffersOn ();
+    window_->SetStereoTypeToAnaglyph ();
 
-    interactor_->SetRenderWindow (win_);
+    interactor_->SetRenderWindow (window_);
     interactor_->SetInteractorStyle (style_);
     //interactor_->SetStillUpdateRate (30.0);
     interactor_->SetDesiredUpdateRate (30.0);
@@ -118,9 +75,11 @@ temp_viz::Viz3d::VizImpl::VizImpl (const std::string &name)
     resetStoppedFlag ();
 
 
-
     //////////////////////////////
-    win_->SetWindowName (name.c_str ());
+
+    String window_name("Viz");
+    window_name = name.empty() ? window_name : window_name + " - " + name;
+    window_->SetWindowName (window_name.c_str ());
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
@@ -130,7 +89,7 @@ temp_viz::Viz3d::VizImpl::~VizImpl ()
         interactor_->DestroyTimer (timer_id_);
     // Clear the collections
     //ren_->RemoveAllItems ();
-    ren_->Clear();
+    renderer_->Clear();
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
@@ -159,7 +118,7 @@ void temp_viz::Viz3d::VizImpl::spin ()
 {
     resetStoppedFlag ();
     // Render the window before we start the interactor
-    win_->Render ();
+    window_->Render ();
     interactor_->Start ();
 }
 
@@ -405,10 +364,10 @@ bool temp_viz::Viz3d::VizImpl::removeActorFromRenderer (const vtkSmartPointer<vt
 {
     vtkLODActor* actor_to_remove = vtkLODActor::SafeDownCast (actor);
 
-    vtkRenderer* renderer = ren_;
+
 
     // Iterate over all actors in this renderer
-    vtkPropCollection* actors = renderer->GetViewProps ();
+    vtkPropCollection* actors = renderer_->GetViewProps ();
     actors->InitTraversal ();
 
     vtkProp* current_actor = NULL;
@@ -416,7 +375,7 @@ bool temp_viz::Viz3d::VizImpl::removeActorFromRenderer (const vtkSmartPointer<vt
     {
         if (current_actor != actor_to_remove)
             continue;
-        renderer->RemoveActor (actor);
+        renderer_->RemoveActor (actor);
         //        renderer->Render ();
         // Found the correct viewport and removed the actor
         return (true);
@@ -432,17 +391,17 @@ bool temp_viz::Viz3d::VizImpl::removeActorFromRenderer (const vtkSmartPointer<vt
 
     // Add it to all renderers
     //rens_->InitTraversal ();
-    vtkRenderer* renderer = ren_;
+
 
         // Iterate over all actors in this renderer
-    vtkPropCollection* actors = renderer->GetViewProps ();
+    vtkPropCollection* actors = renderer_->GetViewProps ();
     actors->InitTraversal ();
     vtkProp* current_actor = NULL;
     while ((current_actor = actors->GetNextProp ()) != NULL)
     {
         if (current_actor != actor_to_remove)
             continue;
-        renderer->RemoveActor (actor);
+        renderer_->RemoveActor (actor);
         //        renderer->Render ();
         // Found the correct viewport and removed the actor
         return (true);
@@ -455,8 +414,8 @@ void temp_viz::Viz3d::VizImpl::addActorToRenderer (const vtkSmartPointer<vtkProp
 {
     // Add it to all renderers
     //rens_->InitTraversal ();
-    vtkRenderer* renderer = ren_;
-    renderer->AddActor (actor);
+
+    renderer_->AddActor (actor);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
@@ -466,17 +425,17 @@ bool temp_viz::Viz3d::VizImpl::removeActorFromRenderer (const vtkSmartPointer<vt
 
     // Initialize traversal
     //rens_->InitTraversal ();
-    vtkRenderer* renderer = ren_;
+
 
     // Iterate over all actors in this renderer
-    vtkPropCollection* actors = renderer->GetViewProps ();
+    vtkPropCollection* actors = renderer_->GetViewProps ();
     actors->InitTraversal ();
     vtkProp* current_actor = NULL;
     while ((current_actor = actors->GetNextProp ()) != NULL)
     {
         if (current_actor != actor_to_remove)
             continue;
-        renderer->RemoveActor (actor);
+        renderer_->RemoveActor (actor);
         //        renderer->Render ();
         // Found the correct viewport and removed the actor
         return (true);
@@ -583,8 +542,8 @@ void temp_viz::Viz3d::VizImpl::createActorFromVTKDataSet (const vtkSmartPointer<
 void temp_viz::Viz3d::VizImpl::setBackgroundColor (const cv::Scalar& color)
 {
     //rens_->InitTraversal ();
-    vtkRenderer* renderer = ren_;
-    renderer->SetBackground (color[2]/255, color[1]/255, color[0]/255);
+
+    renderer_->SetBackground (color[2]/255, color[1]/255, color[0]/255);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
@@ -923,7 +882,7 @@ void temp_viz::Viz3d::VizImpl::initCameraParameters ()
     // Set the camera field of view to about
     camera_temp.fovy = 0.8575;
 
-    int *scr_size = win_->GetScreenSize ();
+    int *scr_size = window_->GetScreenSize ();
     camera_temp.window_size[0] = scr_size[0] / 2;
     camera_temp.window_size[1] = scr_size[1] / 2;
 
@@ -939,8 +898,8 @@ void temp_viz::Viz3d::VizImpl::updateCamera ()
     std::cout << "[temp_viz::PCLVisualizer::updateCamera()] This method was deprecated, just re-rendering all scenes now." << std::endl;
     //rens_->InitTraversal ();
     // Update the camera parameters
-    vtkRenderer* renderer = ren_;
-    renderer->Render ();
+
+    renderer_->Render ();
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
@@ -966,30 +925,18 @@ bool temp_viz::Viz3d::VizImpl::updateShapePose (const std::string &id, const cv:
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
-void temp_viz::Viz3d::VizImpl::getCameras (std::vector<temp_viz::Camera>& cameras)
+void temp_viz::Viz3d::VizImpl::getCameras (temp_viz::Camera& camera)
 {
-    cameras.clear ();
-    //rens_->InitTraversal ();
-    vtkRenderer* renderer = ren_;
+    vtkCamera* active_camera = renderer_->GetActiveCamera ();
 
-    cameras.push_back(Camera());
-    cameras.back ().pos[0] = renderer->GetActiveCamera ()->GetPosition ()[0];
-    cameras.back ().pos[1] = renderer->GetActiveCamera ()->GetPosition ()[1];
-    cameras.back ().pos[2] = renderer->GetActiveCamera ()->GetPosition ()[2];
-    cameras.back ().focal[0] = renderer->GetActiveCamera ()->GetFocalPoint ()[0];
-    cameras.back ().focal[1] = renderer->GetActiveCamera ()->GetFocalPoint ()[1];
-    cameras.back ().focal[2] = renderer->GetActiveCamera ()->GetFocalPoint ()[2];
-    cameras.back ().clip[0] = renderer->GetActiveCamera ()->GetClippingRange ()[0];
-    cameras.back ().clip[1] = renderer->GetActiveCamera ()->GetClippingRange ()[1];
-    cameras.back ().view_up[0] = renderer->GetActiveCamera ()->GetViewUp ()[0];
-    cameras.back ().view_up[1] = renderer->GetActiveCamera ()->GetViewUp ()[1];
-    cameras.back ().view_up[2] = renderer->GetActiveCamera ()->GetViewUp ()[2];
-    cameras.back ().fovy = renderer->GetActiveCamera ()->GetViewAngle () / 180.0 * M_PI;
-    cameras.back ().window_size[0] = renderer->GetRenderWindow ()->GetSize ()[0];
-    cameras.back ().window_size[1] = renderer->GetRenderWindow ()->GetSize ()[1];
-    cameras.back ().window_pos[0] = 0;
-    cameras.back ().window_pos[1] = 0;
+    camera.pos = cv::Vec3d(active_camera->GetPosition());
+    camera.focal = cv::Vec3d(active_camera->GetFocalPoint());
+    camera.clip = cv::Vec2d(active_camera->GetClippingRange());
+    camera.view_up = cv::Vec3d(active_camera->GetViewUp());
 
+    camera.fovy = active_camera->GetViewAngle()/ 180.0 * CV_PI;
+    camera.window_size = cv::Vec2i(renderer_->GetRenderWindow()->GetSize());
+    camera.window_pos = cv::Vec2d::all(0);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
@@ -997,10 +944,7 @@ cv::Affine3f temp_viz::Viz3d::VizImpl::getViewerPose ()
 {
     cv::Affine3f ret  = cv::Affine3f::Identity();
 
-    //rens_->InitTraversal ();
-    vtkRenderer* renderer = ren_;
-
-    vtkCamera& camera = *renderer->GetActiveCamera ();
+    vtkCamera& camera = *renderer_->GetActiveCamera ();
     Eigen::Vector3d pos, x_axis, y_axis, z_axis;
     camera.GetPosition (pos[0], pos[1], pos[2]);
     camera.GetViewUp (y_axis[0], y_axis[1], y_axis[2]);
@@ -1033,32 +977,32 @@ void temp_viz::Viz3d::VizImpl::resetCamera ()
 {
     // Update the camera parameters
     //rens_->InitTraversal ();
-    vtkRenderer* renderer = ren_;
-    renderer->ResetCamera ();
+
+    renderer_->ResetCamera ();
 }
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 void temp_viz::Viz3d::VizImpl::setCameraPosition (const cv::Vec3d& pos, const cv::Vec3d& view, const cv::Vec3d& up)
 {
-    vtkRenderer* renderer = ren_;
-    vtkSmartPointer<vtkCamera> cam = renderer->GetActiveCamera ();
+
+    vtkSmartPointer<vtkCamera> cam = renderer_->GetActiveCamera ();
     cam->SetPosition (pos[0], pos[1], pos[2]);
     cam->SetFocalPoint (view[0], view[1], view[2]);
     cam->SetViewUp (up[0], up[1], up[2]);
-    renderer->Render ();
+    renderer_->Render ();
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 void temp_viz::Viz3d::VizImpl::setCameraPosition (double pos_x, double pos_y, double pos_z, double up_x, double up_y, double up_z)
 {
     //rens_->InitTraversal ();
-    vtkRenderer* renderer = ren_;
 
-    vtkSmartPointer<vtkCamera> cam = renderer->GetActiveCamera ();
+
+    vtkSmartPointer<vtkCamera> cam = renderer_->GetActiveCamera ();
     cam->SetPosition (pos_x, pos_y, pos_z);
     cam->SetViewUp (up_x, up_y, up_z);
-    renderer->Render ();
+    renderer_->Render ();
 
 }
 
@@ -1087,43 +1031,43 @@ void temp_viz::Viz3d::VizImpl::setCameraParameters (const cv::Matx33f& intrinsic
     double fovy = 2 * atan (window_size[1] / (2. * intrinsics (1, 1))) * 180.0 / M_PI;
 
     //rens_->InitTraversal ();
-    vtkRenderer* renderer = ren_;
 
-    vtkSmartPointer<vtkCamera> cam = renderer->GetActiveCamera ();
+
+    vtkSmartPointer<vtkCamera> cam = renderer_->GetActiveCamera ();
     cam->SetPosition (pos_vec[0], pos_vec[1], pos_vec[2]);
     cam->SetFocalPoint (focal_vec[0], focal_vec[1], focal_vec[2]);
     cam->SetViewUp (up_vec[0], up_vec[1], up_vec[2]);
     cam->SetUseHorizontalViewAngle (0);
     cam->SetViewAngle (fovy);
     cam->SetClippingRange (0.01, 1000.01);
-    win_->SetSize (window_size[0], window_size[1]);
+    window_->SetSize (window_size[0], window_size[1]);
 
-    renderer->Render ();
+    renderer_->Render ();
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 void temp_viz::Viz3d::VizImpl::setCameraParameters (const temp_viz::Camera &camera)
 {
     //rens_->InitTraversal ();
-    vtkRenderer* renderer = ren_;
 
-    vtkSmartPointer<vtkCamera> cam = renderer->GetActiveCamera ();
+
+    vtkSmartPointer<vtkCamera> cam = renderer_->GetActiveCamera ();
     cam->SetPosition (camera.pos[0], camera.pos[1], camera.pos[2]);
     cam->SetFocalPoint (camera.focal[0], camera.focal[1], camera.focal[2]);
     cam->SetViewUp (camera.view_up[0], camera.view_up[1], camera.view_up[2]);
-    cam->SetClippingRange (camera.clip);
+    cam->SetClippingRange (camera.clip.val);
     cam->SetUseHorizontalViewAngle (0);
     cam->SetViewAngle (camera.fovy * 180.0 / M_PI);
 
-    win_->SetSize (static_cast<int> (camera.window_size[0]), static_cast<int> (camera.window_size[1]));
+    window_->SetSize (static_cast<int> (camera.window_size[0]), static_cast<int> (camera.window_size[1]));
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 void temp_viz::Viz3d::VizImpl::setCameraClipDistances (double near, double far)
 {
     //rens_->InitTraversal ();
-    vtkRenderer* renderer = ren_;
-    vtkSmartPointer<vtkCamera> cam = renderer->GetActiveCamera ();
+
+    vtkSmartPointer<vtkCamera> cam = renderer_->GetActiveCamera ();
     cam->SetClippingRange (near, far);
 }
 
@@ -1131,8 +1075,8 @@ void temp_viz::Viz3d::VizImpl::setCameraClipDistances (double near, double far)
 void temp_viz::Viz3d::VizImpl::setCameraFieldOfView (double fovy)
 {
     //rens_->InitTraversal ();
-    vtkRenderer* renderer = ren_;
-    vtkSmartPointer<vtkCamera> cam = renderer->GetActiveCamera ();
+
+    vtkSmartPointer<vtkCamera> cam = renderer_->GetActiveCamera ();
     cam->SetUseHorizontalViewAngle (0);
     cam->SetViewAngle (fovy * 180.0 / M_PI);
 
@@ -1154,9 +1098,9 @@ void temp_viz::Viz3d::VizImpl::resetCameraViewpoint (const std::string &id)
 
     // set all renderer to this viewpoint
     //rens_->InitTraversal ();
-    vtkRenderer* renderer = ren_;
 
-    vtkSmartPointer<vtkCamera> cam = renderer->GetActiveCamera ();
+
+    vtkSmartPointer<vtkCamera> cam = renderer_->GetActiveCamera ();
     cam->SetPosition (camera_pose->GetElement (0, 3),
                       camera_pose->GetElement (1, 3),
                       camera_pose->GetElement (2, 3));
@@ -1169,9 +1113,9 @@ void temp_viz::Viz3d::VizImpl::resetCameraViewpoint (const std::string &id)
                     camera_pose->GetElement (1, 1),
                     camera_pose->GetElement (2, 1));
 
-    renderer->SetActiveCamera (cam);
-    renderer->ResetCameraClippingRange ();
-    renderer->Render ();
+    renderer_->SetActiveCamera (cam);
+    renderer_->ResetCameraClippingRange ();
+    renderer_->Render ();
 }
 
 
@@ -1609,9 +1553,9 @@ void temp_viz::Viz3d::VizImpl::setRepresentationToSurfaceForAllActors ()
 {
     //ShapeActorMap::iterator am_it;
     //rens_->InitTraversal ();
-    vtkRenderer* renderer = ren_;
 
-    vtkActorCollection * actors = renderer->GetActors ();
+
+    vtkActorCollection * actors = renderer_->GetActors ();
     actors->InitTraversal ();
     vtkActor * actor;
     while ((actor = actors->GetNextActor ()) != NULL)
@@ -1623,9 +1567,9 @@ void temp_viz::Viz3d::VizImpl::setRepresentationToPointsForAllActors ()
 {
     //ShapeActorMap::iterator am_it;
     //rens_->InitTraversal ();
-    vtkRenderer* renderer = ren_;
 
-    vtkActorCollection * actors = renderer->GetActors ();
+
+    vtkActorCollection * actors = renderer_->GetActors ();
     actors->InitTraversal ();
     vtkActor * actor;
     while ((actor = actors->GetNextActor ()) != NULL)
@@ -1637,9 +1581,9 @@ void temp_viz::Viz3d::VizImpl::setRepresentationToWireframeForAllActors ()
 {
     //ShapeActorMap::iterator am_it;
     //rens_->InitTraversal ();
-    vtkRenderer* renderer = ren_;
 
-    vtkActorCollection * actors = renderer->GetActors ();
+
+    vtkActorCollection * actors = renderer_->GetActors ();
     actors->InitTraversal ();
     vtkActor * actor;
     while ((actor = actors->GetNextActor ()) != NULL)

@@ -1,7 +1,6 @@
 #pragma once
 
 #include <opencv2/core/cvdef.h>
-#include <q/3rdparty.h>
 
 #include <vtkCommand.h>
 #include <vtkRenderWindowInteractor.h>

@@ -11,12 +11,12 @@ namespace temp_viz
     //CV_EXPORTS Eigen::Vector2i worldToView (const Eigen::Vector4d &world_pt, const Eigen::Matrix4d &view_projection_matrix, int width, int height);
     //CV_EXPORTS void getViewFrustum (const Eigen::Matrix4d &view_projection_matrix, double planes[24]);
 
-    enum FrustumCull
-    {
-        PCL_INSIDE_FRUSTUM,
-        PCL_INTERSECT_FRUSTUM,
-        PCL_OUTSIDE_FRUSTUM
-    };
+//    enum FrustumCull
+//    {
+//        PCL_INSIDE_FRUSTUM,
+//        PCL_INTERSECT_FRUSTUM,
+//        PCL_OUTSIDE_FRUSTUM
+//    };
 
     //CV_EXPORTS int cullFrustum (double planes[24], const Eigen::Vector3d &min_bb, const Eigen::Vector3d &max_bb);
     //CV_EXPORTS float viewScreenArea (const Eigen::Vector3d &eye, const Eigen::Vector3d &min_bb, const Eigen::Vector3d &max_bb, const Eigen::Matrix4d &view_projection_matrix, int width, int height);
@@ -47,8 +47,6 @@ namespace temp_viz
         PCL_VISUALIZER_SHADING_PHONG
     };
 
-    //////////////////////////////////////////////////////////////////////////////////////////////
-    /** Camera class holds a set of camera parameters together with the window pos/size. */
     class CV_EXPORTS Camera
     {
     public:
@@ -61,17 +59,16 @@ namespace temp_viz
         /** \brief Up vector of the camera. */
         cv::Vec3d view_up;
 
-        /** \brief Clipping planes depths. clip[0] is near clipping plane, and clip [1] is the far clipping plane */
-        double clip[2];
+        /** \brief Near/far clipping planes depths */
+        cv::Vec2d clip;
 
         /** \brief Field of view angle in y direction (radians). */
         double fovy;
 
         // the following variables are the actual position and size of the window on the screen and NOT the viewport!
         // except for the size, which is the same the viewport is assumed to be centered and same size as the window.
-        double window_size[2];
-        double window_pos[2];
-
+        cv::Vec2d window_size;
+        cv::Vec2d window_pos;
 
         /** \brief Computes View matrix for Camera (Based on gluLookAt)
           * \param[out] view_mat the resultant matrix

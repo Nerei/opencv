@@ -36,7 +36,7 @@ namespace temp_viz
 
         typedef cv::Ptr<Viz3d> Ptr;
 
-        Viz3d(const std::string& name = "Viz");
+        Viz3d(const String& window_name = String());
         ~Viz3d();
 
         void setBackgroundColor(const Color& color = Color::black());

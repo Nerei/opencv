@@ -1,6 +1,5 @@
 #pragma once
 
-#include <q/3rdparty.h>
 #include <Eigen/Core>
 #include <opencv2/core/cvdef.h>
 #include <opencv2/viz/types.hpp>

@@ -2,7 +2,7 @@
 #include <q/viz3d_impl.hpp>
 
 
-temp_viz::Viz3d::Viz3d(const std::string& name) : impl_(new VizImpl(name))
+temp_viz::Viz3d::Viz3d(const String& window_name) : impl_(new VizImpl(window_name))
 {
 
 }

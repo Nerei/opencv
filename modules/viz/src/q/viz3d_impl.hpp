@@ -10,26 +10,16 @@
 #include <opencv2/viz/types.hpp>
 #include <opencv2/core/affine.hpp>
 
-// VTK includes
-#include <q/3rdparty.h>
-
-
 #include <opencv2/viz/viz3d.hpp>
-
-//#include <Eigen/Geometry>
 
 namespace temp_viz
 {
-    inline cv::Scalar VIZ_RGB(unsigned char r, unsigned char g, unsigned char b) { return cv::Scalar(b, g, r); }
-
-
-
     class CV_EXPORTS Viz3d::VizImpl
     {
       public:
         typedef cv::Ptr<VizImpl> Ptr;
 
-        VizImpl (const std::string &name = "Viz");
+        VizImpl (const std::string &name = std::string());
 
         virtual ~VizImpl ();
         void setFullScreen (bool mode);
@@ -437,14 +427,14 @@ namespace temp_viz
         void setCameraFieldOfView (double fovy);
 
         /** \brief Get the current camera parameters. */
-        void getCameras (std::vector<Camera>& cameras);
+        void getCameras (Camera& camera);
 
         /** \brief Get the current viewing pose. */
         cv::Affine3f getViewerPose ();
         void saveScreenshot (const std::string &file);
 
         /** \brief Return a pointer to the underlying VTK Render Window used. */
-        vtkSmartPointer<vtkRenderWindow> getRenderWindow () { return (win_); }
+        vtkSmartPointer<vtkRenderWindow> getRenderWindow () { return (window_); }
 
         void setPosition (int x, int y);
         void setSize (int xw, int yw);
@@ -504,10 +494,10 @@ namespace temp_viz
         vtkSmartPointer<ExitCallback> exit_callback_;
 
         /** \brief The collection of renderers used. */
-        vtkSmartPointer<vtkRenderer> ren_;
+        vtkSmartPointer<vtkRenderer> renderer_;
 
         /** \brief The render window. */
-        vtkSmartPointer<vtkRenderWindow> win_;
+        vtkSmartPointer<vtkRenderWindow> window_;
 
         /** \brief The render window interactor style. */
         vtkSmartPointer<PCLVisualizerInteractorStyle> style_;

@@ -133,6 +133,13 @@
 #include <vtkImageReader2.h>
 #include <vtkImageData.h>
 
+
+
+#include <vtkPolyDataNormals.h>
+#include <vtkMapper.h>
+#include <vtkSelectionNode.h>
+
+
 #if defined __GNUC__ && defined __DEPRECATED_DISABLED__
 #define __DEPRECATED
 #undef __DEPRECATED_DISABLED__

@@ -14,18 +14,18 @@
 
 void temp_viz::Viz3d::VizImpl::setFullScreen (bool mode)
 {
-  if (win_)
-    win_->SetFullScreen (mode);
+  if (window_)
+    window_->SetFullScreen (mode);
 }
 
 void temp_viz::Viz3d::VizImpl::setWindowName (const std::string &name)
 {
-  if (win_)
-    win_->SetWindowName (name.c_str ());
+  if (window_)
+    window_->SetWindowName (name.c_str ());
 }
 
-void temp_viz::Viz3d::VizImpl::setPosition (int x, int y) { win_->SetPosition (x, y); }
-void temp_viz::Viz3d::VizImpl::setSize (int xw, int yw) { win_->SetSize (xw, yw); }
+void temp_viz::Viz3d::VizImpl::setPosition (int x, int y) { window_->SetPosition (x, y); }
+void temp_viz::Viz3d::VizImpl::setSize (int xw, int yw) { window_->SetSize (xw, yw); }
 
 void temp_viz::Viz3d::VizImpl::addPointCloud(const cv::Mat& cloud, const cv::Mat& colors, const std::string& id, const cv::Mat& mask)
 {
@@ -894,7 +894,7 @@ inline bool temp_viz::Viz3d::VizImpl::addText3D (const std::string &text, const 
   textMapper->SetInputConnection (textSource->GetOutputPort ());
 
   // Since each follower may follow a different camera, we need different followers
-  vtkRenderer* renderer = ren_;
+  vtkRenderer* renderer = renderer_;
 
   vtkSmartPointer<vtkFollower> textActor = vtkSmartPointer<vtkFollower>::New ();
   textActor->SetMapper (textMapper);

@@ -69,7 +69,7 @@ cv::Mat cvcloud_load()
 
 TEST(Viz_viz3d, accuracy)
 {
-    temp_viz::Viz3d v;
+    temp_viz::Viz3d v("abc");
     //v.spin();
 
     v.setBackgroundColor();
