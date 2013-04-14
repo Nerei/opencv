@@ -1,9 +1,9 @@
 #pragma once
 
-#include <q/visualization/3rdparty.h>
-#include <q/visualization/viz_types.h>
+#include <q/3rdparty.h>
+#include <q/viz_types.h>
+#include <q/point_picking_event.h>
 #include <opencv2/viz/events.hpp>
-#include <q/visualization/point_picking_event.h>
 
 namespace temp_viz
 {

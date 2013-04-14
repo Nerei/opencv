@@ -1,5 +1,5 @@
-#include <q/visualization/point_picking_event.h>
-#include <q/visualization/interactor_style.h>
+#include <q/point_picking_event.h>
+#include <q/interactor_style.h>
 #include <vtkPointPicker.h>
 #include <vtkRendererCollection.h>
 

@@ -22,7 +22,7 @@
 #include <vtkSelection.h>
 #include <vtkPointPicker.h>
 
-#include <q/visualization/3rdparty.h>
+#include <q/3rdparty.h>
 //#include <q/visualization/vtk/vtkVertexBufferObjectMapper.h>
 //#include <q/visualization/vtk/vtkRenderWindowInteractorFix.h>
 

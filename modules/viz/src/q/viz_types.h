@@ -4,9 +4,11 @@
 #include <vtkLODActor.h>
 #include <vtkSmartPointer.h>
 #include <opencv2/core/cvdef.h>
-#include <q/visualization/3rdparty.h>
+#include <q/3rdparty.h>
 #include <map>
 #include <opencv2/core.hpp>
+
+#include "precomp.hpp"
 
 namespace temp_viz
 {

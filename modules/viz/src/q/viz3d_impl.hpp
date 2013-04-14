@@ -3,15 +3,15 @@
 #include <opencv2/core.hpp>
 // PCL includes
 #include <opencv2/viz/events.hpp>
-#include <q/visualization/interactor_style.h>
-#include <q/visualization/point_picking_event.h>
-#include <q/visualization/viz_types.h>
-#include <q/visualization/common.h>
+#include <q/interactor_style.h>
+#include <q/point_picking_event.h>
+#include <q/viz_types.h>
+#include <q/common.h>
 #include <opencv2/viz/types.hpp>
 #include <opencv2/core/affine.hpp>
 
 // VTK includes
-#include <q/visualization/3rdparty.h>
+#include <q/3rdparty.h>
 
 
 #include <opencv2/viz/viz3d.hpp>
