@@ -14,14 +14,14 @@
 
 void temp_viz::Viz3d::VizImpl::setFullScreen (bool mode)
 {
-  if (window_)
-    window_->SetFullScreen (mode);
+    if (window_)
+        window_->SetFullScreen (mode);
 }
 
 void temp_viz::Viz3d::VizImpl::setWindowName (const std::string &name)
 {
-  if (window_)
-    window_->SetWindowName (name.c_str ());
+    if (window_)
+        window_->SetWindowName (name.c_str ());
 }
 
 void temp_viz::Viz3d::VizImpl::setPosition (int x, int y) { window_->SetPosition (x, y); }
@@ -293,171 +293,173 @@ bool temp_viz::Viz3d::VizImpl::addPointCloudNormals (const cv::Mat &cloud, const
 {
     CV_Assert(cloud.size() == normals.size() && cloud.type() == CV_32FC3 && normals.type() == CV_32FC3);
 
-  if (cloud_actor_map_->find (id) != cloud_actor_map_->end ())
-    return (false);
+    if (cloud_actor_map_->find (id) != cloud_actor_map_->end ())
+        return (false);
 
-  vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
-  vtkSmartPointer<vtkCellArray> lines = vtkSmartPointer<vtkCellArray>::New();
+    vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
+    vtkSmartPointer<vtkCellArray> lines = vtkSmartPointer<vtkCellArray>::New();
 
-  points->SetDataTypeToFloat ();
-  vtkSmartPointer<vtkFloatArray> data = vtkSmartPointer<vtkFloatArray>::New ();
-  data->SetNumberOfComponents (3);
+    points->SetDataTypeToFloat ();
+    vtkSmartPointer<vtkFloatArray> data = vtkSmartPointer<vtkFloatArray>::New ();
+    data->SetNumberOfComponents (3);
 
-  vtkIdType nr_normals = 0;
-  float* pts = 0;
+    vtkIdType nr_normals = 0;
+    float* pts = 0;
 
-  // If the cloud is organized, then distribute the normal step in both directions
-  if (cloud.cols > 1 && cloud.rows > 1)
-  {
-    vtkIdType point_step = static_cast<vtkIdType> (sqrt (double (level)));
-    nr_normals = (static_cast<vtkIdType> ((cloud.cols - 1)/ point_step) + 1) *
-                 (static_cast<vtkIdType> ((cloud.rows - 1) / point_step) + 1);
-    pts = new float[2 * nr_normals * 3];
-
-    vtkIdType cell_count = 0;
-    for (vtkIdType y = 0; y < cloud.rows; y += point_step)
-      for (vtkIdType x = 0; x < cloud.cols; x += point_step)
-      {
-        cv::Point3f p = cloud.at<cv::Point3f>(y, x);
-        cv::Point3f n = normals.at<cv::Point3f>(y, x) * scale;
-
-        pts[2 * cell_count * 3 + 0] = p.x;
-        pts[2 * cell_count * 3 + 1] = p.y;
-        pts[2 * cell_count * 3 + 2] = p.z;
-        pts[2 * cell_count * 3 + 3] = p.x + n.x;
-        pts[2 * cell_count * 3 + 4] = p.y + n.y;
-        pts[2 * cell_count * 3 + 5] = p.z + n.z;
-
-        lines->InsertNextCell (2);
-        lines->InsertCellPoint (2 * cell_count);
-        lines->InsertCellPoint (2 * cell_count + 1);
-        cell_count++;
-    }
-  }
-  else
-  {
-    nr_normals = (cloud.size().area() - 1) / level + 1 ;
-    pts = new float[2 * nr_normals * 3];
-
-    for (vtkIdType i = 0, j = 0; j < nr_normals; j++, i = j * level)
+    // If the cloud is organized, then distribute the normal step in both directions
+    if (cloud.cols > 1 && cloud.rows > 1)
     {
-      cv::Point3f p = cloud.ptr<cv::Point3f>()[i];
-      cv::Point3f n = normals.ptr<cv::Point3f>()[i] * scale;
+        vtkIdType point_step = static_cast<vtkIdType> (sqrt (double (level)));
+        nr_normals = (static_cast<vtkIdType> ((cloud.cols - 1)/ point_step) + 1) *
+                (static_cast<vtkIdType> ((cloud.rows - 1) / point_step) + 1);
+        pts = new float[2 * nr_normals * 3];
 
-      pts[2 * j * 3 + 0] = p.x;
-      pts[2 * j * 3 + 1] = p.y;
-      pts[2 * j * 3 + 2] = p.z;
-      pts[2 * j * 3 + 3] = p.x + n.x;
-      pts[2 * j * 3 + 4] = p.y + n.y;
-      pts[2 * j * 3 + 5] = p.z + n.z;
+        vtkIdType cell_count = 0;
+        for (vtkIdType y = 0; y < cloud.rows; y += point_step)
+            for (vtkIdType x = 0; x < cloud.cols; x += point_step)
+            {
+                cv::Point3f p = cloud.at<cv::Point3f>(y, x);
+                cv::Point3f n = normals.at<cv::Point3f>(y, x) * scale;
 
-      lines->InsertNextCell (2);
-      lines->InsertCellPoint (2 * j);
-      lines->InsertCellPoint (2 * j + 1);
+                pts[2 * cell_count * 3 + 0] = p.x;
+                pts[2 * cell_count * 3 + 1] = p.y;
+                pts[2 * cell_count * 3 + 2] = p.z;
+                pts[2 * cell_count * 3 + 3] = p.x + n.x;
+                pts[2 * cell_count * 3 + 4] = p.y + n.y;
+                pts[2 * cell_count * 3 + 5] = p.z + n.z;
+
+                lines->InsertNextCell (2);
+                lines->InsertCellPoint (2 * cell_count);
+                lines->InsertCellPoint (2 * cell_count + 1);
+                cell_count++;
+            }
     }
-  }
+    else
+    {
+        nr_normals = (cloud.size().area() - 1) / level + 1 ;
+        pts = new float[2 * nr_normals * 3];
 
-  data->SetArray (&pts[0], 2 * nr_normals * 3, 0);
-  points->SetData (data);
+        for (vtkIdType i = 0, j = 0; j < nr_normals; j++, i = j * level)
+        {
+            cv::Point3f p = cloud.ptr<cv::Point3f>()[i];
+            cv::Point3f n = normals.ptr<cv::Point3f>()[i] * scale;
 
-  vtkSmartPointer<vtkPolyData> polyData = vtkSmartPointer<vtkPolyData>::New();
-  polyData->SetPoints (points);
-  polyData->SetLines (lines);
+            pts[2 * j * 3 + 0] = p.x;
+            pts[2 * j * 3 + 1] = p.y;
+            pts[2 * j * 3 + 2] = p.z;
+            pts[2 * j * 3 + 3] = p.x + n.x;
+            pts[2 * j * 3 + 4] = p.y + n.y;
+            pts[2 * j * 3 + 5] = p.z + n.z;
 
-  vtkSmartPointer<vtkDataSetMapper> mapper = vtkSmartPointer<vtkDataSetMapper>::New ();
-  mapper->SetInput (polyData);
-  mapper->SetColorModeToMapScalars();
-  mapper->SetScalarModeToUsePointData();
+            lines->InsertNextCell (2);
+            lines->InsertCellPoint (2 * j);
+            lines->InsertCellPoint (2 * j + 1);
+        }
+    }
 
-  // create actor
-  vtkSmartPointer<vtkLODActor> actor = vtkSmartPointer<vtkLODActor>::New ();
-  actor->SetMapper (mapper);
+    data->SetArray (&pts[0], 2 * nr_normals * 3, 0);
+    points->SetData (data);
 
-  // Add it to all renderers
-  addActorToRenderer (actor);
+    vtkSmartPointer<vtkPolyData> polyData = vtkSmartPointer<vtkPolyData>::New();
+    polyData->SetPoints (points);
+    polyData->SetLines (lines);
 
-  // Save the pointer/ID pair to the global actor map
-  (*cloud_actor_map_)[id].actor = actor;
-  return (true);
+    vtkSmartPointer<vtkDataSetMapper> mapper = vtkSmartPointer<vtkDataSetMapper>::New ();
+    mapper->SetInput (polyData);
+    mapper->SetColorModeToMapScalars();
+    mapper->SetScalarModeToUsePointData();
+
+    // create actor
+    vtkSmartPointer<vtkLODActor> actor = vtkSmartPointer<vtkLODActor>::New ();
+    actor->SetMapper (mapper);
+
+    // Add it to all renderers
+    addActorToRenderer (actor);
+
+    // Save the pointer/ID pair to the global actor map
+    (*cloud_actor_map_)[id].actor = actor;
+    return (true);
 }
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////
-bool temp_viz::Viz3d::VizImpl::addLine (const cv::Point3f &pt1, const cv::Point3f &pt2, double r, double g, double b, const std::string &id)
+bool temp_viz::Viz3d::VizImpl::addLine (const cv::Point3f &pt1, const cv::Point3f &pt2, const Color& color, const std::string &id)
 {
-  // Check to see if this ID entry already exists (has it been already added to the visualizer?)
-  ShapeActorMap::iterator am_it = shape_actor_map_->find (id);
-  if (am_it != shape_actor_map_->end ())
-    return std::cout << "[addLine] A shape with id <" << id <<  "> already exists! Please choose a different id and retry." << std::endl, false;
+    // Check to see if this ID entry already exists (has it been already added to the visualizer?)
+    ShapeActorMap::iterator am_it = shape_actor_map_->find (id);
+    if (am_it != shape_actor_map_->end ())
+        return std::cout << "[addLine] A shape with id <" << id <<  "> already exists! Please choose a different id and retry." << std::endl, false;
 
-  vtkSmartPointer<vtkDataSet> data = createLine (pt1, pt2);
+    vtkSmartPointer<vtkDataSet> data = createLine (pt1, pt2);
 
-  // Create an Actor
-  vtkSmartPointer<vtkLODActor> actor;
-  createActorFromVTKDataSet (data, actor);
-  actor->GetProperty ()->SetRepresentationToWireframe ();
-  actor->GetProperty ()->SetColor (r, g, b);
-  actor->GetMapper ()->ScalarVisibilityOff ();
-  addActorToRenderer (actor);
+    // Create an Actor
+    vtkSmartPointer<vtkLODActor> actor;
+    createActorFromVTKDataSet (data, actor);
+    actor->GetProperty ()->SetRepresentationToWireframe ();
 
-  // Save the pointer/ID pair to the global actor map
-  (*shape_actor_map_)[id] = actor;
-  return (true);
+    Color c = vtkcolor(color);
+    actor->GetProperty ()->SetColor (c.val);
+    actor->GetMapper ()->ScalarVisibilityOff ();
+    addActorToRenderer (actor);
+
+    // Save the pointer/ID pair to the global actor map
+    (*shape_actor_map_)[id] = actor;
+    return (true);
 }
 
 
 
-inline bool temp_viz::Viz3d::VizImpl::addPolygonMesh (const cv::Mat& cloud, const cv::Mat& colors, const cv::Mat& mask, const std::vector<temp_viz::Vertices> &vertices, const std::string &id)
+inline bool temp_viz::Viz3d::VizImpl::addPolygonMesh (const Mesh3d& mesh, const Mat& mask, const std::string &id)
 {
-    CV_Assert(cloud.type() == CV_32FC3 && cloud.rows == 1 && !vertices.empty ());
-    CV_Assert(colors.empty() || (!colors.empty() && colors.size() == cloud.size() && colors.type() == CV_8UC3));
-    CV_Assert(mask.empty() || (!mask.empty() && mask.size() == cloud.size() && mask.type() == CV_8U));
+    CV_Assert(mesh.cloud.type() == CV_32FC3 && mesh.cloud.rows == 1 && !mesh.polygons.empty ());
+    CV_Assert(mesh.colors.empty() || (!mesh.colors.empty() && mesh.colors.size() == mesh.cloud.size() && mesh.colors.type() == CV_8UC3));
+    CV_Assert(mask.empty() || (!mask.empty() && mask.size() == mesh.cloud.size() && mask.type() == CV_8U));
 
     if (cloud_actor_map_->find (id) != cloud_actor_map_->end ())
-      return std::cout << "[addPolygonMesh] A shape with id <" << id << "> already exists! Please choose a different id and retry." << std::endl, false;
+        return std::cout << "[addPolygonMesh] A shape with id <" << id << "> already exists! Please choose a different id and retry." << std::endl, false;
 
-//    int rgb_idx = -1;
-//    std::vector<sensor_msgs::PointField> fields;
+    //    int rgb_idx = -1;
+    //    std::vector<sensor_msgs::PointField> fields;
 
 
-//    rgb_idx = temp_viz::getFieldIndex (*cloud, "rgb", fields);
-//    if (rgb_idx == -1)
-//      rgb_idx = temp_viz::getFieldIndex (*cloud, "rgba", fields);
+    //    rgb_idx = temp_viz::getFieldIndex (*cloud, "rgb", fields);
+    //    if (rgb_idx == -1)
+    //      rgb_idx = temp_viz::getFieldIndex (*cloud, "rgba", fields);
 
     vtkSmartPointer<vtkUnsignedCharArray> colors_array;
 #if 1
-    if (!colors.empty())
+    if (!mesh.colors.empty())
     {
-      colors_array = vtkSmartPointer<vtkUnsignedCharArray>::New ();
-      colors_array->SetNumberOfComponents (3);
-      colors_array->SetName ("Colors");
+        colors_array = vtkSmartPointer<vtkUnsignedCharArray>::New ();
+        colors_array->SetNumberOfComponents (3);
+        colors_array->SetName ("Colors");
 
-      const unsigned char* data = colors.ptr<unsigned char>();
+        const unsigned char* data = mesh.colors.ptr<unsigned char>();
 
-      //TODO check mask
-      CV_Assert(mask.empty()); //because not implemented;
+        //TODO check mask
+        CV_Assert(mask.empty()); //because not implemented;
 
-      for(int i = 0; i < colors.cols; ++i)
-          colors_array->InsertNextTupleValue(&data[i*3]);
+        for(int i = 0; i < mesh.colors.cols; ++i)
+            colors_array->InsertNextTupleValue(&data[i*3]);
 
-//      temp_viz::RGB rgb_data;
-//      for (size_t i = 0; i < cloud->size (); ++i)
-//      {
-//        if (!isFinite (cloud->points[i]))
-//          continue;
-//        memcpy (&rgb_data, reinterpret_cast<const char*> (&cloud->points[i]) + fields[rgb_idx].offset, sizeof (temp_viz::RGB));
-//        unsigned char color[3];
-//        color[0] = rgb_data.r;
-//        color[1] = rgb_data.g;
-//        color[2] = rgb_data.b;
-//        colors->InsertNextTupleValue (color);
-//      }
+        //      temp_viz::RGB rgb_data;
+        //      for (size_t i = 0; i < cloud->size (); ++i)
+        //      {
+        //        if (!isFinite (cloud->points[i]))
+        //          continue;
+        //        memcpy (&rgb_data, reinterpret_cast<const char*> (&cloud->points[i]) + fields[rgb_idx].offset, sizeof (temp_viz::RGB));
+        //        unsigned char color[3];
+        //        color[0] = rgb_data.r;
+        //        color[1] = rgb_data.g;
+        //        color[2] = rgb_data.b;
+        //        colors->InsertNextTupleValue (color);
+        //      }
     }
 #endif
 
     // Create points from polyMesh.cloud
     vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New ();
-    vtkIdType nr_points = cloud.size().area();
+    vtkIdType nr_points = mesh.cloud.size().area();
 
     points->SetNumberOfPoints (nr_points);
 
@@ -470,15 +472,15 @@ inline bool temp_viz::Viz3d::VizImpl::addPolygonMesh (const cv::Mat& cloud, cons
     // If the dataset is dense (no NaNs)
     if (mask.empty())
     {
-      cv::Mat hdr(cloud.size(), CV_32FC3, (void*)data);
-      cloud.copyTo(hdr);
+        cv::Mat hdr(mesh.cloud.size(), CV_32FC3, (void*)data);
+        mesh.cloud.copyTo(hdr);
     }
     else
     {
         lookup.resize (nr_points);
 
         const unsigned char *mdata = mask.ptr<unsigned char>();
-        const cv::Point3f *cdata = cloud.ptr<cv::Point3f>();
+        const cv::Point3f *cdata = mesh.cloud.ptr<cv::Point3f>();
         cv::Point3f* out = reinterpret_cast<cv::Point3f*>(data);
 
         int j = 0;    // true point index
@@ -494,80 +496,80 @@ inline bool temp_viz::Viz3d::VizImpl::addPolygonMesh (const cv::Mat& cloud, cons
 
     // Get the maximum size of a polygon
     int max_size_of_polygon = -1;
-    for (size_t i = 0; i < vertices.size (); ++i)
-      if (max_size_of_polygon < static_cast<int> (vertices[i].vertices.size ()))
-        max_size_of_polygon = static_cast<int> (vertices[i].vertices.size ());
+    for (size_t i = 0; i < mesh.polygons.size (); ++i)
+        if (max_size_of_polygon < static_cast<int> (mesh.polygons[i].vertices.size ()))
+            max_size_of_polygon = static_cast<int> (mesh.polygons[i].vertices.size ());
 
     vtkSmartPointer<vtkLODActor> actor;
 
-    if (vertices.size () > 1)
+    if (mesh.polygons.size () > 1)
     {
-      // Create polys from polyMesh.polygons
-      vtkSmartPointer<vtkCellArray> cell_array = vtkSmartPointer<vtkCellArray>::New ();
-      vtkIdType *cell = cell_array->WritePointer (vertices.size (), vertices.size () * (max_size_of_polygon + 1));
-      int idx = 0;
-      if (lookup.size () > 0)
-      {
-        for (size_t i = 0; i < vertices.size (); ++i, ++idx)
+        // Create polys from polyMesh.polygons
+        vtkSmartPointer<vtkCellArray> cell_array = vtkSmartPointer<vtkCellArray>::New ();
+        vtkIdType *cell = cell_array->WritePointer (mesh.polygons.size (), mesh.polygons.size () * (max_size_of_polygon + 1));
+        int idx = 0;
+        if (lookup.size () > 0)
         {
-          size_t n_points = vertices[i].vertices.size ();
-          *cell++ = n_points;
-          //cell_array->InsertNextCell (n_points);
-          for (size_t j = 0; j < n_points; j++, ++idx)
-            *cell++ = lookup[vertices[i].vertices[j]];
-            //cell_array->InsertCellPoint (lookup[vertices[i].vertices[j]]);
+            for (size_t i = 0; i < mesh.polygons.size (); ++i, ++idx)
+            {
+                size_t n_points = mesh.polygons[i].vertices.size ();
+                *cell++ = n_points;
+                //cell_array->InsertNextCell (n_points);
+                for (size_t j = 0; j < n_points; j++, ++idx)
+                    *cell++ = lookup[mesh.polygons[i].vertices[j]];
+                //cell_array->InsertCellPoint (lookup[vertices[i].vertices[j]]);
+            }
         }
-      }
-      else
-      {
-        for (size_t i = 0; i < vertices.size (); ++i, ++idx)
+        else
         {
-          size_t n_points = vertices[i].vertices.size ();
-          *cell++ = n_points;
-          //cell_array->InsertNextCell (n_points);
-          for (size_t j = 0; j < n_points; j++, ++idx)
-            *cell++ = vertices[i].vertices[j];
-            //cell_array->InsertCellPoint (vertices[i].vertices[j]);
+            for (size_t i = 0; i < mesh.polygons.size (); ++i, ++idx)
+            {
+                size_t n_points = mesh.polygons[i].vertices.size ();
+                *cell++ = n_points;
+                //cell_array->InsertNextCell (n_points);
+                for (size_t j = 0; j < n_points; j++, ++idx)
+                    *cell++ = mesh.polygons[i].vertices[j];
+                //cell_array->InsertCellPoint (vertices[i].vertices[j]);
+            }
         }
-      }
-      vtkSmartPointer<vtkPolyData> polydata;
-      allocVtkPolyData (polydata);
-      cell_array->GetData ()->SetNumberOfValues (idx);
-      cell_array->Squeeze ();
-      polydata->SetStrips (cell_array);
-      polydata->SetPoints (points);
+        vtkSmartPointer<vtkPolyData> polydata;
+        allocVtkPolyData (polydata);
+        cell_array->GetData ()->SetNumberOfValues (idx);
+        cell_array->Squeeze ();
+        polydata->SetStrips (cell_array);
+        polydata->SetPoints (points);
 
-      if (colors_array)
-        polydata->GetPointData ()->SetScalars (colors_array);
+        if (colors_array)
+            polydata->GetPointData ()->SetScalars (colors_array);
 
-      createActorFromVTKDataSet (polydata, actor, false);
+        createActorFromVTKDataSet (polydata, actor, false);
     }
     else
     {
-      vtkSmartPointer<vtkPolygon> polygon = vtkSmartPointer<vtkPolygon>::New ();
-      size_t n_points = vertices[0].vertices.size ();
-      polygon->GetPointIds ()->SetNumberOfIds (n_points - 1);
+        vtkSmartPointer<vtkPolygon> polygon = vtkSmartPointer<vtkPolygon>::New ();
+        size_t n_points = mesh.polygons[0].vertices.size ();
+        polygon->GetPointIds ()->SetNumberOfIds (n_points - 1);
 
-      if (lookup.size () > 0)
-      {
-        for (size_t j = 0; j < (n_points - 1); ++j)
-          polygon->GetPointIds ()->SetId (j, lookup[vertices[0].vertices[j]]);
-      }
-      else
-      {
-        for (size_t j = 0; j < (n_points - 1); ++j)
-          polygon->GetPointIds ()->SetId (j, vertices[0].vertices[j]);
-      }
-      vtkSmartPointer<vtkUnstructuredGrid> poly_grid;
-      allocVtkUnstructuredGrid (poly_grid);
-      poly_grid->Allocate (1, 1);
-      poly_grid->InsertNextCell (polygon->GetCellType (), polygon->GetPointIds ());
-      poly_grid->SetPoints (points);
-      poly_grid->Update ();
-      if (colors_array)
-        poly_grid->GetPointData ()->SetScalars (colors_array);
+        if (lookup.size () > 0)
+        {
+            for (size_t j = 0; j < n_points - 1; ++j)
+                polygon->GetPointIds ()->SetId (j, lookup[mesh.polygons[0].vertices[j]]);
+        }
+        else
+        {
+            for (size_t j = 0; j < n_points - 1; ++j)
+                polygon->GetPointIds ()->SetId (j, mesh.polygons[0].vertices[j]);
+        }
+        vtkSmartPointer<vtkUnstructuredGrid> poly_grid;
+        allocVtkUnstructuredGrid (poly_grid);
+        poly_grid->Allocate (1, 1);
+        poly_grid->InsertNextCell (polygon->GetCellType (), polygon->GetPointIds ());
+        poly_grid->SetPoints (points);
+        poly_grid->Update ();
+        if (colors_array)
+            poly_grid->GetPointData ()->SetScalars (colors_array);
 
-      createActorFromVTKDataSet (poly_grid, actor, false);
+        createActorFromVTKDataSet (poly_grid, actor, false);
     }
     addActorToRenderer (actor);
     actor->GetProperty ()->SetRepresentationToSurface ();
@@ -591,32 +593,30 @@ inline bool temp_viz::Viz3d::VizImpl::addPolygonMesh (const cv::Mat& cloud, cons
     (*cloud_actor_map_)[id].viewpoint_transformation_ = transformation;
 
     return (true);
-
-
 }
 
 
-inline bool temp_viz::Viz3d::VizImpl::updatePolygonMesh (const cv::Mat& cloud, const cv::Mat& colors, const cv::Mat& mask, const std::vector<temp_viz::Vertices> &vertices, const std::string &id)
+inline bool temp_viz::Viz3d::VizImpl::updatePolygonMesh (const Mesh3d& mesh, const cv::Mat& mask, const std::string &id)
 {
-    CV_Assert(cloud.type() == CV_32FC3 && cloud.rows == 1 && !vertices.empty ());
-    CV_Assert(colors.empty() || (!colors.empty() && colors.size() == cloud.size() && colors.type() == CV_8UC3));
-    CV_Assert(mask.empty() || (!mask.empty() && mask.size() == cloud.size() && mask.type() == CV_8U));
+    CV_Assert(mesh.cloud.type() == CV_32FC3 && mesh.cloud.rows == 1 && !mesh.polygons.empty ());
+    CV_Assert(mesh.colors.empty() || (!mesh.colors.empty() && mesh.colors.size() == mesh.cloud.size() && mesh.colors.type() == CV_8UC3));
+    CV_Assert(mask.empty() || (!mask.empty() && mask.size() == mesh.cloud.size() && mask.type() == CV_8U));
 
     // Check to see if this ID entry already exists (has it been already added to the visualizer?)
     CloudActorMap::iterator am_it = cloud_actor_map_->find (id);
     if (am_it == cloud_actor_map_->end ())
-      return (false);
+        return (false);
 
     // Get the current poly data
     vtkSmartPointer<vtkPolyData> polydata = static_cast<vtkPolyDataMapper*>(am_it->second.actor->GetMapper ())->GetInput ();
     if (!polydata)
-      return (false);
+        return (false);
     vtkSmartPointer<vtkCellArray> cells = polydata->GetStrips ();
     if (!cells)
-      return (false);
+        return (false);
     vtkSmartPointer<vtkPoints> points   = polydata->GetPoints ();
     // Copy the new point array in
-    vtkIdType nr_points = cloud.size().area();
+    vtkIdType nr_points = mesh.cloud.size().area();
     points->SetNumberOfPoints (nr_points);
 
     // Get a pointer to the beginning of the data array
@@ -627,8 +627,8 @@ inline bool temp_viz::Viz3d::VizImpl::updatePolygonMesh (const cv::Mat& cloud, c
     // If the dataset is dense (no NaNs)
     if (mask.empty())
     {
-        cv::Mat hdr(cloud.size(), CV_32FC3, (void*)data);
-        cloud.copyTo(hdr);
+        cv::Mat hdr(mesh.cloud.size(), CV_32FC3, (void*)data);
+        mesh.cloud.copyTo(hdr);
 
     }
     else
@@ -636,7 +636,7 @@ inline bool temp_viz::Viz3d::VizImpl::updatePolygonMesh (const cv::Mat& cloud, c
         lookup.resize (nr_points);
 
         const unsigned char *mdata = mask.ptr<unsigned char>();
-        const cv::Point3f *cdata = cloud.ptr<cv::Point3f>();
+        const cv::Point3f *cdata = mesh.cloud.ptr<cv::Point3f>();
         cv::Point3f* out = reinterpret_cast<cv::Point3f*>(data);
 
         int j = 0;    // true point index
@@ -653,21 +653,21 @@ inline bool temp_viz::Viz3d::VizImpl::updatePolygonMesh (const cv::Mat& cloud, c
     // Update colors
     vtkUnsignedCharArray* colors_array = vtkUnsignedCharArray::SafeDownCast (polydata->GetPointData ()->GetScalars ());
 
-    if (!colors.empty() && colors_array)
+    if (!mesh.colors.empty() && colors_array)
     {
         if (mask.empty())
         {
-            const unsigned char* data = colors.ptr<unsigned char>();
-            for(int i = 0; i < colors.cols; ++i)
+            const unsigned char* data = mesh.colors.ptr<unsigned char>();
+            for(int i = 0; i < mesh.colors.cols; ++i)
                 colors_array->InsertNextTupleValue(&data[i*3]);
         }
         else
         {
-            const unsigned char* color = colors.ptr<unsigned char>();
+            const unsigned char* color = mesh.colors.ptr<unsigned char>();
             const unsigned char* mdata = mask.ptr<unsigned char>();
 
             int j = 0;
-            for(int i = 0; i < colors.cols; ++i)
+            for(int i = 0; i < mesh.colors.cols; ++i)
                 if (mdata[i])
                     colors_array->SetTupleValue (j++, &color[i*3]);
 
@@ -676,33 +676,33 @@ inline bool temp_viz::Viz3d::VizImpl::updatePolygonMesh (const cv::Mat& cloud, c
 
     // Get the maximum size of a polygon
     int max_size_of_polygon = -1;
-    for (size_t i = 0; i < vertices.size (); ++i)
-      if (max_size_of_polygon < static_cast<int> (vertices[i].vertices.size ()))
-        max_size_of_polygon = static_cast<int> (vertices[i].vertices.size ());
+    for (size_t i = 0; i < mesh.polygons.size (); ++i)
+        if (max_size_of_polygon < static_cast<int> (mesh.polygons[i].vertices.size ()))
+            max_size_of_polygon = static_cast<int> (mesh.polygons[i].vertices.size ());
 
     // Update the cells
     cells = vtkSmartPointer<vtkCellArray>::New ();
-    vtkIdType *cell = cells->WritePointer (vertices.size (), vertices.size () * (max_size_of_polygon + 1));
+    vtkIdType *cell = cells->WritePointer (mesh.polygons.size (), mesh.polygons.size () * (max_size_of_polygon + 1));
     int idx = 0;
     if (lookup.size () > 0)
     {
-      for (size_t i = 0; i < vertices.size (); ++i, ++idx)
-      {
-        size_t n_points = vertices[i].vertices.size ();
-        *cell++ = n_points;
-        for (size_t j = 0; j < n_points; j++, cell++, ++idx)
-          *cell = lookup[vertices[i].vertices[j]];
-      }
+        for (size_t i = 0; i < mesh.polygons.size (); ++i, ++idx)
+        {
+            size_t n_points = mesh.polygons[i].vertices.size ();
+            *cell++ = n_points;
+            for (size_t j = 0; j < n_points; j++, cell++, ++idx)
+                *cell = lookup[mesh.polygons[i].vertices[j]];
+        }
     }
     else
     {
-      for (size_t i = 0; i < vertices.size (); ++i, ++idx)
-      {
-        size_t n_points = vertices[i].vertices.size ();
-        *cell++ = n_points;
-        for (size_t j = 0; j < n_points; j++, cell++, ++idx)
-          *cell = vertices[i].vertices[j];
-      }
+        for (size_t i = 0; i < mesh.polygons.size (); ++i, ++idx)
+        {
+            size_t n_points = mesh.polygons[i].vertices.size ();
+            *cell++ = n_points;
+            for (size_t j = 0; j < n_points; j++, cell++, ++idx)
+                *cell = mesh.polygons[i].vertices[j];
+        }
     }
     cells->GetData ()->SetNumberOfValues (idx);
     cells->Squeeze ();
@@ -712,228 +712,193 @@ inline bool temp_viz::Viz3d::VizImpl::updatePolygonMesh (const cv::Mat& cloud, c
     return (true);
 }
 
-
-
-
-
-
 ////////////////////////////////////////////////////////////////////////////////////////////
-bool temp_viz::Viz3d::VizImpl::addArrow (const cv::Point3f &pt1, const cv::Point3f &pt2, double r, double g, double b, const std::string &id)
+bool temp_viz::Viz3d::VizImpl::addArrow (const cv::Point3f &p1, const cv::Point3f &p2, const Color& color, bool display_length, const std::string &id)
 {
-  // Check to see if this ID entry already exists (has it been already added to the visualizer?)
-  ShapeActorMap::iterator am_it = shape_actor_map_->find (id);
-  if (am_it != shape_actor_map_->end ())
-    return std::cout << "[addArrow] A shape with id <"<<id <<"> already exists! Please choose a different id and retry." << std::endl, false;
+    // Check to see if this ID entry already exists (has it been already added to the visualizer?)
+    ShapeActorMap::iterator am_it = shape_actor_map_->find (id);
+    if (am_it != shape_actor_map_->end ())
+        return std::cout << "[addArrow] A shape with id <" << id << "> already exists! Please choose a different id and retry." << std::endl, false;
 
+    // Create an Actor
+    vtkSmartPointer<vtkLeaderActor2D> leader = vtkSmartPointer<vtkLeaderActor2D>::New ();
+    leader->GetPositionCoordinate()->SetCoordinateSystemToWorld ();
+    leader->GetPositionCoordinate()->SetValue (p1.x, p1.y, p1.z);
+    leader->GetPosition2Coordinate()->SetCoordinateSystemToWorld ();
+    leader->GetPosition2Coordinate()->SetValue (p2.x, p2.y, p2.z);
+    leader->SetArrowStyleToFilled();
+    leader->SetArrowPlacementToPoint2 ();
 
-  // Create an Actor
-  vtkSmartPointer<vtkLeaderActor2D> leader = vtkSmartPointer<vtkLeaderActor2D>::New ();
-  leader->GetPositionCoordinate ()->SetCoordinateSystemToWorld ();
-  leader->GetPositionCoordinate ()->SetValue (pt1.x, pt1.y, pt1.z);
-  leader->GetPosition2Coordinate ()->SetCoordinateSystemToWorld ();
-  leader->GetPosition2Coordinate ()->SetValue (pt2.x, pt2.y, pt2.z);
-  leader->SetArrowStyleToFilled ();
-  leader->AutoLabelOn ();
+    if (display_length)
+        leader->AutoLabelOn ();
+    else
+        leader->AutoLabelOff ();
 
-  leader->GetProperty ()->SetColor (r, g, b);
-  addActorToRenderer (leader);
+    Color c = vtkcolor(color);
+    leader->GetProperty ()->SetColor (c.val);
+    addActorToRenderer (leader);
 
-  // Save the pointer/ID pair to the global actor map
-  (*shape_actor_map_)[id] = leader;
-  return (true);
+    // Save the pointer/ID pair to the global actor map
+    (*shape_actor_map_)[id] = leader;
+    return (true);
 }
-
 ////////////////////////////////////////////////////////////////////////////////////////////
-bool temp_viz::Viz3d::VizImpl::addArrow (const cv::Point3f &pt1, const cv::Point3f &pt2, double r, double g, double b, bool display_length, const std::string &id)
+bool temp_viz::Viz3d::VizImpl::addArrow (const cv::Point3f &p1, const cv::Point3f &p2, const Color& color_line, const Color& color_text, const std::string &id)
 {
-  // Check to see if this ID entry already exists (has it been already added to the visualizer?)
-  ShapeActorMap::iterator am_it = shape_actor_map_->find (id);
-  if (am_it != shape_actor_map_->end ())
-    return std::cout << "[addArrow] A shape with id <" << id << "> already exists! Please choose a different id and retry." << std::endl, false;
+    // Check to see if this ID entry already exists (has it been already added to the visualizer?)
+    ShapeActorMap::iterator am_it = shape_actor_map_->find (id);
+    if (am_it != shape_actor_map_->end ())
+    {
+        std::cout << "[addArrow] A shape with id <" << id << "> already exists! Please choose a different id and retry." << std::endl;
+        return (false);
+    }
 
-
-  // Create an Actor
-  vtkSmartPointer<vtkLeaderActor2D> leader = vtkSmartPointer<vtkLeaderActor2D>::New ();
-  leader->GetPositionCoordinate ()->SetCoordinateSystemToWorld ();
-  leader->GetPositionCoordinate ()->SetValue (pt1.x, pt1.y, pt1.z);
-  leader->GetPosition2Coordinate ()->SetCoordinateSystemToWorld ();
-  leader->GetPosition2Coordinate ()->SetValue (pt2.x, pt2.y, pt2.z);
-  leader->SetArrowStyleToFilled ();
-  leader->SetArrowPlacementToPoint1 ();
-  if (display_length)
+    // Create an Actor
+    vtkSmartPointer<vtkLeaderActor2D> leader = vtkSmartPointer<vtkLeaderActor2D>::New ();
+    leader->GetPositionCoordinate ()->SetCoordinateSystemToWorld ();
+    leader->GetPositionCoordinate ()->SetValue (p1.x, p1.y, p1.z);
+    leader->GetPosition2Coordinate ()->SetCoordinateSystemToWorld ();
+    leader->GetPosition2Coordinate ()->SetValue (p2.x, p2.y, p2.z);
+    leader->SetArrowStyleToFilled ();
     leader->AutoLabelOn ();
-  else
-    leader->AutoLabelOff ();
 
-  leader->GetProperty ()->SetColor (r, g, b);
-  addActorToRenderer (leader);
+    Color ct = vtkcolor(color_text);
+    leader->GetLabelTextProperty()->SetColor(ct.val);
 
-  // Save the pointer/ID pair to the global actor map
-  (*shape_actor_map_)[id] = leader;
-  return (true);
-}
-////////////////////////////////////////////////////////////////////////////////////////////
-bool
-temp_viz::Viz3d::VizImpl::addArrow (const cv::Point3f &pt1, const cv::Point3f &pt2, double r_line, double g_line, double b_line,
-                         double r_text, double g_text, double b_text, const std::string &id)
-{
-  // Check to see if this ID entry already exists (has it been already added to the visualizer?)
-  ShapeActorMap::iterator am_it = shape_actor_map_->find (id);
-  if (am_it != shape_actor_map_->end ())
-  {
-    std::cout << "[addArrow] A shape with id <" << id << "> already exists! Please choose a different id and retry." << std::endl;
-    return (false);
-  }
+    Color cl = vtkcolor(color_line);
+    leader->GetProperty ()->SetColor (cl.val);
+    addActorToRenderer (leader);
 
-  // Create an Actor
-  vtkSmartPointer<vtkLeaderActor2D> leader = vtkSmartPointer<vtkLeaderActor2D>::New ();
-  leader->GetPositionCoordinate ()->SetCoordinateSystemToWorld ();
-  leader->GetPositionCoordinate ()->SetValue (pt1.x, pt1.y, pt1.z);
-  leader->GetPosition2Coordinate ()->SetCoordinateSystemToWorld ();
-  leader->GetPosition2Coordinate ()->SetValue (pt2.x, pt2.y, pt2.z);
-  leader->SetArrowStyleToFilled ();
-  leader->AutoLabelOn ();
-
-  leader->GetLabelTextProperty()->SetColor(r_text, g_text, b_text);
-
-  leader->GetProperty ()->SetColor (r_line, g_line, b_line);
-  addActorToRenderer (leader);
-
-  // Save the pointer/ID pair to the global actor map
-  (*shape_actor_map_)[id] = leader;
-  return (true);
+    // Save the pointer/ID pair to the global actor map
+    (*shape_actor_map_)[id] = leader;
+    return (true);
 }
 
+#include <vtkSphereSource.h>
 ////////////////////////////////////////////////////////////////////////////////////////////
-inline bool temp_viz::Viz3d::VizImpl::addSphere (const cv::Point3f& center, double radius, double r, double g, double b, const std::string &id)
+inline bool temp_viz::Viz3d::VizImpl::addSphere (const cv::Point3f& center, float radius, const Color& color, const std::string &id)
 {
-  // Check to see if this ID entry already exists (has it been already added to the visualizer?)
-  ShapeActorMap::iterator am_it = shape_actor_map_->find (id);
-  if (am_it != shape_actor_map_->end ())
-  {
-    std::cout << "[addSphere] A shape with id <"<<id << "> already exists! Please choose a different id and retry." << std::endl;
-    return (false);
-  }
+    // Check to see if this ID entry already exists (has it been already added to the visualizer?)
+    ShapeActorMap::iterator am_it = shape_actor_map_->find (id);
+    if (am_it != shape_actor_map_->end ())
+        return std::cout << "[addSphere] A shape with id <"<<id << "> already exists! Please choose a different id and retry." << std::endl, false;
 
-  //vtkSmartPointer<vtkDataSet> data = createSphere (center.getVector4fMap (), radius);
-  vtkSmartPointer<vtkSphereSource> data = vtkSmartPointer<vtkSphereSource>::New ();
-  data->SetRadius (radius);
-  data->SetCenter (double (center.x), double (center.y), double (center.z));
-  data->SetPhiResolution (10);
-  data->SetThetaResolution (10);
-  data->LatLongTessellationOff ();
-  data->Update ();
+    //vtkSmartPointer<vtkDataSet> data = createSphere (center.getVector4fMap (), radius);
+    vtkSmartPointer<vtkSphereSource> data = vtkSmartPointer<vtkSphereSource>::New ();
+    data->SetRadius (radius);
+    data->SetCenter (center.x, center.y, center.z);
+    data->SetPhiResolution (10);
+    data->SetThetaResolution (10);
+    data->LatLongTessellationOff ();
+    data->Update ();
 
-  // Setup actor and mapper
-  vtkSmartPointer <vtkPolyDataMapper> mapper = vtkSmartPointer<vtkPolyDataMapper>::New ();
-  mapper->SetInputConnection (data->GetOutputPort ());
+    // Setup actor and mapper
+    vtkSmartPointer <vtkPolyDataMapper> mapper = vtkSmartPointer<vtkPolyDataMapper>::New ();
+    mapper->SetInputConnection (data->GetOutputPort ());
 
-  // Create an Actor
-  vtkSmartPointer<vtkLODActor> actor = vtkSmartPointer<vtkLODActor>::New ();
-  actor->SetMapper (mapper);
-  //createActorFromVTKDataSet (data, actor);
-  actor->GetProperty ()->SetRepresentationToSurface ();
-  actor->GetProperty ()->SetInterpolationToFlat ();
-  actor->GetProperty ()->SetColor (r, g, b);
-  actor->GetMapper ()->ImmediateModeRenderingOn ();
-  actor->GetMapper ()->StaticOn ();
-  actor->GetMapper ()->ScalarVisibilityOff ();
-  actor->GetMapper ()->Update ();
-  addActorToRenderer (actor);
+    // Create an Actor
+    vtkSmartPointer<vtkLODActor> actor = vtkSmartPointer<vtkLODActor>::New ();
+    actor->SetMapper (mapper);
+    //createActorFromVTKDataSet (data, actor);
+    actor->GetProperty ()->SetRepresentationToSurface ();
+    actor->GetProperty ()->SetInterpolationToFlat ();
 
-  // Save the pointer/ID pair to the global actor map
-  (*shape_actor_map_)[id] = actor;
-  return (true);
+    Color c = vtkcolor(color);
+    actor->GetProperty ()->SetColor (c.val);
+    actor->GetMapper ()->ImmediateModeRenderingOn ();
+    actor->GetMapper ()->StaticOn ();
+    actor->GetMapper ()->ScalarVisibilityOff ();
+    actor->GetMapper ()->Update ();
+    addActorToRenderer (actor);
+
+    // Save the pointer/ID pair to the global actor map
+    (*shape_actor_map_)[id] = actor;
+    return (true);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////
-inline bool temp_viz::Viz3d::VizImpl::updateSphere (const cv::Point3f &center, double radius, double r, double g, double b, const std::string &id)
+inline bool temp_viz::Viz3d::VizImpl::updateSphere (const cv::Point3f &center, float radius, const Color& color, const std::string &id)
 {
-  // Check to see if this ID entry already exists (has it been already added to the visualizer?)
-  ShapeActorMap::iterator am_it = shape_actor_map_->find (id);
-  if (am_it == shape_actor_map_->end ())
-    return (false);
+    // Check to see if this ID entry already exists (has it been already added to the visualizer?)
+    ShapeActorMap::iterator am_it = shape_actor_map_->find (id);
+    if (am_it == shape_actor_map_->end ())
+        return (false);
 
-  //////////////////////////////////////////////////////////////////////////
-  // Get the actor pointer
-  vtkLODActor* actor = vtkLODActor::SafeDownCast (am_it->second);
-  vtkAlgorithm *algo = actor->GetMapper ()->GetInput ()->GetProducerPort ()->GetProducer ();
-  vtkSphereSource *src = vtkSphereSource::SafeDownCast (algo);
+    //////////////////////////////////////////////////////////////////////////
+    // Get the actor pointer
+    vtkLODActor* actor = vtkLODActor::SafeDownCast (am_it->second);
+    vtkAlgorithm *algo = actor->GetMapper ()->GetInput ()->GetProducerPort ()->GetProducer ();
+    vtkSphereSource *src = vtkSphereSource::SafeDownCast (algo);
 
-  src->SetCenter (double (center.x), double (center.y), double (center.z));
-  src->SetRadius (radius);
-  src->Update ();
-  actor->GetProperty ()->SetColor (r, g, b);
-  actor->Modified ();
+    src->SetCenter(center.x, center.y, center.z);
+    src->SetRadius(radius);
+    src->Update ();
+    Color c = vtkcolor(color);
+    actor->GetProperty ()->SetColor (c.val);
+    actor->Modified ();
 
-  return (true);
+    return (true);
 }
 
 //////////////////////////////////////////////////
-inline bool temp_viz::Viz3d::VizImpl::addText3D (const std::string &text, const cv::Point3f& position,
-  double textScale, double r, double g, double b, const std::string &id)
+inline bool temp_viz::Viz3d::VizImpl::addText3D (const std::string &text, const cv::Point3f& position, const Color& color, double textScale, const std::string &id)
 {
-  std::string tid;
-  if (id.empty ())
-    tid = text;
-  else
-    tid = id;
+    std::string tid;
+    if (id.empty ())
+        tid = text;
+    else
+        tid = id;
 
-  // Check to see if this ID entry already exists (has it been already added to the visualizer?)
-  ShapeActorMap::iterator am_it = shape_actor_map_->find (tid);
-  if (am_it != shape_actor_map_->end ())
-  {
-    return std::cout << "[addText3d] A text with id <" << tid << "> already exists! Please choose a different id and retry." << std::endl, false;
-  }
+    // Check to see if this ID entry already exists (has it been already added to the visualizer?)
+    ShapeActorMap::iterator am_it = shape_actor_map_->find (tid);
+    if (am_it != shape_actor_map_->end ())
+        return std::cout << "[addText3d] A text with id <" << tid << "> already exists! Please choose a different id and retry." << std::endl, false;
 
-  vtkSmartPointer<vtkVectorText> textSource = vtkSmartPointer<vtkVectorText>::New ();
-  textSource->SetText (text.c_str());
-  textSource->Update ();
+    vtkSmartPointer<vtkVectorText> textSource = vtkSmartPointer<vtkVectorText>::New ();
+    textSource->SetText (text.c_str());
+    textSource->Update ();
 
-  vtkSmartPointer<vtkPolyDataMapper> textMapper = vtkSmartPointer<vtkPolyDataMapper>::New ();
-  textMapper->SetInputConnection (textSource->GetOutputPort ());
+    vtkSmartPointer<vtkPolyDataMapper> textMapper = vtkSmartPointer<vtkPolyDataMapper>::New ();
+    textMapper->SetInputConnection (textSource->GetOutputPort ());
 
-  // Since each follower may follow a different camera, we need different followers
-  vtkRenderer* renderer = renderer_;
+    // Since each follower may follow a different camera, we need different followers
+    vtkRenderer* renderer = renderer_;
 
-  vtkSmartPointer<vtkFollower> textActor = vtkSmartPointer<vtkFollower>::New ();
-  textActor->SetMapper (textMapper);
-  textActor->SetPosition (position.x, position.y, position.z);
-  textActor->SetScale (textScale);
-  textActor->GetProperty ()->SetColor (r, g, b);
-  textActor->SetCamera (renderer->GetActiveCamera ());
+    vtkSmartPointer<vtkFollower> textActor = vtkSmartPointer<vtkFollower>::New ();
+    textActor->SetMapper (textMapper);
+    textActor->SetPosition (position.x, position.y, position.z);
+    textActor->SetScale (textScale);
 
-  renderer->AddActor (textActor);
-  renderer->Render ();
+    Color c = vtkcolor(color);
+    textActor->GetProperty ()->SetColor (c.val);
+    textActor->SetCamera (renderer->GetActiveCamera ());
 
-  // Save the pointer/ID pair to the global actor map. If we are saving multiple vtkFollowers
-  // for multiple viewport
-  (*shape_actor_map_)[tid] = textActor;
+    renderer->AddActor (textActor);
+    renderer->Render ();
+
+    // Save the pointer/ID pair to the global actor map. If we are saving multiple vtkFollowers
+    // for multiple viewport
+    (*shape_actor_map_)[tid] = textActor;
 
 
-  return (true);
+    return (true);
 }
 
-
-
-
-inline bool temp_viz::Viz3d::VizImpl::addPolygon (const cv::Mat& cloud, const cv::Scalar& color, const std::string &id)
+inline bool temp_viz::Viz3d::VizImpl::addPolygon (const cv::Mat& cloud, const Color& color, const std::string &id)
 {
     CV_Assert(cloud.type() == CV_32FC3 && cloud.rows == 1);
 
-    vtkSmartPointer<vtkPoints> poly_points = vtkSmartPointer<vtkPoints>::New ();
+    vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New ();
     vtkSmartPointer<vtkPolygon> polygon    = vtkSmartPointer<vtkPolygon>::New ();
 
     int total = cloud.size().area();
-    poly_points->SetNumberOfPoints (total);
+    points->SetNumberOfPoints (total);
     polygon->GetPointIds ()->SetNumberOfIds (total);
 
-
-    int i;
-    for (i = 0; i < total; ++i)
+    for (int i = 0; i < total; ++i)
     {
         cv::Point3f p = cloud.ptr<cv::Point3f>()[i];
-        poly_points->SetPoint (i, p.x, p.y, p.z);
+        points->SetPoint (i, p.x, p.y, p.z);
         polygon->GetPointIds ()->SetId (i, i);
     }
 
@@ -941,13 +906,14 @@ inline bool temp_viz::Viz3d::VizImpl::addPolygon (const cv::Mat& cloud, const cv
     allocVtkUnstructuredGrid (poly_grid);
     poly_grid->Allocate (1, 1);
     poly_grid->InsertNextCell (polygon->GetCellType (), polygon->GetPointIds ());
-    poly_grid->SetPoints (poly_points);
+    poly_grid->SetPoints (points);
     poly_grid->Update ();
 
 
     //////////////////////////////////////////////////////
     vtkSmartPointer<vtkDataSet> data = poly_grid;
 
+    Color c = vtkcolor(color);
 
     // Check to see if this ID entry already exists (has it been already added to the visualizer?)
     ShapeActorMap::iterator am_it = shape_actor_map_->find (id);
@@ -965,10 +931,10 @@ inline bool temp_viz::Viz3d::VizImpl::addPolygon (const cv::Mat& cloud, const cv
         all_data->AddInput (poly_data);
 
         // Create an Actor
-        vtkSmartPointer<vtkActor> actor;
+        vtkSmartPointer<vtkLODActor> actor;
         createActorFromVTKDataSet (all_data->GetOutput (), actor);
         actor->GetProperty ()->SetRepresentationToWireframe ();
-        actor->GetProperty ()->SetColor (color[2]/255, color[1]/255, color[0]/255);
+        actor->GetProperty ()->SetColor (c.val);
         actor->GetMapper ()->ScalarVisibilityOff ();
         actor->GetProperty ()->BackfaceCullingOff ();
 
@@ -981,10 +947,10 @@ inline bool temp_viz::Viz3d::VizImpl::addPolygon (const cv::Mat& cloud, const cv
     else
     {
         // Create an Actor
-        vtkSmartPointer<vtkActor> actor;
+        vtkSmartPointer<vtkLODActor> actor;
         createActorFromVTKDataSet (data, actor);
         actor->GetProperty ()->SetRepresentationToWireframe ();
-        actor->GetProperty ()->SetColor (color[2]/255, color[1]/255, color[0]/255);
+        actor->GetProperty ()->SetColor (c.val);
         actor->GetMapper ()->ScalarVisibilityOff ();
         actor->GetProperty ()->BackfaceCullingOff ();
         addActorToRenderer (actor);

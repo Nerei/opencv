@@ -2,8 +2,8 @@
 
 #include <opencv2/core/cvdef.h>
 #include <opencv2/core.hpp>
-#include <vtkMatrix4x4.h>
-#include <Eigen/Core>
+#include <opencv2/viz/types.hpp>
+//#include <vtkMatrix4x4.h>
 
 namespace temp_viz
 {
@@ -51,34 +51,34 @@ namespace temp_viz
     {
     public:
         /** Focal point or lookAt. The view direction can be obtained by (focal-pos).normalized () */
-        cv::Vec3d focal;
+        Vec3d focal;
 
         /** \brief Position of the camera. */
-        cv::Vec3d pos;
+        Vec3d pos;
 
         /** \brief Up vector of the camera. */
-        cv::Vec3d view_up;
+        Vec3d view_up;
 
         /** \brief Near/far clipping planes depths */
-        cv::Vec2d clip;
+        Vec2d clip;
 
         /** \brief Field of view angle in y direction (radians). */
         double fovy;
 
         // the following variables are the actual position and size of the window on the screen and NOT the viewport!
         // except for the size, which is the same the viewport is assumed to be centered and same size as the window.
-        cv::Vec2d window_size;
-        cv::Vec2d window_pos;
+        Vec2i window_size;
+        Vec2i window_pos;
 
         /** \brief Computes View matrix for Camera (Based on gluLookAt)
           * \param[out] view_mat the resultant matrix
           */
-        void computeViewMatrix (Eigen::Matrix4d& view_mat) const;
+        void computeViewMatrix(Affine3d& view_mat) const;
 
         /** \brief Computes Projection Matrix for Camera
           *  \param[out] proj the resultant matrix
           */
-        void computeProjectionMatrix (Eigen::Matrix4d& proj) const;
+        void computeProjectionMatrix(Matx44d& proj) const;
 
         /** \brief converts point to window coordiantes
           * \param[in] pt xyz point to be converted
@@ -87,12 +87,14 @@ namespace temp_viz
           * This function computes the projection and view matrix every time.
           * It is very inefficient to use this for every point in the point cloud!
           */
-        void cvtWindowCoordinates (const cv::Point3f& pt, Eigen::Vector4d& window_cord) const
+        void cvtWindowCoordinates (const cv::Point3f& pt, Vec4d& window_cord) const
         {
-            Eigen::Matrix4d proj, view;
-            this->computeViewMatrix (view);
-            this->computeProjectionMatrix (proj);
-            this->cvtWindowCoordinates (pt, window_cord, proj*view);
+            Affine3d view;
+            computeViewMatrix (view);
+
+            Matx44d proj;
+            computeProjectionMatrix (proj);
+            cvtWindowCoordinates (pt, proj * view.matrix, window_cord);
             return;
         }
 
@@ -106,11 +108,12 @@ namespace temp_viz
           * the projection matrix * the view matrix.  However, additional
           * matrices like a camera disortion matrix can also be added.
           */
-        void cvtWindowCoordinates (const cv::Point3f& pt, Eigen::Vector4d& window_cord, const Eigen::Matrix4d& composite_mat) const
+        void cvtWindowCoordinates (const Point3f& pt, Matx44d& composite_mat, Vec4d& window_cord) const
         {
-            Eigen::Vector4d pte (pt.x, pt.y, pt.z, 1);
+            Vec4d pte (pt.x, pt.y, pt.z, 1);
             window_cord = composite_mat * pte;
-            window_cord = window_cord/window_cord (3);
+            window_cord = window_cord/window_cord[3];
+
             window_cord[0] = (window_cord[0]+1.0) / 2.0*window_size[0];
             window_cord[1] = (window_cord[1]+1.0) / 2.0*window_size[1];
             window_cord[2] = (window_cord[2]+1.0) / 2.0;

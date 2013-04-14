@@ -14,7 +14,7 @@ vtkRenderWindowInteractor* vtkRenderWindowInteractorFixNew ()
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 temp_viz::Viz3d::VizImpl::VizImpl (const std::string &name)
-    :  style_ (vtkSmartPointer<temp_viz::PCLVisualizerInteractorStyle>::New ())
+    :  style_ (vtkSmartPointer<temp_viz::InteractorStyle>::New ())
     , cloud_actor_map_ (new CloudActorMap)
     , shape_actor_map_ (new ShapeActorMap)
     , s_lastDone_(0.0)
@@ -64,12 +64,12 @@ temp_viz::Viz3d::VizImpl::VizImpl (const std::string &name)
     interactor_->SetPicker (pp);
 
     exit_main_loop_timer_callback_ = vtkSmartPointer<ExitMainLoopTimerCallback>::New ();
-    exit_main_loop_timer_callback_->pcl_visualizer = this;
+    exit_main_loop_timer_callback_->viz_ = this;
     exit_main_loop_timer_callback_->right_timer_id = -1;
     interactor_->AddObserver (vtkCommand::TimerEvent, exit_main_loop_timer_callback_);
 
     exit_callback_ = vtkSmartPointer<ExitCallback>::New ();
-    exit_callback_->pcl_visualizer = this;
+    exit_callback_->viz_ = this;
     interactor_->AddObserver (vtkCommand::ExitEvent, exit_callback_);
 
     resetStoppedFlag ();
@@ -288,7 +288,7 @@ bool temp_viz::Viz3d::VizImpl::removeShape (const std::string &id)
     {
         // There is no cloud or shape with this ID, so just exit
         if (ca_it == cloud_actor_map_->end ())
-            return (false);
+            return false;
         // Cloud found, set shape to false
         shape = false;
     }
@@ -307,10 +307,10 @@ bool temp_viz::Viz3d::VizImpl::removeShape (const std::string &id)
         if (removeActorFromRenderer (ca_it->second.actor))
         {
             cloud_actor_map_->erase (ca_it);
-            return (true);
+            return true;
         }
     }
-    return (false);
+    return false;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
@@ -445,27 +445,10 @@ bool temp_viz::Viz3d::VizImpl::removeActorFromRenderer (const vtkSmartPointer<vt
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
-namespace
-{
-// Helper function called by createActorFromVTKDataSet () methods.
-// This function determines the default setting of vtkMapper::InterpolateScalarsBeforeMapping.
-// Return 0, interpolation off, if data is a vtkPolyData that contains only vertices.
-// Return 1, interpolation on, for anything else.
-int getDefaultScalarInterpolationForDataSet (vtkDataSet* data)
-{
-    vtkPolyData* polyData = vtkPolyData::SafeDownCast (data);
-    return (polyData && polyData->GetNumberOfCells () != polyData->GetNumberOfVerts ());
-}
-
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////////
 void temp_viz::Viz3d::VizImpl::createActorFromVTKDataSet (const vtkSmartPointer<vtkDataSet> &data, vtkSmartPointer<vtkLODActor> &actor, bool use_scalars)
 {
-    // If actor is not initialized, initialize it here
     if (!actor)
         actor = vtkSmartPointer<vtkLODActor>::New ();
-
 
     vtkSmartPointer<vtkDataSetMapper> mapper = vtkSmartPointer<vtkDataSetMapper>::New ();
     mapper->SetInput (data);
@@ -473,14 +456,17 @@ void temp_viz::Viz3d::VizImpl::createActorFromVTKDataSet (const vtkSmartPointer<
     if (use_scalars)
     {
         vtkSmartPointer<vtkDataArray> scalars = data->GetPointData ()->GetScalars ();
-        double minmax[2];
         if (scalars)
         {
-            scalars->GetRange (minmax);
-            mapper->SetScalarRange (minmax);
-
+            cv::Vec3d minmax(scalars->GetRange());
+            mapper->SetScalarRange(minmax.val);
             mapper->SetScalarModeToUsePointData ();
-            mapper->SetInterpolateScalarsBeforeMapping (getDefaultScalarInterpolationForDataSet (data));
+
+            // interpolation OFF, if data is a vtkPolyData that contains only vertices, ON for anything else.
+            vtkPolyData* polyData = vtkPolyData::SafeDownCast (data);
+            bool interpolation = (polyData && polyData->GetNumberOfCells () != polyData->GetNumberOfVerts ());
+
+            mapper->SetInterpolateScalarsBeforeMapping (interpolation);
             mapper->ScalarVisibilityOn ();
         }
     }
@@ -497,199 +483,122 @@ void temp_viz::Viz3d::VizImpl::createActorFromVTKDataSet (const vtkSmartPointer<
     actor->SetMapper (mapper);
 }
 
-/////////////////////////////////////////////////////////////////////////////////////////////
-void temp_viz::Viz3d::VizImpl::createActorFromVTKDataSet (const vtkSmartPointer<vtkDataSet> &data, vtkSmartPointer<vtkActor> &actor, bool use_scalars)
-{
-    // If actor is not initialized, initialize it here
-    if (!actor)
-        actor = vtkSmartPointer<vtkActor>::New ();
-
-
-    vtkSmartPointer<vtkDataSetMapper> mapper = vtkSmartPointer<vtkDataSetMapper>::New ();
-    mapper->SetInput (data);
-
-    if (use_scalars)
-    {
-        vtkSmartPointer<vtkDataArray> scalars = data->GetPointData ()->GetScalars ();
-        double minmax[2];
-        if (scalars)
-        {
-            scalars->GetRange (minmax);
-            mapper->SetScalarRange (minmax);
-
-            mapper->SetScalarModeToUsePointData ();
-            mapper->SetInterpolateScalarsBeforeMapping (getDefaultScalarInterpolationForDataSet (data));
-            mapper->ScalarVisibilityOn ();
-        }
-    }
-    mapper->ImmediateModeRenderingOff ();
-
-    //actor->SetNumberOfCloudPoints (int (std::max<vtkIdType> (1, data->GetNumberOfPoints () / 10)));
-    actor->GetProperty ()->SetInterpolationToFlat ();
-
-    /// FIXME disabling backface culling due to known VTK bug: vtkTextActors are not
-    /// shown when there is a vtkActor with backface culling on present in the scene
-    /// Please see VTK bug tracker for more details: http://www.vtk.org/Bug/view.php?id=12588
-    // actor->GetProperty ()->BackfaceCullingOn ();
-
-    actor->SetMapper (mapper);
-
-    //actor->SetNumberOfCloudPoints (std::max<vtkIdType> (1, data->GetNumberOfPoints () / 10));
-    actor->GetProperty ()->SetInterpolationToFlat ();
-}
-
 //////////////////////////////////////////////////////////////////////////////////////////////
-void temp_viz::Viz3d::VizImpl::setBackgroundColor (const cv::Scalar& color)
+void temp_viz::Viz3d::VizImpl::setBackgroundColor (const Color& color)
 {
-    //rens_->InitTraversal ();
-
-    renderer_->SetBackground (color[2]/255, color[1]/255, color[0]/255);
+    Color c = vtkcolor(color);
+    renderer_->SetBackground (c.val);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
-bool temp_viz::Viz3d::VizImpl::setPointCloudRenderingProperties (int property, double val1, double val2, double val3, const std::string &id)
+void temp_viz::Viz3d::VizImpl::setPointCloudColor (const Color& color, const std::string &id)
 {
-    // Check to see if this ID entry already exists (has it been already added to the visualizer?)
     CloudActorMap::iterator am_it = cloud_actor_map_->find (id);
+    if (am_it != cloud_actor_map_->end ())
+    {
+        vtkLODActor* actor = vtkLODActor::SafeDownCast (am_it->second.actor);
 
-    if (am_it == cloud_actor_map_->end ())
-    {
-        std::cout << "[setPointCloudRenderingProperties] Could not find any PointCloud datasets with id <" << id << ">!\n" << std::endl;
-        return (false);
-    }
-    // Get the actor pointer
-    vtkLODActor* actor = vtkLODActor::SafeDownCast (am_it->second.actor);
-
-    switch (property)
-    {
-    case PCL_VISUALIZER_COLOR:
-    {
-        actor->GetProperty ()->SetColor (val1, val2, val3);
+        Color c = vtkcolor(color);
+        actor->GetProperty ()->SetColor (c.val);
         actor->GetMapper ()->ScalarVisibilityOff ();
         actor->Modified ();
-        break;
     }
-    default:
-    {
-        std::cout << "[setPointCloudRenderingProperties] Unknown property ("<<property<<") specified!" << std::endl;
-        return (false);
-    }
-    }
-    return (true);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 bool temp_viz::Viz3d::VizImpl::getPointCloudRenderingProperties (int property, double &value, const std::string &id)
 {
-    // Check to see if this ID entry already exists (has it been already added to the visualizer?)
     CloudActorMap::iterator am_it = cloud_actor_map_->find (id);
-
     if (am_it == cloud_actor_map_->end ())
-        return (false);
-    // Get the actor pointer
+        return false;
+
     vtkLODActor* actor = vtkLODActor::SafeDownCast (am_it->second.actor);
 
     switch (property)
     {
-    case PCL_VISUALIZER_POINT_SIZE:
-    {
-        value = actor->GetProperty ()->GetPointSize ();
-        actor->Modified ();
-        break;
+        case PCL_VISUALIZER_POINT_SIZE:
+        {
+            value = actor->GetProperty ()->GetPointSize ();
+            actor->Modified ();
+            break;
+        }
+        case PCL_VISUALIZER_OPACITY:
+        {
+            value = actor->GetProperty ()->GetOpacity ();
+            actor->Modified ();
+            break;
+        }
+        case PCL_VISUALIZER_LINE_WIDTH:
+        {
+            value = actor->GetProperty ()->GetLineWidth ();
+            actor->Modified ();
+            break;
+        }
+        default:
+            CV_Assert("getPointCloudRenderingProperties: Unknown property");
     }
-    case PCL_VISUALIZER_OPACITY:
-    {
-        value = actor->GetProperty ()->GetOpacity ();
-        actor->Modified ();
-        break;
-    }
-    case PCL_VISUALIZER_LINE_WIDTH:
-    {
-        value = actor->GetProperty ()->GetLineWidth ();
-        actor->Modified ();
-        break;
-    }
-    default:
-    {
-        std::cout << "[getPointCloudRenderingProperties] Unknown property ("<< property<< ") specified!" << std::endl;
-        return (false);
-    }
-    }
-    return (true);
+
+    return true;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 bool temp_viz::Viz3d::VizImpl::setPointCloudRenderingProperties (int property, double value, const std::string &id)
 {
-    // Check to see if this ID entry already exists (has it been already added to the visualizer?)
     CloudActorMap::iterator am_it = cloud_actor_map_->find (id);
-
     if (am_it == cloud_actor_map_->end ())
-    {
-        std::cout << "[setPointCloudRenderingProperties] Could not find any PointCloud datasets with id <" << id << ">!" << std::endl;
-        return (false);
-    }
-    // Get the actor pointer
+        return std::cout << "[setPointCloudRenderingProperties] Could not find any PointCloud datasets with id <" << id << ">!" << std::endl, false;
+
     vtkLODActor* actor = vtkLODActor::SafeDownCast (am_it->second.actor);
 
     switch (property)
     {
-    case PCL_VISUALIZER_POINT_SIZE:
-    {
-        actor->GetProperty ()->SetPointSize (float (value));
-        actor->Modified ();
-        break;
+        case PCL_VISUALIZER_POINT_SIZE:
+        {
+            actor->GetProperty ()->SetPointSize (float (value));
+            actor->Modified ();
+            break;
+        }
+        case PCL_VISUALIZER_OPACITY:
+        {
+            actor->GetProperty ()->SetOpacity (value);
+            actor->Modified ();
+            break;
+        }
+            // Turn on/off flag to control whether data is rendered using immediate
+            // mode or note. Immediate mode rendering tends to be slower but it can
+            // handle larger datasets. The default value is immediate mode off. If you
+            // are having problems rendering a large dataset you might want to consider
+            // using immediate more rendering.
+        case PCL_VISUALIZER_IMMEDIATE_RENDERING:
+        {
+            actor->GetMapper ()->SetImmediateModeRendering (int (value));
+            actor->Modified ();
+            break;
+        }
+        case PCL_VISUALIZER_LINE_WIDTH:
+        {
+            actor->GetProperty ()->SetLineWidth (float (value));
+            actor->Modified ();
+            break;
+        }
+        default:
+            CV_Assert("setPointCloudRenderingProperties: Unknown property");
     }
-    case PCL_VISUALIZER_OPACITY:
-    {
-        actor->GetProperty ()->SetOpacity (value);
-        actor->Modified ();
-        break;
-    }
-        // Turn on/off flag to control whether data is rendered using immediate
-        // mode or note. Immediate mode rendering tends to be slower but it can
-        // handle larger datasets. The default value is immediate mode off. If you
-        // are having problems rendering a large dataset you might want to consider
-        // using immediate more rendering.
-    case PCL_VISUALIZER_IMMEDIATE_RENDERING:
-    {
-        actor->GetMapper ()->SetImmediateModeRendering (int (value));
-        actor->Modified ();
-        break;
-    }
-    case PCL_VISUALIZER_LINE_WIDTH:
-    {
-        actor->GetProperty ()->SetLineWidth (float (value));
-        actor->Modified ();
-        break;
-    }
-    default:
-    {
-        std::cout << "[setPointCloudRenderingProperties] Unknown property ("<<property<<") specified!" << std::endl;
-        return (false);
-    }
-    }
-    return (true);
+    return true;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 bool temp_viz::Viz3d::VizImpl::setPointCloudSelected (const bool selected, const std::string &id)
 {
-    // Check to see if this ID entry already exists (has it been already added to the visualizer?)
     CloudActorMap::iterator am_it = cloud_actor_map_->find (id);
-
     if (am_it == cloud_actor_map_->end ())
-    {
-        std::cout << "[setPointCloudRenderingProperties] Could not find any PointCloud datasets with id <" << id << ">!" << std::endl;
-        return (false);
-    }
-    // Get the actor pointer
-    vtkLODActor* actor = vtkLODActor::SafeDownCast (am_it->second.actor);
+        return std::cout << "[setPointCloudRenderingProperties] Could not find any PointCloud datasets with id <" << id << ">!" << std::endl, false;
 
+    vtkLODActor* actor = vtkLODActor::SafeDownCast (am_it->second.actor);
     if (selected)
     {
         actor->GetProperty ()->EdgeVisibilityOn ();
-        actor->GetProperty ()->SetEdgeColor (1.0,0.0,0.0);
+        actor->GetProperty ()->SetEdgeColor (1.0, 0.0, 0.0);
         actor->Modified ();
     }
     else
@@ -698,62 +607,36 @@ bool temp_viz::Viz3d::VizImpl::setPointCloudSelected (const bool selected, const
         actor->Modified ();
     }
 
-    return (true);
+    return true;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
-bool temp_viz::Viz3d::VizImpl::setShapeRenderingProperties (int property, double val1, double val2, double val3, const std::string &id)
+void temp_viz::Viz3d::VizImpl::setShapeColor (const Color& color, const std::string &id)
 {
-    // Check to see if this ID entry already exists (has it been already added to the visualizer?)
     ShapeActorMap::iterator am_it = shape_actor_map_->find (id);
+    if (am_it != shape_actor_map_->end ())
+    {
+        vtkActor* actor = vtkActor::SafeDownCast (am_it->second);
 
-    if (am_it == shape_actor_map_->end ())
-    {
-        std::cout << "[setShapeRenderingProperties] Could not find any shape with id <" << id << ">!" << std::endl;
-        return (false);
-    }
-    // Get the actor pointer
-    vtkActor* actor = vtkActor::SafeDownCast (am_it->second);
-
-    switch (property)
-    {
-    case PCL_VISUALIZER_COLOR:
-    {
+        Color c = vtkcolor(color);
         actor->GetMapper ()->ScalarVisibilityOff ();
-        actor->GetProperty ()->SetColor (val1, val2, val3);
-        actor->GetProperty ()->SetEdgeColor (val1, val2, val3);
-        // The following 3 are set by SetColor automatically according to the VTK docs
-        //actor->GetProperty ()->SetAmbientColor  (val1, val2, val3);
-        //actor->GetProperty ()->SetDiffuseColor (val1, val2, val3);
-        //actor->GetProperty ()->SetSpecularColor (val1, val2, val3);
+        actor->GetProperty ()->SetColor (c.val);
+        actor->GetProperty ()->SetEdgeColor (c.val);
         actor->GetProperty ()->SetAmbient (0.8);
         actor->GetProperty ()->SetDiffuse (0.8);
         actor->GetProperty ()->SetSpecular (0.8);
         actor->GetProperty ()->SetLighting (0);
         actor->Modified ();
-        break;
     }
-    default:
-    {
-        std::cout << "[setShapeRenderingProperties] Unknown property ("<< property << ") specified!" << std::endl;
-        return (false);
-    }
-    }
-    return (true);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 bool temp_viz::Viz3d::VizImpl::setShapeRenderingProperties (int property, double value, const std::string &id)
 {
-    // Check to see if this ID entry already exists (has it been already added to the visualizer?)
     ShapeActorMap::iterator am_it = shape_actor_map_->find (id);
-
     if (am_it == shape_actor_map_->end ())
-    {
-        std::cout << "[setShapeRenderingProperties] Could not find any shape with id <" << id << ">!\n" << std::endl;
-        return (false);
-    }
-    // Get the actor pointer
+        return std::cout << "[setShapeRenderingProperties] Could not find any shape with id <" << id << ">!\n" << std::endl, false;
+
     vtkActor* actor = vtkActor::SafeDownCast (am_it->second);
 
     switch (property)
@@ -788,21 +671,9 @@ bool temp_viz::Viz3d::VizImpl::setShapeRenderingProperties (int property, double
     {
         switch (int (value))
         {
-        case PCL_VISUALIZER_REPRESENTATION_POINTS:
-        {
-            actor->GetProperty ()->SetRepresentationToPoints ();
-            break;
-        }
-        case PCL_VISUALIZER_REPRESENTATION_WIREFRAME:
-        {
-            actor->GetProperty ()->SetRepresentationToWireframe ();
-            break;
-        }
-        case PCL_VISUALIZER_REPRESENTATION_SURFACE:
-        {
-            actor->GetProperty ()->SetRepresentationToSurface ();
-            break;
-        }
+            case PCL_VISUALIZER_REPRESENTATION_POINTS:    actor->GetProperty ()->SetRepresentationToPoints (); break;
+            case PCL_VISUALIZER_REPRESENTATION_WIREFRAME: actor->GetProperty ()->SetRepresentationToWireframe (); break;
+            case PCL_VISUALIZER_REPRESENTATION_SURFACE:   actor->GetProperty ()->SetRepresentationToSurface ();  break;
         }
         actor->Modified ();
         break;
@@ -811,11 +682,7 @@ bool temp_viz::Viz3d::VizImpl::setShapeRenderingProperties (int property, double
     {
         switch (int (value))
         {
-        case PCL_VISUALIZER_SHADING_FLAT:
-        {
-            actor->GetProperty ()->SetInterpolationToFlat ();
-            break;
-        }
+        case PCL_VISUALIZER_SHADING_FLAT: actor->GetProperty ()->SetInterpolationToFlat (); break;
         case PCL_VISUALIZER_SHADING_GOURAUD:
         {
             if (!actor->GetMapper ()->GetInput ()->GetPointData ()->GetNormals ())
@@ -848,12 +715,10 @@ bool temp_viz::Viz3d::VizImpl::setShapeRenderingProperties (int property, double
         break;
     }
     default:
-    {
-        std::cout << "[setShapeRenderingProperties] Unknown property (" << property << ") specified!\n" << std::endl;
-        return (false);
+        CV_Assert("setShapeRenderingProperties: Unknown property");
+
     }
-    }
-    return (true);
+    return true;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
@@ -861,30 +726,21 @@ void temp_viz::Viz3d::VizImpl::initCameraParameters ()
 {
     Camera camera_temp;
     // Set default camera parameters to something meaningful
-    camera_temp.clip[0] = 0.01;
-    camera_temp.clip[1] = 1000.01;
+    camera_temp.clip = Vec2d(0.01, 1000.01);
 
     // Look straight along the z-axis
-    camera_temp.focal[0] = 0.;
-    camera_temp.focal[1] = 0.;
-    camera_temp.focal[2] = 1.;
+    camera_temp.focal = Vec3d(0.0, 0.0, 1.0);
 
     // Position the camera at the origin
-    camera_temp.pos[0] = 0.;
-    camera_temp.pos[1] = 0.;
-    camera_temp.pos[2] = 0.;
+    camera_temp.pos = Vec3d(0.0, 0.0, 0.0);
 
     // Set the up-vector of the camera to be the y-axis
-    camera_temp.view_up[0] = 0.;
-    camera_temp.view_up[1] = 1.;
-    camera_temp.view_up[2] = 0.;
+    camera_temp.view_up = Vec3d(0.0, 1.0, 0.0);
 
     // Set the camera field of view to about
     camera_temp.fovy = 0.8575;
-
-    int *scr_size = window_->GetScreenSize ();
-    camera_temp.window_size[0] = scr_size[0] / 2;
-    camera_temp.window_size[1] = scr_size[1] / 2;
+    camera_temp.window_size = Vec2i(window_->GetScreenSize()) / 2;
+    camera_temp.window_pos = Vec2i(0, 0);
 
     setCameraParameters (camera_temp);
 }
@@ -942,42 +798,35 @@ void temp_viz::Viz3d::VizImpl::getCameras (temp_viz::Camera& camera)
 /////////////////////////////////////////////////////////////////////////////////////////////
 cv::Affine3f temp_viz::Viz3d::VizImpl::getViewerPose ()
 {
-    cv::Affine3f ret  = cv::Affine3f::Identity();
-
     vtkCamera& camera = *renderer_->GetActiveCamera ();
-    Eigen::Vector3d pos, x_axis, y_axis, z_axis;
-    camera.GetPosition (pos[0], pos[1], pos[2]);
-    camera.GetViewUp (y_axis[0], y_axis[1], y_axis[2]);
-    camera.GetFocalPoint (z_axis[0], z_axis[1], z_axis[2]);
 
-    z_axis = (z_axis - pos).normalized ();
-    x_axis = y_axis.cross (z_axis).normalized ();
+    Vec3d pos(camera.GetPosition());
+    Vec3d view_up(camera.GetViewUp());
+    Vec3d focal(camera.GetFocalPoint());
 
-    /// TODO replace this ugly thing with matrix.block () = vector3f
-    ret.matrix (0, 0) = static_cast<float> (x_axis[0]);
-    ret.matrix (0, 1) = static_cast<float> (y_axis[0]);
-    ret.matrix (0, 2) = static_cast<float> (z_axis[0]);
-    ret.matrix (0, 3) = static_cast<float> (pos[0]);
+    Vec3d y_axis = normalized(view_up);
+    Vec3d z_axis = normalized(focal - pos);
+    Vec3d x_axis = normalized(y_axis.cross(z_axis));
 
-    ret.matrix (1, 0) = static_cast<float> (x_axis[1]);
-    ret.matrix (1, 1) = static_cast<float> (y_axis[1]);
-    ret.matrix (1, 2) = static_cast<float> (z_axis[1]);
-    ret.matrix (1, 3) = static_cast<float> (pos[1]);
+    cv::Matx33d R;
+    R(0, 0) = x_axis[0];
+    R(0, 1) = y_axis[0];
+    R(0, 2) = z_axis[0];
 
-    ret.matrix (2, 0) = static_cast<float> (x_axis[2]);
-    ret.matrix (2, 1) = static_cast<float> (y_axis[2]);
-    ret.matrix (2, 2) = static_cast<float> (z_axis[2]);
-    ret.matrix (2, 3) = static_cast<float> (pos[2]);
+    R(1, 0) = x_axis[1];
+    R(1, 1) = y_axis[1];
+    R(1, 2) = z_axis[1];
 
-    return ret;
+    R(2, 0) = x_axis[2];
+    R(2, 1) = y_axis[2];
+    R(2, 2) = z_axis[2];
+
+    return cv::Affine3f(R, pos);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 void temp_viz::Viz3d::VizImpl::resetCamera ()
 {
-    // Update the camera parameters
-    //rens_->InitTraversal ();
-
     renderer_->ResetCamera ();
 }
 
@@ -1199,24 +1048,23 @@ bool temp_viz::Viz3d::VizImpl::addCube (const cv::Vec3f& translation, const cv::
 
 ////////////////////////////////////////////////////////////////////////////////////////////
 bool temp_viz::Viz3d::VizImpl::addCube (float x_min, float x_max, float y_min, float y_max, float z_min, float z_max,
-                                            double r, double g, double b, const std::string &id)
+                                            const Color& color , const std::string &id)
 {
     // Check to see if this ID entry already exists (has it been already added to the visualizer?)
     ShapeActorMap::iterator am_it = shape_actor_map_->find (id);
     if (am_it != shape_actor_map_->end ())
-    {
-        std::cout << "[addCube] A shape with id <" << id << "> already exists! Please choose a different id and retry." << std::endl;
-        return (false);
-    }
+        return std::cout << "[addCube] A shape with id <" << id << "> already exists! Please choose a different id and retry." << std::endl, false;
 
     vtkSmartPointer<vtkDataSet> data = createCube (x_min, x_max, y_min, y_max, z_min, z_max);
 
     // Create an Actor
-    vtkSmartPointer<vtkActor> actor;
+    vtkSmartPointer<vtkLODActor> actor;
     createActorFromVTKDataSet (data, actor);
     actor->GetProperty ()->SetRepresentationToWireframe ();
     actor->GetProperty ()->SetLighting (false);
-    actor->GetProperty ()->SetColor (r,g,b);
+
+    Color c = vtkcolor(color);
+    actor->GetProperty ()->SetColor (c.val);
     addActorToRenderer (actor);
 
     // Save the pointer/ID pair to the global actor map
@@ -1437,17 +1285,14 @@ bool temp_viz::Viz3d::VizImpl::addCircle (const temp_viz::ModelCoefficients &coe
 //}
 
 /////////////////////////////////////////////////////////////////////////////////////////////
-bool temp_viz::Viz3d::VizImpl::addText (const std::string &text, int xpos, int ypos, const cv::Scalar& color, int fontsize, const std::string &id)
+bool temp_viz::Viz3d::VizImpl::addText (const std::string &text, int xpos, int ypos, const Color& color, int fontsize, const std::string &id)
 {
    std::string tid = id.empty() ? text : id;
 
     // Check to see if this ID entry already exists (has it been already added to the visualizer?)
     ShapeActorMap::iterator am_it = shape_actor_map_->find (tid);
     if (am_it != shape_actor_map_->end ())
-    {
-        std::cout << "[addText] A text with id <"<<id <<"> already exists! Please choose a different id and retry.\n" << std::endl;
-        return (false);
-    }
+        return std::cout << "[addText] A text with id <"<<id <<"> already exists! Please choose a different id and retry.\n" << std::endl, false;
 
     // Create an Actor
     vtkSmartPointer<vtkTextActor> actor = vtkSmartPointer<vtkTextActor>::New ();
@@ -1459,7 +1304,9 @@ bool temp_viz::Viz3d::VizImpl::addText (const std::string &text, int xpos, int y
     tprop->SetFontFamilyToArial ();
     tprop->SetJustificationToLeft ();
     tprop->BoldOn ();
-    tprop->SetColor (color[2]/255, color[1]/255, color[0]/255);
+
+    Color c = vtkcolor(color);
+    tprop->SetColor (c.val);
     addActorToRenderer (actor);
 
     // Save the pointer/ID pair to the global actor map
@@ -1468,7 +1315,7 @@ bool temp_viz::Viz3d::VizImpl::addText (const std::string &text, int xpos, int y
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////
-bool temp_viz::Viz3d::VizImpl::updateText (const std::string &text, int xpos, int ypos, const cv::Scalar& color, int fontsize, const std::string &id)
+bool temp_viz::Viz3d::VizImpl::updateText (const std::string &text, int xpos, int ypos, const Color& color, int fontsize, const std::string &id)
 {
     std::string tid = id.empty() ? text : id;
 
@@ -1484,26 +1331,28 @@ bool temp_viz::Viz3d::VizImpl::updateText (const std::string &text, int xpos, in
 
     vtkTextProperty* tprop = actor->GetTextProperty ();
     tprop->SetFontSize (fontsize);
-    tprop->SetColor (color[2]/255, color[1]/255, color[0]/255);
+
+    Color c = vtkcolor(color);
+    tprop->SetColor (c.val);
 
     actor->Modified ();
 
     return (true);
 }
 
-bool temp_viz::Viz3d::VizImpl::addPolylineFromPolygonMesh (const cv::Mat& cloud, const std::vector<temp_viz::Vertices> &polygons, const std::string &id)
+bool temp_viz::Viz3d::VizImpl::addPolylineFromPolygonMesh (const Mesh3d& mesh, const std::string &id)
 {
-    CV_Assert(cloud.rows == 1 && cloud.type() == CV_32FC3);
+    CV_Assert(mesh.cloud.rows == 1 && mesh.cloud.type() == CV_32FC3);
 
     ShapeActorMap::iterator am_it = shape_actor_map_->find (id);
     if (am_it != shape_actor_map_->end ())
         return std::cout << "[addPolylineFromPolygonMesh] A shape with id <"<< id << "> already exists! Please choose a different id and retry.\n" << std::endl, false;
 
     vtkSmartPointer<vtkPoints> poly_points = vtkSmartPointer<vtkPoints>::New ();
-    poly_points->SetNumberOfPoints (cloud.size().area());
+    poly_points->SetNumberOfPoints (mesh.cloud.size().area());
 
-    const cv::Point3f *cdata = cloud.ptr<cv::Point3f>();
-    for (int i = 0; i < cloud.cols; ++i)
+    const cv::Point3f *cdata = mesh.cloud.ptr<cv::Point3f>();
+    for (int i = 0; i < mesh.cloud.cols; ++i)
         poly_points->InsertPoint (i, cdata[i].x, cdata[i].y,cdata[i].z);
 
 
@@ -1512,13 +1361,13 @@ bool temp_viz::Viz3d::VizImpl::addPolylineFromPolygonMesh (const cv::Mat& cloud,
     vtkSmartPointer <vtkPolyData> polyData;
     allocVtkPolyData (polyData);
 
-    for (size_t i = 0; i < polygons.size (); i++)
+    for (size_t i = 0; i < mesh.polygons.size (); i++)
     {
         vtkSmartPointer<vtkPolyLine> polyLine = vtkSmartPointer<vtkPolyLine>::New();
-        polyLine->GetPointIds()->SetNumberOfIds(polygons[i].vertices.size());
-        for(unsigned int k = 0; k < polygons[i].vertices.size(); k++)
+        polyLine->GetPointIds()->SetNumberOfIds(mesh.polygons[i].vertices.size());
+        for(unsigned int k = 0; k < mesh.polygons[i].vertices.size(); k++)
         {
-            polyLine->GetPointIds()->SetId(k, polygons[i].vertices[k]);
+            polyLine->GetPointIds()->SetId(k,mesh. polygons[i].vertices[k]);
         }
 
         cells->InsertNextCell (polyLine);
@@ -1551,10 +1400,6 @@ bool temp_viz::Viz3d::VizImpl::addPolylineFromPolygonMesh (const cv::Mat& cloud,
 ///////////////////////////////////////////////////////////////////////////////////
 void temp_viz::Viz3d::VizImpl::setRepresentationToSurfaceForAllActors ()
 {
-    //ShapeActorMap::iterator am_it;
-    //rens_->InitTraversal ();
-
-
     vtkActorCollection * actors = renderer_->GetActors ();
     actors->InitTraversal ();
     vtkActor * actor;
@@ -1565,10 +1410,6 @@ void temp_viz::Viz3d::VizImpl::setRepresentationToSurfaceForAllActors ()
 ///////////////////////////////////////////////////////////////////////////////////
 void temp_viz::Viz3d::VizImpl::setRepresentationToPointsForAllActors ()
 {
-    //ShapeActorMap::iterator am_it;
-    //rens_->InitTraversal ();
-
-
     vtkActorCollection * actors = renderer_->GetActors ();
     actors->InitTraversal ();
     vtkActor * actor;
@@ -1579,10 +1420,6 @@ void temp_viz::Viz3d::VizImpl::setRepresentationToPointsForAllActors ()
 ///////////////////////////////////////////////////////////////////////////////////
 void temp_viz::Viz3d::VizImpl::setRepresentationToWireframeForAllActors ()
 {
-    //ShapeActorMap::iterator am_it;
-    //rens_->InitTraversal ();
-
-
     vtkActorCollection * actors = renderer_->GetActors ();
     actors->InitTraversal ();
     vtkActor * actor;

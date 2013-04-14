@@ -1,5 +1,7 @@
 #include <q/common.h>
 #include <cstdlib>
+#include <opencv2/viz/types.hpp>
+
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -274,42 +276,40 @@ int hull_vertex_table[43][7] = {
 //}
 
 /////////////////////////////////////////////////////////////////////////////////////////////
-void temp_viz::Camera::computeViewMatrix (Eigen::Matrix4d &view_mat) const
+void temp_viz::Camera::computeViewMatrix (Affine3d& view_mat) const
 {
     //constructs view matrix from camera pos, view up, and the point it is looking at
     //this code is based off of gluLookAt http://www.opengl.org/wiki/GluLookAt_code
-    Eigen::Vector3d focal_point (focal[0], focal[1], focal[2]);
-    Eigen::Vector3d posv        (pos[0]  , pos[1]  , pos[2]);
-    Eigen::Vector3d up          (view_up[0] , view_up[1] , view_up[2]);
 
-    Eigen::Vector3d zAxis = (focal_point - posv).normalized();
-    Eigen::Vector3d xAxis = zAxis.cross(up).normalized();
-    // make sure the y-axis is orthogonal to the other two
-    Eigen::Vector3d yAxis = xAxis.cross (zAxis);
+    Vec3d zAxis = normalized(focal - pos);
+    Vec3d xAxis = normalized(zAxis.cross(view_up));
+    Vec3d yAxis = xAxis.cross (zAxis);
 
-    view_mat.block <1, 3> (0, 0) = xAxis;
-    view_mat.block <1, 3> (1, 0) = yAxis;
-    view_mat.block <1, 3> (2, 0) = -zAxis;
-    view_mat.row (3) << 0, 0, 0, 1;
+    Matx33d R;
 
-    view_mat.block <3, 1> (0, 3) = view_mat.topLeftCorner<3, 3> () * (-posv);
+    R(0, 0) =  xAxis[0];  R(0, 1) =  xAxis[1];  R(0, 2) =  xAxis[2];
+    R(1, 0) =  yAxis[0];  R(1, 1) =  yAxis[1];  R(1, 2) =  yAxis[2];
+    R(1, 0) = -zAxis[0];  R(2, 1) = -zAxis[1];  R(2, 2) = -zAxis[2];
+
+    Vec3d t = R * (-pos);
+
+    view_mat = Affine3d(R, t);
 }
 
 ///////////////////////////////////////////////////////////////////////
-void temp_viz::Camera::computeProjectionMatrix (Eigen::Matrix4d& proj) const
+void temp_viz::Camera::computeProjectionMatrix (Matx44d& proj) const
 {
-    float top    = static_cast<float> (clip[0]) * tanf (0.5f * static_cast<float> (fovy));
-    float left   = -top * static_cast<float> (window_size[0] / window_size[1]);
-    float right  = -left;
-    float bottom = -top;
+    double top    = clip[0] * tan (0.5 * fovy);
+    double left   = -(top * window_size[0]) / window_size[1];
+    double right  = -left;
+    double bottom = -top;
 
-    float temp1, temp2, temp3, temp4;
-    temp1 = 2.0f * static_cast<float> (clip[0]);
-    temp2 = 1.0f / (right - left);
-    temp3 = 1.0f / (top - bottom);
-    temp4 = 1.0f / static_cast<float> (clip[1] - clip[0]);
+    double temp1 = 2.0 * clip[0];
+    double temp2 = 1.0 / (right - left);
+    double temp3 = 1.0 / (top - bottom);
+    double temp4 = 1.0 / clip[1] - clip[0];
 
-    proj.setZero ();
+    proj = Matx44d::zeros();
 
     proj(0,0) = temp1 * temp2;
     proj(1,1) = temp1 * temp3;

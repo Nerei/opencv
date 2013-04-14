@@ -107,7 +107,7 @@ TEST(Viz_viz3d, accuracy)
 
     for(int i = 0; i < mesh->cloud.cols; ++i)
         mesh->cloud.ptr<cv::Point3f>()[i] -= cv::Point3f(2, 2, 2);
-    v.addPolylineFromPolygonMesh (mesh->cloud, mesh->polygons);
+    v.addPolylineFromPolygonMesh(*mesh);
 
 
     v.addText("===Abd sadfljsadlk", 100, 100, cv::Scalar(255, 0, 0), 15);
@@ -116,7 +116,7 @@ TEST(Viz_viz3d, accuracy)
 
     colors.setTo(cv::Scalar(255, 0, 0));
 
-    v.addSphere(cv::Point3f(0, 0, 0), 0.3, 0, 0, 1);
+    v.addSphere(cv::Point3f(0, 0, 0), 0.3, temp_viz::Color::blue());
 
     cv::Mat cvpoly(1, 5, CV_32FC3);
     cv::Point3f* pdata = cvpoly.ptr<cv::Point3f>();
@@ -125,7 +125,7 @@ TEST(Viz_viz3d, accuracy)
     pdata[2] = cv::Point3f(3, 1, 2);
     pdata[3] = cv::Point3f(0, 2, 4);
     pdata[4] = cv::Point3f(7, 2, 3);
-    v.addPolygon(cvpoly);
+    v.addPolygon(cvpoly, temp_viz::Color::white());
 
     v.updatePointCloud(cloud, colors);
     v.spin();

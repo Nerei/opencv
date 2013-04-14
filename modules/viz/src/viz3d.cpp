@@ -40,33 +40,32 @@ bool temp_viz::Viz3d::updatePointCloud(const Mat& cloud, const Mat& colors, cons
 
 bool temp_viz::Viz3d::addPolygonMesh (const Mesh3d& mesh, const String &id)
 {
-    return impl_->addPolygonMesh(mesh.cloud, mesh.colors, Mat(), mesh.polygons, id);
+    return impl_->addPolygonMesh(mesh, Mat(), id);
 }
 
 bool temp_viz::Viz3d::updatePolygonMesh (const Mesh3d& mesh, const String &id)
 {
-    return impl_->updatePolygonMesh(mesh.cloud, mesh.colors, Mat(), mesh.polygons, id);
+    return impl_->updatePolygonMesh(mesh, Mat(), id);
 }
 
-bool temp_viz::Viz3d::addPolylineFromPolygonMesh (const Mat& cloud, const std::vector<temp_viz::Vertices> &vertices, const String &id)
+bool temp_viz::Viz3d::addPolylineFromPolygonMesh (const Mesh3d& mesh, const String &id)
 {
-    return impl_->addPolylineFromPolygonMesh(cloud, vertices, id);
+    return impl_->addPolylineFromPolygonMesh(mesh, id);
 }
 
-bool temp_viz::Viz3d::addText (const String &text, int xpos, int ypos, const Scalar& color, int fontsize, const String &id)
+bool temp_viz::Viz3d::addText (const String &text, int xpos, int ypos, const Color& color, int fontsize, const String &id)
 {
     return impl_->addText(text, xpos, ypos, color, fontsize, id);
 }
 
-bool temp_viz::Viz3d::addPolygon(const Mat& cloud, const Scalar& color, const String& id)
+bool temp_viz::Viz3d::addPolygon(const Mat& cloud, const Color& color, const String& id)
 {
     return impl_->addPolygon(cloud, color, id);
 }
 
-
-bool temp_viz::Viz3d::addSphere (const cv::Point3f &center, double radius, double r, double g, double b, const std::string &id)
+bool temp_viz::Viz3d::addSphere (const cv::Point3f &center, double radius, const Color& color, const std::string &id)
 {
-    return impl_->addSphere(center, radius, r, g, b, id);
+    return impl_->addSphere(center, radius, color, id);
 }
 
 void temp_viz::Viz3d::spin()

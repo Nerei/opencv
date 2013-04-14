@@ -20,9 +20,9 @@
 using namespace cv;
 
 //////////////////////////////////////////////////////////////////////////////////////////////
-void temp_viz::PCLVisualizerInteractorStyle::Initialize ()
+void temp_viz::InteractorStyle::Initialize ()
 {
-    modifier_ = temp_viz::PCLVisualizerInteractorStyle::INTERACTOR_KB_MOD_ALT;
+    modifier_ = temp_viz::InteractorStyle::INTERACTOR_KB_MOD_ALT;
     // Set windows size (width, height) to unknown (-1)
     win_height_ = win_width_ = -1;
     win_pos_x_ = win_pos_y_ = 0;
@@ -43,7 +43,7 @@ void temp_viz::PCLVisualizerInteractorStyle::Initialize ()
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////
-void temp_viz::PCLVisualizerInteractorStyle::saveScreenshot (const std::string &file)
+void temp_viz::InteractorStyle::saveScreenshot (const std::string &file)
 {
     FindPokedRenderer (Interactor->GetEventPosition ()[0], Interactor->GetEventPosition ()[1]);
     wif_->SetInput (Interactor->GetRenderWindow ());
@@ -54,7 +54,7 @@ void temp_viz::PCLVisualizerInteractorStyle::saveScreenshot (const std::string &
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////
-void temp_viz::PCLVisualizerInteractorStyle::zoomIn ()
+void temp_viz::InteractorStyle::zoomIn ()
 {
     FindPokedRenderer (Interactor->GetEventPosition ()[0], Interactor->GetEventPosition ()[1]);
     // Zoom in
@@ -65,7 +65,7 @@ void temp_viz::PCLVisualizerInteractorStyle::zoomIn ()
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////
-void temp_viz::PCLVisualizerInteractorStyle::zoomOut ()
+void temp_viz::InteractorStyle::zoomOut ()
 {
     FindPokedRenderer (Interactor->GetEventPosition ()[0], Interactor->GetEventPosition ()[1]);
     // Zoom out
@@ -76,7 +76,7 @@ void temp_viz::PCLVisualizerInteractorStyle::zoomOut ()
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////
-void temp_viz::PCLVisualizerInteractorStyle::OnChar ()
+void temp_viz::InteractorStyle::OnChar ()
 {
     // Make sure we ignore the same events we handle in OnKeyDown to avoid calling things twice
     FindPokedRenderer (Interactor->GetEventPosition ()[0], Interactor->GetEventPosition ()[1]);
@@ -143,26 +143,26 @@ void temp_viz::PCLVisualizerInteractorStyle::OnChar ()
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////
-boost::signals2::connection temp_viz::PCLVisualizerInteractorStyle::registerMouseCallback (boost::function<void (const cv::MouseEvent&)> callback)
+boost::signals2::connection temp_viz::InteractorStyle::registerMouseCallback (boost::function<void (const cv::MouseEvent&)> callback)
 {
     return (mouse_signal_.connect (callback));
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////
-boost::signals2::connection temp_viz::PCLVisualizerInteractorStyle::registerKeyboardCallback (boost::function<void (const cv::KeyboardEvent&)> callback)
+boost::signals2::connection temp_viz::InteractorStyle::registerKeyboardCallback (boost::function<void (const cv::KeyboardEvent&)> callback)
 {
     return (keyboard_signal_.connect (callback));
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////
-boost::signals2::connection temp_viz::PCLVisualizerInteractorStyle::registerPointPickingCallback (boost::function<void (const cv::PointPickingEvent&)> callback)
+boost::signals2::connection temp_viz::InteractorStyle::registerPointPickingCallback (boost::function<void (const cv::PointPickingEvent&)> callback)
 {
     return (point_picking_signal_.connect (callback));
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////
 void
-temp_viz::PCLVisualizerInteractorStyle::OnKeyDown ()
+temp_viz::InteractorStyle::OnKeyDown ()
 {
     if (!init_)
     {
@@ -474,7 +474,8 @@ temp_viz::PCLVisualizerInteractorStyle::OnKeyDown ()
         static CloudActorMap::iterator it = actors_->begin ();
         // it might be that some actors don't have a valid transformation set -> we skip them to avoid a seg fault.
         bool found_transformation = false;
-        for (unsigned idx = 0; idx < actors_->size (); ++idx, ++it)
+
+        for (size_t idx = 0; idx < actors_->size (); ++idx, ++it)
         {
             if (it == actors_->end ())
                 it = actors_->begin ();
@@ -543,7 +544,7 @@ temp_viz::PCLVisualizerInteractorStyle::OnKeyDown ()
 
 //////////////////////////////////////////////////////////////////////////////////////////////
 void
-temp_viz::PCLVisualizerInteractorStyle::OnKeyUp ()
+temp_viz::InteractorStyle::OnKeyUp ()
 {
     KeyboardEvent event (false, Interactor->GetKeySym (), Interactor->GetKeyCode (), Interactor->GetAltKey (), Interactor->GetControlKey (), Interactor->GetShiftKey ());
     keyboard_signal_ (event);
@@ -552,7 +553,7 @@ temp_viz::PCLVisualizerInteractorStyle::OnKeyUp ()
 
 //////////////////////////////////////////////////////////////////////////////////////////////
 void
-temp_viz::PCLVisualizerInteractorStyle::OnMouseMove ()
+temp_viz::InteractorStyle::OnMouseMove ()
 {
     int x = this->Interactor->GetEventPosition()[0];
     int y = this->Interactor->GetEventPosition()[1];
@@ -563,7 +564,7 @@ temp_viz::PCLVisualizerInteractorStyle::OnMouseMove ()
 
 //////////////////////////////////////////////////////////////////////////////////////////////
 void
-temp_viz::PCLVisualizerInteractorStyle::OnLeftButtonDown ()
+temp_viz::InteractorStyle::OnLeftButtonDown ()
 {
 
     int x = this->Interactor->GetEventPosition()[0];
@@ -583,8 +584,7 @@ temp_viz::PCLVisualizerInteractorStyle::OnLeftButtonDown ()
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////
-void
-temp_viz::PCLVisualizerInteractorStyle::OnLeftButtonUp ()
+void temp_viz::InteractorStyle::OnLeftButtonUp ()
 {
     int x = this->Interactor->GetEventPosition()[0];
     int y = this->Interactor->GetEventPosition()[1];
@@ -594,8 +594,7 @@ temp_viz::PCLVisualizerInteractorStyle::OnLeftButtonUp ()
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////
-void
-temp_viz::PCLVisualizerInteractorStyle::OnMiddleButtonDown ()
+void temp_viz::InteractorStyle::OnMiddleButtonDown ()
 {
     int x = this->Interactor->GetEventPosition()[0];
     int y = this->Interactor->GetEventPosition()[1];
@@ -613,8 +612,7 @@ temp_viz::PCLVisualizerInteractorStyle::OnMiddleButtonDown ()
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////
-void
-temp_viz::PCLVisualizerInteractorStyle::OnMiddleButtonUp ()
+void temp_viz::InteractorStyle::OnMiddleButtonUp ()
 {
     int x = this->Interactor->GetEventPosition()[0];
     int y = this->Interactor->GetEventPosition()[1];
@@ -624,8 +622,7 @@ temp_viz::PCLVisualizerInteractorStyle::OnMiddleButtonUp ()
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////
-void
-temp_viz::PCLVisualizerInteractorStyle::OnRightButtonDown ()
+void temp_viz::InteractorStyle::OnRightButtonDown ()
 {
     int x = this->Interactor->GetEventPosition()[0];
     int y = this->Interactor->GetEventPosition()[1];
@@ -643,8 +640,7 @@ temp_viz::PCLVisualizerInteractorStyle::OnRightButtonDown ()
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////
-void
-temp_viz::PCLVisualizerInteractorStyle::OnRightButtonUp ()
+void temp_viz::InteractorStyle::OnRightButtonUp ()
 {
     int x = this->Interactor->GetEventPosition()[0];
     int y = this->Interactor->GetEventPosition()[1];
@@ -654,8 +650,7 @@ temp_viz::PCLVisualizerInteractorStyle::OnRightButtonUp ()
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////
-void
-temp_viz::PCLVisualizerInteractorStyle::OnMouseWheelForward ()
+void temp_viz::InteractorStyle::OnMouseWheelForward ()
 {
     int x = this->Interactor->GetEventPosition()[0];
     int y = this->Interactor->GetEventPosition()[1];
@@ -686,8 +681,7 @@ temp_viz::PCLVisualizerInteractorStyle::OnMouseWheelForward ()
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////
-void
-temp_viz::PCLVisualizerInteractorStyle::OnMouseWheelBackward ()
+void temp_viz::InteractorStyle::OnMouseWheelBackward ()
 {
     int x = this->Interactor->GetEventPosition()[0];
     int y = this->Interactor->GetEventPosition()[1];
@@ -718,8 +712,7 @@ temp_viz::PCLVisualizerInteractorStyle::OnMouseWheelBackward ()
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////
-void
-temp_viz::PCLVisualizerInteractorStyle::OnTimer ()
+void temp_viz::InteractorStyle::OnTimer ()
 {
     if (!init_)
     {
@@ -740,7 +733,7 @@ temp_viz::PCLVisualizerInteractorStyle::OnTimer ()
 namespace temp_viz
 {
     // Standard VTK macro for *New ()
-    vtkStandardNewMacro (PCLVisualizerInteractorStyle);
+    vtkStandardNewMacro (InteractorStyle);
 
 }
 

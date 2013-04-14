@@ -4,35 +4,18 @@
     //#error "Viz is in beta state now. Please define macro above to use it"
 #endif
 
-
 #include <opencv2/core/cvdef.h>
-#include <opencv2/core/affine.hpp>
 #include <opencv2/core.hpp>
 
 
 #include <string>
 #include <opencv2/viz/types.hpp>
 
-
 namespace temp_viz
 {
-    using cv::Scalar;
-    using cv::Affine3f;
-    using cv::Mat;
-    typedef std::string String;
-
-
     class CV_EXPORTS Viz3d
     {
     public:
-
-        //syntax colorrizer hack for qtcraetor
-        typedef temp_viz::Scalar Scalar;
-        typedef temp_viz::Mat Mat;
-        typedef temp_viz::Affine3f Affine3f;
-        typedef cv::Point3f Point3f;
-        // end if hack
-
 
         typedef cv::Ptr<Viz3d> Ptr;
 
@@ -61,15 +44,15 @@ namespace temp_viz
         bool addPolygonMesh (const Mesh3d& mesh, const String &id = "polygon");
         bool updatePolygonMesh (const Mesh3d& mesh, const String &id = "polygon");
 
-        bool addPolylineFromPolygonMesh (const Mat& cloud, const std::vector<temp_viz::Vertices> &vertices, const String &id = "polyline");
+        bool addPolylineFromPolygonMesh (const Mesh3d& mesh, const String &id = "polyline");
 
 
-        bool addText (const String &text, int xpos, int ypos, const Scalar& color = Scalar(255, 255, 255), int fontsize = 10, const String &id = "");
+        bool addText (const String &text, int xpos, int ypos, const Color& color, int fontsize = 10, const String &id = "");
 
 
-        bool addPolygon(const Mat& cloud, const Scalar& color = Scalar(255, 255, 255), const String &id = "polygon");
+        bool addPolygon(const Mat& cloud, const Color& color, const String &id = "polygon");
 
-        bool addSphere (const Point3f &center, double radius, double r, double g, double b, const String &id = "sphere");
+        bool addSphere (const Point3f &center, double radius, const Color& color, const String &id = "sphere");
 
 
         void spin ();

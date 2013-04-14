@@ -1,10 +1,7 @@
 #pragma once
 
 #include <Eigen/Core>
-#include <opencv2/core/cvdef.h>
 #include <opencv2/viz/types.hpp>
-#include <opencv2/core.hpp>
-
 #include "precomp.hpp"
 
 namespace temp_viz

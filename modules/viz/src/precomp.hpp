@@ -1,6 +1,8 @@
 #pragma once
 
 #include <opencv2/core.hpp>
+#include <map>
+#include <vector>
 
 
 #include <boost/function.hpp>
@@ -138,6 +140,8 @@
 #include <vtkPolyDataNormals.h>
 #include <vtkMapper.h>
 #include <vtkSelectionNode.h>
+
+
 
 
 #if defined __GNUC__ && defined __DEPRECATED_DISABLED__

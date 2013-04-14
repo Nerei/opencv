@@ -29,10 +29,8 @@ namespace temp_viz
           * \author Radu B. Rusu
           * \ingroup visualization
           */
-        class CV_EXPORTS PCLVisualizerInteractorStyle : public vtkInteractorStyleTrackballCamera
+        class CV_EXPORTS InteractorStyle : public vtkInteractorStyleTrackballCamera
         {
-            typedef cv::Ptr<CloudActorMap> CloudActorMapPtr;
-
         public:
 
             enum InteractorKeyboardModifier
@@ -42,16 +40,14 @@ namespace temp_viz
                 INTERACTOR_KB_MOD_SHIFT
             };
 
-            static PCLVisualizerInteractorStyle *New ();
+            static InteractorStyle *New ();
 
-            /** \brief Empty constructor. */
-            PCLVisualizerInteractorStyle () {}
 
-            /** \brief Empty destructor */
-            virtual ~PCLVisualizerInteractorStyle () {}
+            InteractorStyle () {}
+            virtual ~InteractorStyle () {}
 
             // this macro defines Superclass, the isA functionality and the safe downcast method
-            vtkTypeMacro (PCLVisualizerInteractorStyle, vtkInteractorStyleTrackballCamera);
+            vtkTypeMacro (InteractorStyle, vtkInteractorStyleTrackballCamera);
 
             /** \brief Initialization routine. Must be called before anything else. */
             virtual void Initialize ();
@@ -59,10 +55,8 @@ namespace temp_viz
             /** \brief Pass a pointer to the actor map
                   * \param[in] actors the actor map that will be used with this style
                   */
-            inline void setCloudActorMap (const CloudActorMapPtr &actors) { actors_ = actors; }
+            inline void setCloudActorMap (const cv::Ptr<CloudActorMap>& actors) { actors_ = actors; }
 
-//            /** \brief Get the cloud actor map pointer. */
-//            inline CloudActorMapPtr getCloudActorMap () { return (actors_); }
 
             /** \brief Pass a set of renderers to the interactor style.
                   * \param[in] rens the vtkRendererCollection to use
@@ -109,7 +103,7 @@ namespace temp_viz
             vtkSmartPointer<vtkRenderer> ren_;
 
             /** \brief Actor map stored internally. */
-            CloudActorMapPtr actors_;
+            cv::Ptr<CloudActorMap> actors_;
 
             /** \brief The current window width/height. */
             int win_height_, win_width_;
