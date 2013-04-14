@@ -1049,23 +1049,18 @@ bool temp_viz::Viz3d::VizImpl::addModelFromPLYFile (const std::string &filename,
 {
     ShapeActorMap::iterator am_it = shape_actor_map_->find (id);
     if (am_it != shape_actor_map_->end ())
-    {
-        std::cout << "[addModelFromPLYFile] A shape with id <"<<id<<"> already exists! Please choose a different id and retry.." << std::endl;
-        return (false);
-    }
+        return std::cout << "[addModelFromPLYFile] A shape with id <"<<id<<"> already exists! Please choose a different id and retry.." << std::endl, false;
 
     vtkSmartPointer<vtkPLYReader> reader = vtkSmartPointer<vtkPLYReader>::New ();
     reader->SetFileName (filename.c_str ());
 
-    // Create an Actor
     vtkSmartPointer<vtkLODActor> actor;
     createActorFromVTKDataSet (reader->GetOutput (), actor);
     actor->GetProperty ()->SetRepresentationToWireframe ();
     renderer_->AddActor(actor);
 
-    // Save the pointer/ID pair to the global actor map
     (*shape_actor_map_)[id] = actor;
-    return (true);
+    return true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////
@@ -1075,22 +1070,18 @@ bool temp_viz::Viz3d::VizImpl::addModelFromPLYFile (const std::string &filename,
     if (am_it != shape_actor_map_->end ())
         return std::cout << "[addModelFromPLYFile] A shape with id <"<<id<<"> already exists! Please choose a different id and retry." << std::endl, false;
 
-
     vtkSmartPointer <vtkPLYReader > reader = vtkSmartPointer<vtkPLYReader>::New ();
     reader->SetFileName (filename.c_str ());
 
-    //create transformation filter
     vtkSmartPointer <vtkTransformFilter> trans_filter = vtkSmartPointer<vtkTransformFilter>::New ();
     trans_filter->SetTransform (transform);
     trans_filter->SetInputConnection (reader->GetOutputPort ());
 
-    // Create an Actor
     vtkSmartPointer <vtkLODActor> actor;
     createActorFromVTKDataSet (trans_filter->GetOutput (), actor);
     actor->GetProperty ()->SetRepresentationToWireframe ();
     renderer_->AddActor(actor);
 
-    // Save the pointer/ID pair to the global actor map
     (*shape_actor_map_)[id] = actor;
     return (true);
 }

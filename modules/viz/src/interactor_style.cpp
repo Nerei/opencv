@@ -356,19 +356,13 @@ temp_viz::InteractorStyle::OnKeyDown ()
     {
         if (keymod)
         {
-            // Get screen size
-            int *temp = Interactor->GetRenderWindow ()->GetScreenSize ();
-            int scr_size[2]; scr_size[0] = temp[0]; scr_size[1] = temp[1];
+            Vec2i screen_size(Interactor->GetRenderWindow ()->GetScreenSize ());
+            Vec2i win_size(Interactor->GetRenderWindow ()->GetSize ());
 
-            // Get window size
-            temp = Interactor->GetRenderWindow ()->GetSize ();
-            int win_size[2]; win_size[0] = temp[0]; win_size[1] = temp[1];
             // Is window size = max?
-            if (win_size[0] == max_win_size_[0] && win_size[1] == max_win_size_[1])
+            if (win_size == max_win_size_)
             {
-                // Set the previously saved 'current' window size
                 Interactor->GetRenderWindow ()->SetSize (win_size_.val);
-                // Set the previously saved window position
                 Interactor->GetRenderWindow ()->SetPosition (win_pos_.val);
                 Interactor->GetRenderWindow ()->Render ();
                 Interactor->Render ();
@@ -376,16 +370,13 @@ temp_viz::InteractorStyle::OnKeyDown ()
             // Set to max
             else
             {
-                int *win_pos = Interactor->GetRenderWindow ()->GetPosition ();
-                win_pos_ = Vec2i(win_pos);
-                win_size_ = Vec2i(win_size);
+                win_pos_ = Vec2i(Interactor->GetRenderWindow ()->GetPosition ());
+                win_size_ = win_size;
 
-                // Set the maximum window size
-                Interactor->GetRenderWindow ()->SetSize (scr_size[0], scr_size[1]);
+                Interactor->GetRenderWindow ()->SetSize (screen_size.val);
                 Interactor->GetRenderWindow ()->Render ();
                 Interactor->Render ();
-                int *win_size = Interactor->GetRenderWindow ()->GetSize ();
-                max_win_size_ = Vec2i(win_size);
+                max_win_size_ = Vec2i(Interactor->GetRenderWindow ()->GetSize ());
             }
         }
         else
@@ -536,9 +527,8 @@ temp_viz::InteractorStyle::OnKeyUp ()
 void
 temp_viz::InteractorStyle::OnMouseMove ()
 {
-    int x = this->Interactor->GetEventPosition()[0];
-    int y = this->Interactor->GetEventPosition()[1];
-    MouseEvent event (MouseEvent::MouseMove, MouseEvent::NoButton, x, y, Interactor->GetAltKey (), Interactor->GetControlKey (), Interactor->GetShiftKey ());
+    Vec2i p(Interactor->GetEventPosition());
+    MouseEvent event (MouseEvent::MouseMove, MouseEvent::NoButton, p, Interactor->GetAltKey (), Interactor->GetControlKey (), Interactor->GetShiftKey ());
     mouse_signal_ (event);
     Superclass::OnMouseMove ();
 }
@@ -547,18 +537,16 @@ temp_viz::InteractorStyle::OnMouseMove ()
 void
 temp_viz::InteractorStyle::OnLeftButtonDown ()
 {
-
-    int x = this->Interactor->GetEventPosition()[0];
-    int y = this->Interactor->GetEventPosition()[1];
+    Vec2i p(Interactor->GetEventPosition());
 
     if (Interactor->GetRepeatCount () == 0)
     {
-        MouseEvent event (MouseEvent::MouseButtonPress, MouseEvent::LeftButton, x, y, Interactor->GetAltKey (), Interactor->GetControlKey (), Interactor->GetShiftKey ());
+        MouseEvent event (MouseEvent::MouseButtonPress, MouseEvent::LeftButton, p, Interactor->GetAltKey (), Interactor->GetControlKey (), Interactor->GetShiftKey ());
         mouse_signal_ (event);
     }
     else
     {
-        MouseEvent event (MouseEvent::MouseDblClick, MouseEvent::LeftButton, x, y, Interactor->GetAltKey (), Interactor->GetControlKey (), Interactor->GetShiftKey ());
+        MouseEvent event (MouseEvent::MouseDblClick, MouseEvent::LeftButton, p, Interactor->GetAltKey (), Interactor->GetControlKey (), Interactor->GetShiftKey ());
         mouse_signal_ (event);
     }
     Superclass::OnLeftButtonDown ();
@@ -567,9 +555,8 @@ temp_viz::InteractorStyle::OnLeftButtonDown ()
 //////////////////////////////////////////////////////////////////////////////////////////////
 void temp_viz::InteractorStyle::OnLeftButtonUp ()
 {
-    int x = this->Interactor->GetEventPosition()[0];
-    int y = this->Interactor->GetEventPosition()[1];
-    MouseEvent event (MouseEvent::MouseButtonRelease, MouseEvent::LeftButton, x, y, Interactor->GetAltKey (), Interactor->GetControlKey (), Interactor->GetShiftKey ());
+    Vec2i p(Interactor->GetEventPosition());
+    MouseEvent event (MouseEvent::MouseButtonRelease, MouseEvent::LeftButton, p, Interactor->GetAltKey (), Interactor->GetControlKey (), Interactor->GetShiftKey ());
     mouse_signal_ (event);
     Superclass::OnLeftButtonUp ();
 }
@@ -577,16 +564,15 @@ void temp_viz::InteractorStyle::OnLeftButtonUp ()
 //////////////////////////////////////////////////////////////////////////////////////////////
 void temp_viz::InteractorStyle::OnMiddleButtonDown ()
 {
-    int x = this->Interactor->GetEventPosition()[0];
-    int y = this->Interactor->GetEventPosition()[1];
+    Vec2i p(Interactor->GetEventPosition());
     if (Interactor->GetRepeatCount () == 0)
     {
-        MouseEvent event (MouseEvent::MouseButtonPress, MouseEvent::MiddleButton, x, y, Interactor->GetAltKey (), Interactor->GetControlKey (), Interactor->GetShiftKey ());
+        MouseEvent event (MouseEvent::MouseButtonPress, MouseEvent::MiddleButton, p, Interactor->GetAltKey (), Interactor->GetControlKey (), Interactor->GetShiftKey ());
         mouse_signal_ (event);
     }
     else
     {
-        MouseEvent event (MouseEvent::MouseDblClick, MouseEvent::MiddleButton, x, y, Interactor->GetAltKey (), Interactor->GetControlKey (), Interactor->GetShiftKey ());
+        MouseEvent event (MouseEvent::MouseDblClick, MouseEvent::MiddleButton, p, Interactor->GetAltKey (), Interactor->GetControlKey (), Interactor->GetShiftKey ());
         mouse_signal_ (event);
     }
     Superclass::OnMiddleButtonDown ();
@@ -595,9 +581,8 @@ void temp_viz::InteractorStyle::OnMiddleButtonDown ()
 //////////////////////////////////////////////////////////////////////////////////////////////
 void temp_viz::InteractorStyle::OnMiddleButtonUp ()
 {
-    int x = this->Interactor->GetEventPosition()[0];
-    int y = this->Interactor->GetEventPosition()[1];
-    MouseEvent event (MouseEvent::MouseButtonRelease, MouseEvent::MiddleButton, x, y, Interactor->GetAltKey (), Interactor->GetControlKey (), Interactor->GetShiftKey ());
+    Vec2i p(Interactor->GetEventPosition());
+    MouseEvent event (MouseEvent::MouseButtonRelease, MouseEvent::MiddleButton, p, Interactor->GetAltKey (), Interactor->GetControlKey (), Interactor->GetShiftKey ());
     mouse_signal_ (event);
     Superclass::OnMiddleButtonUp ();
 }
@@ -605,16 +590,15 @@ void temp_viz::InteractorStyle::OnMiddleButtonUp ()
 //////////////////////////////////////////////////////////////////////////////////////////////
 void temp_viz::InteractorStyle::OnRightButtonDown ()
 {
-    int x = this->Interactor->GetEventPosition()[0];
-    int y = this->Interactor->GetEventPosition()[1];
+    Vec2i p(Interactor->GetEventPosition());
     if (Interactor->GetRepeatCount () == 0)
     {
-        MouseEvent event (MouseEvent::MouseButtonPress, MouseEvent::RightButton, x, y, Interactor->GetAltKey (), Interactor->GetControlKey (), Interactor->GetShiftKey ());
+        MouseEvent event (MouseEvent::MouseButtonPress, MouseEvent::RightButton, p, Interactor->GetAltKey (), Interactor->GetControlKey (), Interactor->GetShiftKey ());
         mouse_signal_ (event);
     }
     else
     {
-        MouseEvent event (MouseEvent::MouseDblClick, MouseEvent::RightButton, x, y, Interactor->GetAltKey (), Interactor->GetControlKey (), Interactor->GetShiftKey ());
+        MouseEvent event (MouseEvent::MouseDblClick, MouseEvent::RightButton, p, Interactor->GetAltKey (), Interactor->GetControlKey (), Interactor->GetShiftKey ());
         mouse_signal_ (event);
     }
     Superclass::OnRightButtonDown ();
@@ -623,9 +607,8 @@ void temp_viz::InteractorStyle::OnRightButtonDown ()
 //////////////////////////////////////////////////////////////////////////////////////////////
 void temp_viz::InteractorStyle::OnRightButtonUp ()
 {
-    int x = this->Interactor->GetEventPosition()[0];
-    int y = this->Interactor->GetEventPosition()[1];
-    MouseEvent event (MouseEvent::MouseButtonRelease, MouseEvent::RightButton, x, y, Interactor->GetAltKey (), Interactor->GetControlKey (), Interactor->GetShiftKey ());
+    Vec2i p(Interactor->GetEventPosition());
+    MouseEvent event (MouseEvent::MouseButtonRelease, MouseEvent::RightButton, p, Interactor->GetAltKey (), Interactor->GetControlKey (), Interactor->GetShiftKey ());
     mouse_signal_ (event);
     Superclass::OnRightButtonUp ();
 }
@@ -633,9 +616,8 @@ void temp_viz::InteractorStyle::OnRightButtonUp ()
 //////////////////////////////////////////////////////////////////////////////////////////////
 void temp_viz::InteractorStyle::OnMouseWheelForward ()
 {
-    int x = this->Interactor->GetEventPosition()[0];
-    int y = this->Interactor->GetEventPosition()[1];
-    MouseEvent event (MouseEvent::MouseScrollUp, MouseEvent::VScroll, x, y, Interactor->GetAltKey (), Interactor->GetControlKey (), Interactor->GetShiftKey ());
+    Vec2i p(Interactor->GetEventPosition());
+    MouseEvent event (MouseEvent::MouseScrollUp, MouseEvent::VScroll, p, Interactor->GetAltKey (), Interactor->GetControlKey (), Interactor->GetShiftKey ());
     mouse_signal_ (event);
     if (Interactor->GetRepeatCount ())
         mouse_signal_ (event);
@@ -664,9 +646,8 @@ void temp_viz::InteractorStyle::OnMouseWheelForward ()
 //////////////////////////////////////////////////////////////////////////////////////////////
 void temp_viz::InteractorStyle::OnMouseWheelBackward ()
 {
-    int x = this->Interactor->GetEventPosition()[0];
-    int y = this->Interactor->GetEventPosition()[1];
-    MouseEvent event (MouseEvent::MouseScrollDown, MouseEvent::VScroll, x, y, Interactor->GetAltKey (), Interactor->GetControlKey (), Interactor->GetShiftKey ());
+    Vec2i p(Interactor->GetEventPosition());
+    MouseEvent event (MouseEvent::MouseScrollDown, MouseEvent::VScroll, p, Interactor->GetAltKey (), Interactor->GetControlKey (), Interactor->GetShiftKey ());
     mouse_signal_ (event);
     if (Interactor->GetRepeatCount ())
         mouse_signal_ (event);

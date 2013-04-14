@@ -163,19 +163,7 @@ public:
     // Add a vtkPolydata as a mesh
     bool addModelFromPolyData (vtkSmartPointer<vtkPolyData> polydata, const std::string & id = "PolyData");
     bool addModelFromPolyData (vtkSmartPointer<vtkPolyData> polydata, vtkSmartPointer<vtkTransform> transform, const std::string &id = "PolyData");
-
-
-    /** \brief Add a PLYmodel as a mesh
-          * \param[in] filename of the ply file
-          * \param[in] id the model id/name (default: "PLYModel")
-          */
     bool addModelFromPLYFile (const std::string &filename, const std::string &id = "PLYModel");
-
-    /** \brief Add a PLYmodel as a mesh and applies given transformation
-          * \param[in] filename of the ply file
-          * \param[in] transform transformation to apply
-          * \param[in] id the model id/name (default: "PLYModel")
-          */
     bool addModelFromPLYFile (const std::string &filename, vtkSmartPointer<vtkTransform> transform, const std::string &id = "PLYModel");
 
     /** \brief Add a cylinder from a set of given model coefficients
