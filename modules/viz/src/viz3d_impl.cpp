@@ -141,7 +141,7 @@ void temp_viz::Viz3d::VizImpl::addPointCloud(const cv::Mat& cloud, const cv::Mat
         actor->GetMapper ()->SetScalarRange (minmax);
 
     // Add it to all renderers
-    addActorToRenderer (actor);
+    renderer_->AddActor (actor);
 
     // Save the pointer/ID pair to the global actor map
     (*cloud_actor_map_)[id].actor = actor;
@@ -374,7 +374,7 @@ bool temp_viz::Viz3d::VizImpl::addPointCloudNormals (const cv::Mat &cloud, const
     actor->SetMapper (mapper);
 
     // Add it to all renderers
-    addActorToRenderer (actor);
+    renderer_->AddActor (actor);
 
     // Save the pointer/ID pair to the global actor map
     (*cloud_actor_map_)[id].actor = actor;
@@ -400,7 +400,7 @@ bool temp_viz::Viz3d::VizImpl::addLine (const cv::Point3f &pt1, const cv::Point3
     Color c = vtkcolor(color);
     actor->GetProperty ()->SetColor (c.val);
     actor->GetMapper ()->ScalarVisibilityOff ();
-    addActorToRenderer (actor);
+    renderer_->AddActor (actor);
 
     // Save the pointer/ID pair to the global actor map
     (*shape_actor_map_)[id] = actor;
@@ -571,7 +571,7 @@ inline bool temp_viz::Viz3d::VizImpl::addPolygonMesh (const Mesh3d& mesh, const 
 
         createActorFromVTKDataSet (poly_grid, actor, false);
     }
-    addActorToRenderer (actor);
+    renderer_->AddActor (actor);
     actor->GetProperty ()->SetRepresentationToSurface ();
     // Backface culling renders the visualization slower, but guarantees that we see all triangles
     actor->GetProperty ()->BackfaceCullingOff ();
@@ -736,7 +736,7 @@ bool temp_viz::Viz3d::VizImpl::addArrow (const cv::Point3f &p1, const cv::Point3
 
     Color c = vtkcolor(color);
     leader->GetProperty ()->SetColor (c.val);
-    addActorToRenderer (leader);
+    renderer_->AddActor (leader);
 
     // Save the pointer/ID pair to the global actor map
     (*shape_actor_map_)[id] = leader;
@@ -767,7 +767,7 @@ bool temp_viz::Viz3d::VizImpl::addArrow (const cv::Point3f &p1, const cv::Point3
 
     Color cl = vtkcolor(color_line);
     leader->GetProperty ()->SetColor (cl.val);
-    addActorToRenderer (leader);
+    renderer_->AddActor (leader);
 
     // Save the pointer/ID pair to the global actor map
     (*shape_actor_map_)[id] = leader;
@@ -809,7 +809,7 @@ inline bool temp_viz::Viz3d::VizImpl::addSphere (const cv::Point3f& center, floa
     actor->GetMapper ()->StaticOn ();
     actor->GetMapper ()->ScalarVisibilityOff ();
     actor->GetMapper ()->Update ();
-    addActorToRenderer (actor);
+    renderer_->AddActor (actor);
 
     // Save the pointer/ID pair to the global actor map
     (*shape_actor_map_)[id] = actor;
@@ -939,7 +939,7 @@ inline bool temp_viz::Viz3d::VizImpl::addPolygon (const cv::Mat& cloud, const Co
         actor->GetProperty ()->BackfaceCullingOff ();
 
         removeActorFromRenderer (am_it->second);
-        addActorToRenderer (actor);
+        renderer_->AddActor (actor);
 
         // Save the pointer/ID pair to the global actor map
         (*shape_actor_map_)[id] = actor;
@@ -953,7 +953,7 @@ inline bool temp_viz::Viz3d::VizImpl::addPolygon (const cv::Mat& cloud, const Co
         actor->GetProperty ()->SetColor (c.val);
         actor->GetMapper ()->ScalarVisibilityOff ();
         actor->GetProperty ()->BackfaceCullingOff ();
-        addActorToRenderer (actor);
+        renderer_->AddActor (actor);
 
         // Save the pointer/ID pair to the global actor map
         (*shape_actor_map_)[id] = actor;

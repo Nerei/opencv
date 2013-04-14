@@ -87,8 +87,7 @@ temp_viz::Viz3d::VizImpl::~VizImpl ()
 {
     if (interactor_ != NULL)
         interactor_->DestroyTimer (timer_id_);
-    // Clear the collections
-    //ren_->RemoveAllItems ();
+
     renderer_->Clear();
 }
 
@@ -108,30 +107,11 @@ boost::signals2::connection temp_viz::Viz3d::VizImpl::registerMouseCallback (boo
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
-boost::signals2::connection temp_viz::Viz3d::VizImpl::registerPointPickingCallback (boost::function<void (const cv::PointPickingEvent&)> callback)
-{
-    return (style_->registerPointPickingCallback (callback));
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////////
 void temp_viz::Viz3d::VizImpl::spin ()
 {
     resetStoppedFlag ();
-    // Render the window before we start the interactor
     window_->Render ();
     interactor_->Start ();
-}
-
-
-namespace temp_viz
-{
-    inline double getTime ()
-    {
-      boost::posix_time::ptime epoch_time (boost::gregorian::date (1970, 1, 1));
-      boost::posix_time::ptime current_time = boost::posix_time::microsec_clock::local_time ();
-      return (static_cast<double>((current_time - epoch_time).total_nanoseconds ()) * 1.0e-9);
-    }
-
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
@@ -145,7 +125,7 @@ void temp_viz::Viz3d::VizImpl::spinOnce (int time, bool force_redraw)
     if (force_redraw)
         interactor_->Render ();
 
-    double s_now_ = temp_viz::getTime();
+    double s_now_ = cv::getTickCount() / cv::getTickFrequency();
     if (s_lastDone_ > s_now_)
       s_lastDone_ = s_now_;
 
@@ -157,32 +137,6 @@ void temp_viz::Viz3d::VizImpl::spinOnce (int time, bool force_redraw)
         s_lastDone_ = s_now_;
     }
 }
-
-int feq (double a, double b) { return fabs (a - b) < 1e-9; }
-
-//void quat_to_angle_axis (const Eigen::Quaternionf &qx, double &theta, double axis[3])
-//{
-//    double q[4];
-//    q[0] = qx.w();
-//    q[1] = qx.x();
-//    q[2] = qx.y();
-//    q[3] = qx.z();
-
-//    double halftheta = acos (q[0]);
-//    theta = halftheta * 2;
-//    double sinhalftheta = sin (halftheta);
-//    if (feq (halftheta, 0)) {
-//        axis[0] = 0;
-//        axis[1] = 0;
-//        axis[2] = 1;
-//        theta = 0;
-//    } else {
-//        axis[0] = q[1] / sinhalftheta;
-//        axis[1] = q[2] / sinhalftheta;
-//        axis[2] = q[3] / sinhalftheta;
-//    }
-//}
-
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 void temp_viz::Viz3d::VizImpl::addCoordinateSystem (double scale, const cv::Affine3f& affine, const std::string &id)
@@ -227,38 +181,26 @@ void temp_viz::Viz3d::VizImpl::addCoordinateSystem (double scale, const cv::Affi
     float r_angle = cv::norm(rvec);
     rvec *= 1.f/r_angle;
 
-//    Eigen::Quaternionf rf;
-//    rf = Eigen::Quaternionf(m);
-//    double r_angle;
-//    double r_axis[3];
-//    quat_to_angle_axis(rf,r_angle,r_axis);
-    //
     axes_actor->SetOrientation(0,0,0);
     axes_actor->RotateWXYZ(r_angle*180/CV_PI,rvec[0], rvec[1], rvec[2]);
-    //WAS:  axes_actor->SetOrientation (roll, pitch, yaw);
+    renderer_->AddActor (axes_actor);
 
-    // Save the ID and actor pair to the global actor map
     (*shape_actor_map_)[id] = axes_actor;
-    addActorToRenderer (axes_actor);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 bool temp_viz::Viz3d::VizImpl::removeCoordinateSystem (const std::string &id)
 {
-    // Check to see if the given ID entry exists
     ShapeActorMap::iterator am_it = shape_actor_map_->find (id);
-
     if (am_it == shape_actor_map_->end ())
-        return (false);
+        return false;
 
     // Remove it from all renderers
-    if (removeActorFromRenderer (am_it->second))
-    {
-        // Remove the ID pair to the global actor map
-        shape_actor_map_->erase (am_it);
-        return (true);
-    }
-    return (false);
+    if (!removeActorFromRenderer(am_it->second))
+        return false;
+
+    shape_actor_map_->erase(am_it);
+    return true;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
@@ -410,24 +352,10 @@ bool temp_viz::Viz3d::VizImpl::removeActorFromRenderer (const vtkSmartPointer<vt
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
-void temp_viz::Viz3d::VizImpl::addActorToRenderer (const vtkSmartPointer<vtkProp> &actor)
-{
-    // Add it to all renderers
-    //rens_->InitTraversal ();
-
-    renderer_->AddActor (actor);
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////////
 bool temp_viz::Viz3d::VizImpl::removeActorFromRenderer (const vtkSmartPointer<vtkProp> &actor)
 {
-    vtkProp* actor_to_remove = vtkProp::SafeDownCast (actor);
+    vtkProp* actor_to_remove = vtkProp::SafeDownCast(actor);
 
-    // Initialize traversal
-    //rens_->InitTraversal ();
-
-
-    // Iterate over all actors in this renderer
     vtkPropCollection* actors = renderer_->GetViewProps ();
     actors->InitTraversal ();
     vtkProp* current_actor = NULL;
@@ -436,11 +364,8 @@ bool temp_viz::Viz3d::VizImpl::removeActorFromRenderer (const vtkSmartPointer<vt
         if (current_actor != actor_to_remove)
             continue;
         renderer_->RemoveActor (actor);
-        //        renderer->Render ();
-        // Found the correct viewport and removed the actor
-        return (true);
+        return true;
     }
-
     return false;
 }
 
@@ -516,19 +441,19 @@ bool temp_viz::Viz3d::VizImpl::getPointCloudRenderingProperties (int property, d
 
     switch (property)
     {
-        case PCL_VISUALIZER_POINT_SIZE:
+        case VIZ_POINT_SIZE:
         {
             value = actor->GetProperty ()->GetPointSize ();
             actor->Modified ();
             break;
         }
-        case PCL_VISUALIZER_OPACITY:
+        case VIZ_OPACITY:
         {
             value = actor->GetProperty ()->GetOpacity ();
             actor->Modified ();
             break;
         }
-        case PCL_VISUALIZER_LINE_WIDTH:
+        case VIZ_LINE_WIDTH:
         {
             value = actor->GetProperty ()->GetLineWidth ();
             actor->Modified ();
@@ -552,13 +477,13 @@ bool temp_viz::Viz3d::VizImpl::setPointCloudRenderingProperties (int property, d
 
     switch (property)
     {
-        case PCL_VISUALIZER_POINT_SIZE:
+        case VIZ_POINT_SIZE:
         {
             actor->GetProperty ()->SetPointSize (float (value));
             actor->Modified ();
             break;
         }
-        case PCL_VISUALIZER_OPACITY:
+        case VIZ_OPACITY:
         {
             actor->GetProperty ()->SetOpacity (value);
             actor->Modified ();
@@ -569,13 +494,13 @@ bool temp_viz::Viz3d::VizImpl::setPointCloudRenderingProperties (int property, d
             // handle larger datasets. The default value is immediate mode off. If you
             // are having problems rendering a large dataset you might want to consider
             // using immediate more rendering.
-        case PCL_VISUALIZER_IMMEDIATE_RENDERING:
+        case VIZ_IMMEDIATE_RENDERING:
         {
             actor->GetMapper ()->SetImmediateModeRendering (int (value));
             actor->Modified ();
             break;
         }
-        case PCL_VISUALIZER_LINE_WIDTH:
+        case VIZ_LINE_WIDTH:
         {
             actor->GetProperty ()->SetLineWidth (float (value));
             actor->Modified ();
@@ -641,25 +566,25 @@ bool temp_viz::Viz3d::VizImpl::setShapeRenderingProperties (int property, double
 
     switch (property)
     {
-    case PCL_VISUALIZER_POINT_SIZE:
+    case VIZ_POINT_SIZE:
     {
         actor->GetProperty ()->SetPointSize (float (value));
         actor->Modified ();
         break;
     }
-    case PCL_VISUALIZER_OPACITY:
+    case VIZ_OPACITY:
     {
         actor->GetProperty ()->SetOpacity (value);
         actor->Modified ();
         break;
     }
-    case PCL_VISUALIZER_LINE_WIDTH:
+    case VIZ_LINE_WIDTH:
     {
         actor->GetProperty ()->SetLineWidth (float (value));
         actor->Modified ();
         break;
     }
-    case PCL_VISUALIZER_FONT_SIZE:
+    case VIZ_FONT_SIZE:
     {
         vtkTextActor* text_actor = vtkTextActor::SafeDownCast (am_it->second);
         vtkSmartPointer<vtkTextProperty> tprop = text_actor->GetTextProperty ();
@@ -667,23 +592,23 @@ bool temp_viz::Viz3d::VizImpl::setShapeRenderingProperties (int property, double
         text_actor->Modified ();
         break;
     }
-    case PCL_VISUALIZER_REPRESENTATION:
+    case VIZ_REPRESENTATION:
     {
         switch (int (value))
         {
-            case PCL_VISUALIZER_REPRESENTATION_POINTS:    actor->GetProperty ()->SetRepresentationToPoints (); break;
-            case PCL_VISUALIZER_REPRESENTATION_WIREFRAME: actor->GetProperty ()->SetRepresentationToWireframe (); break;
-            case PCL_VISUALIZER_REPRESENTATION_SURFACE:   actor->GetProperty ()->SetRepresentationToSurface ();  break;
+            case REPRESENTATION_POINTS:    actor->GetProperty ()->SetRepresentationToPoints (); break;
+            case REPRESENTATION_WIREFRAME: actor->GetProperty ()->SetRepresentationToWireframe (); break;
+            case REPRESENTATION_SURFACE:   actor->GetProperty ()->SetRepresentationToSurface ();  break;
         }
         actor->Modified ();
         break;
     }
-    case PCL_VISUALIZER_SHADING:
+    case VIZ_SHADING:
     {
         switch (int (value))
         {
-        case PCL_VISUALIZER_SHADING_FLAT: actor->GetProperty ()->SetInterpolationToFlat (); break;
-        case PCL_VISUALIZER_SHADING_GOURAUD:
+        case SHADING_FLAT: actor->GetProperty ()->SetInterpolationToFlat (); break;
+        case SHADING_GOURAUD:
         {
             if (!actor->GetMapper ()->GetInput ()->GetPointData ()->GetNormals ())
             {
@@ -697,7 +622,7 @@ bool temp_viz::Viz3d::VizImpl::setShapeRenderingProperties (int property, double
             actor->GetProperty ()->SetInterpolationToGouraud ();
             break;
         }
-        case PCL_VISUALIZER_SHADING_PHONG:
+        case SHADING_PHONG:
         {
             if (!actor->GetMapper ()->GetInput ()->GetPointData ()->GetNormals ())
             {
@@ -986,7 +911,7 @@ bool temp_viz::Viz3d::VizImpl::addCylinder (const temp_viz::ModelCoefficients &c
     createActorFromVTKDataSet (data, actor);
     actor->GetProperty ()->SetRepresentationToWireframe ();
     actor->GetProperty ()->SetLighting (false);
-    addActorToRenderer (actor);
+    renderer_->AddActor (actor);
 
     // Save the pointer/ID pair to the global actor map
     (*shape_actor_map_)[id] = actor;
@@ -1011,7 +936,7 @@ bool temp_viz::Viz3d::VizImpl::addCube (const temp_viz::ModelCoefficients &coeff
     createActorFromVTKDataSet (data, actor);
     actor->GetProperty ()->SetRepresentationToWireframe ();
     actor->GetProperty ()->SetLighting (false);
-    addActorToRenderer (actor);
+    renderer_->AddActor (actor);
 
     // Save the pointer/ID pair to the global actor map
     (*shape_actor_map_)[id] = actor;
@@ -1039,7 +964,7 @@ bool temp_viz::Viz3d::VizImpl::addCube (const cv::Vec3f& translation, const cv::
     createActorFromVTKDataSet (data, actor);
     actor->GetProperty ()->SetRepresentationToWireframe ();
     actor->GetProperty ()->SetLighting (false);
-    addActorToRenderer (actor);
+    renderer_->AddActor (actor);
 
     // Save the pointer/ID pair to the global actor map
     (*shape_actor_map_)[id] = actor;
@@ -1065,7 +990,7 @@ bool temp_viz::Viz3d::VizImpl::addCube (float x_min, float x_max, float y_min, f
 
     Color c = vtkcolor(color);
     actor->GetProperty ()->SetColor (c.val);
-    addActorToRenderer (actor);
+    renderer_->AddActor (actor);
 
     // Save the pointer/ID pair to the global actor map
     (*shape_actor_map_)[id] = actor;
@@ -1085,7 +1010,7 @@ bool temp_viz::Viz3d::VizImpl::addModelFromPolyData (vtkSmartPointer<vtkPolyData
     vtkSmartPointer<vtkLODActor> actor;
     createActorFromVTKDataSet (polydata, actor);
     actor->GetProperty ()->SetRepresentationToWireframe ();
-    addActorToRenderer (actor);
+    renderer_->AddActor(actor);
 
     // Save the pointer/ID pair to the global actor map
     (*shape_actor_map_)[id] = actor;
@@ -1111,7 +1036,7 @@ bool temp_viz::Viz3d::VizImpl::addModelFromPolyData (vtkSmartPointer<vtkPolyData
     vtkSmartPointer <vtkLODActor> actor;
     createActorFromVTKDataSet (trans_filter->GetOutput (), actor);
     actor->GetProperty ()->SetRepresentationToWireframe ();
-    addActorToRenderer (actor);
+    renderer_->AddActor(actor);
 
     // Save the pointer/ID pair to the global actor map
     (*shape_actor_map_)[id] = actor;
@@ -1136,7 +1061,7 @@ bool temp_viz::Viz3d::VizImpl::addModelFromPLYFile (const std::string &filename,
     vtkSmartPointer<vtkLODActor> actor;
     createActorFromVTKDataSet (reader->GetOutput (), actor);
     actor->GetProperty ()->SetRepresentationToWireframe ();
-    addActorToRenderer (actor);
+    renderer_->AddActor(actor);
 
     // Save the pointer/ID pair to the global actor map
     (*shape_actor_map_)[id] = actor;
@@ -1163,7 +1088,7 @@ bool temp_viz::Viz3d::VizImpl::addModelFromPLYFile (const std::string &filename,
     vtkSmartPointer <vtkLODActor> actor;
     createActorFromVTKDataSet (trans_filter->GetOutput (), actor);
     actor->GetProperty ()->SetRepresentationToWireframe ();
-    addActorToRenderer (actor);
+    renderer_->AddActor(actor);
 
     // Save the pointer/ID pair to the global actor map
     (*shape_actor_map_)[id] = actor;
@@ -1195,7 +1120,7 @@ bool temp_viz::Viz3d::VizImpl::addPlane (const temp_viz::ModelCoefficients &coef
     //  actor->GetProperty ()->SetRepresentationToWireframe ();
     actor->GetProperty ()->SetRepresentationToSurface ();
     actor->GetProperty ()->SetLighting (false);
-    addActorToRenderer (actor);
+    renderer_->AddActor(actor);
 
     // Save the pointer/ID pair to the global actor map
     (*shape_actor_map_)[id] = actor;
@@ -1219,7 +1144,7 @@ bool temp_viz::Viz3d::VizImpl::addPlane (const temp_viz::ModelCoefficients &coef
     createActorFromVTKDataSet (data, actor);
     actor->GetProperty ()->SetRepresentationToWireframe ();
     actor->GetProperty ()->SetLighting (false);
-    addActorToRenderer (actor);
+    renderer_->AddActor(actor);
 
     // Save the pointer/ID pair to the global actor map
     (*shape_actor_map_)[id] = actor;
@@ -1244,45 +1169,12 @@ bool temp_viz::Viz3d::VizImpl::addCircle (const temp_viz::ModelCoefficients &coe
     createActorFromVTKDataSet (data, actor);
     actor->GetProperty ()->SetRepresentationToWireframe ();
     actor->GetProperty ()->SetLighting (false);
-    addActorToRenderer (actor);
+
 
     // Save the pointer/ID pair to the global actor map
     (*shape_actor_map_)[id] = actor;
     return (true);
 }
-
-///////////////////////////////////////////////////////////////////////////////////////////////
-//void temp_viz::Viz3d::VizImpl::createViewPort (double xmin, double ymin, double xmax, double ymax, int &viewport)
-//{
-////    // Create a new renderer
-////    vtkSmartPointer<vtkRenderer> ren = vtkSmartPointer<vtkRenderer>::New ();
-////    ren->SetViewport (xmin, ymin, xmax, ymax);
-
-////    if (rens_->GetNumberOfItems () > 0)
-////        ren->SetActiveCamera (rens_->GetFirstRenderer ()->GetActiveCamera ());
-////    ren->ResetCamera ();
-
-////    // Add it to the list of renderers
-////    rens_->AddItem (ren);
-
-////    if (rens_->GetNumberOfItems () <= 1)          // If only one renderer
-////        viewport = 0;                               // set viewport to 'all'
-////    else
-////        viewport = rens_->GetNumberOfItems () - 1;
-
-////    win_->AddRenderer (ren);
-////    win_->Modified ();
-//}
-
-////////////////////////////////////////////////////////////////////////////////////////////
-//void temp_viz::Viz3d::VizImpl::createViewPortCamera ()
-//{
-//    vtkSmartPointer<vtkCamera> cam = vtkSmartPointer<vtkCamera>::New ();
-//    //rens_->InitTraversal ();
-//    vtkRenderer* renderer = ren_;
-//    renderer->SetActiveCamera (cam);
-//    renderer->ResetCamera ();
-//}
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 bool temp_viz::Viz3d::VizImpl::addText (const std::string &text, int xpos, int ypos, const Color& color, int fontsize, const std::string &id)
@@ -1307,7 +1199,7 @@ bool temp_viz::Viz3d::VizImpl::addText (const std::string &text, int xpos, int y
 
     Color c = vtkcolor(color);
     tprop->SetColor (c.val);
-    addActorToRenderer (actor);
+    renderer_->AddActor(actor);
 
     // Save the pointer/ID pair to the global actor map
     (*shape_actor_map_)[tid] = actor;
@@ -1383,17 +1275,13 @@ bool temp_viz::Viz3d::VizImpl::addPolylineFromPolygonMesh (const Mesh3d& mesh, c
     vtkSmartPointer < vtkPolyDataMapper > mapper = vtkSmartPointer<vtkPolyDataMapper>::New ();
     mapper->SetInput (polyData);
 
-    vtkSmartPointer < vtkActor > actor = vtkSmartPointer<vtkActor>::New ();
+    vtkSmartPointer <vtkActor> actor = vtkSmartPointer<vtkActor>::New ();
     actor->SetMapper (mapper);
-
-
-    addActorToRenderer (actor);
+    renderer_->AddActor(actor);
 
     // Save the pointer/ID pair to the global actor map
     (*shape_actor_map_)[id] = actor;
-
     return (true);
-
 }
 
 
@@ -1422,7 +1310,7 @@ void temp_viz::Viz3d::VizImpl::setRepresentationToWireframeForAllActors ()
 {
     vtkActorCollection * actors = renderer_->GetActors ();
     actors->InitTraversal ();
-    vtkActor * actor;
+    vtkActor *actor;
     while ((actor = actors->GetNextActor ()) != NULL)
         actor->GetProperty ()->SetRepresentationToWireframe ();
 }
@@ -1486,13 +1374,6 @@ void temp_viz::Viz3d::VizImpl::allocVtkUnstructuredGrid (vtkSmartPointer<vtkUnst
     polydata = vtkSmartPointer<vtkUnstructuredGrid>::New ();
 }
 
-////////////////////////////////////////////////////////////////////////////////////////////////
-//void temp_viz::Viz3d::getTransformationMatrix (const Eigen::Vector4f &origin, const Eigen::Quaternion<float> &orientation, Eigen::Matrix4f &transformation)
-//{
-//    transformation.setIdentity ();
-//    transformation.block<3,3>(0,0) = orientation.toRotationMatrix ();
-//    transformation.block<3,1>(0,3) = origin.head (3);
-//}
 
 //////////////////////////////////////////////////////////////////////////////////////////////
 void temp_viz::convertToVtkMatrix (const Eigen::Vector4f &origin, const Eigen::Quaternion<float> &orientation, vtkSmartPointer<vtkMatrix4x4> &vtk_matrix)
@@ -1509,14 +1390,6 @@ void temp_viz::convertToVtkMatrix (const Eigen::Vector4f &origin, const Eigen::Q
     vtk_matrix->SetElement (2, 3, origin (2));
     vtk_matrix->SetElement (3, 3, 1.0f);
 }
-
-//////////////////////////////////////////////////////////////////////////////////////////////
-//void temp_viz::convertToVtkMatrix (const Eigen::Matrix4f &m, vtkSmartPointer<vtkMatrix4x4> &vtk_matrix)
-//{
-//    for (int i = 0; i < 4; i++)
-//        for (int k = 0; k < 4; k++)
-//            vtk_matrix->SetElement (i, k, m (i, k));
-//}
 
 void temp_viz::convertToVtkMatrix (const cv::Matx44f &m, vtkSmartPointer<vtkMatrix4x4> &vtk_matrix)
 {

@@ -22,6 +22,7 @@ namespace temp_viz
     typedef cv::Point3f Point3f;
     typedef cv::Matx44d Matx44d;
     typedef cv::Matx44f Matx44f;
+    typedef cv::Size Size;
 
 
     struct CV_EXPORTS ModelCoefficients

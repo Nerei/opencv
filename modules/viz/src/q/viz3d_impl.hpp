@@ -1,21 +1,16 @@
 #pragma once
 
 #include <opencv2/core.hpp>
-// PCL includes
 #include <opencv2/viz/events.hpp>
 #include <q/interactor_style.h>
-#include <q/point_picking_event.h>
 #include <q/viz_types.h>
 #include <q/common.h>
 #include <opencv2/viz/types.hpp>
 #include <opencv2/core/affine.hpp>
-
 #include <opencv2/viz/viz3d.hpp>
 
 namespace temp_viz
 {
-
-
 
 class CV_EXPORTS Viz3d::VizImpl
 {
@@ -61,24 +56,6 @@ public:
           */
     template<typename T> inline boost::signals2::connection registerMouseCallback (void (T::*callback) (const cv::MouseEvent&, void*), T& instance, void* cookie = NULL)
     { return (registerMouseCallback (boost::bind (callback, boost::ref (instance), _1, cookie))); }
-
-    /** \brief Register a callback function for point picking events
-          * \param[in] cb a boost function that will be registered as a callback for a point picking event
-          * \return a connection object that allows to disconnect the callback function.
-          */
-    boost::signals2::connection registerPointPickingCallback (boost::function<void (const cv::PointPickingEvent&)> cb);
-    inline boost::signals2::connection registerPointPickingCallback (void (*callback) (const cv::PointPickingEvent&, void*), void* cookie = NULL)
-    { return (registerPointPickingCallback (boost::bind (callback, _1, cookie))); }
-
-    /** \brief Register a callback function for point picking events
-          * \param[in] callback  the member function that will be registered as a callback for a point picking event
-          * \param[in] instance  instance to the class that implements the callback function
-          * \param[in] cookie    user data that is passed to the callback
-          * \return a connection object that allows to disconnect the callback function.
-          */
-    template<typename T> inline boost::signals2::connection
-    registerPointPickingCallback (void (T::*callback) (const cv::PointPickingEvent&, void*), T& instance, void* cookie = NULL)
-    { return (registerPointPickingCallback (boost::bind (callback, boost::ref (instance), _1, cookie))); }
 
     void spin ();
     void spinOnce (int time = 1, bool force_redraw = false);
@@ -183,18 +160,10 @@ public:
     bool addSphere (const cv::Point3f &center, float radius, const Color& color, const std::string &id = "sphere");
     bool updateSphere (const cv::Point3f &center, float radius, const Color& color, const std::string &id = "sphere");
 
-    /** \brief Add a vtkPolydata as a mesh
-          * \param[in] polydata vtkPolyData
-          * \param[in] id the model id/name (default: "PolyData")
-          */
+    // Add a vtkPolydata as a mesh
     bool addModelFromPolyData (vtkSmartPointer<vtkPolyData> polydata, const std::string & id = "PolyData");
-
-    /** \brief Add a vtkPolydata as a mesh
-          * \param[in] polydata vtkPolyData
-          * \param[in] transform transformation to apply
-          * \param[in] id the model id/name (default: "PolyData")
-          */
     bool addModelFromPolyData (vtkSmartPointer<vtkPolyData> polydata, vtkSmartPointer<vtkTransform> transform, const std::string &id = "PolyData");
+
 
     /** \brief Add a PLYmodel as a mesh
           * \param[in] filename of the ply file
@@ -466,7 +435,7 @@ private:
     bool removeActorFromRenderer (const vtkSmartPointer<vtkActor> &actor);
     bool removeActorFromRenderer (const vtkSmartPointer<vtkProp> &actor);
 
-    void addActorToRenderer (const vtkSmartPointer<vtkProp> &actor);
+    //void addActorToRenderer (const vtkSmartPointer<vtkProp> &actor);
 
 
     /** \brief Internal method. Creates a vtk actor from a vtk polydata object.

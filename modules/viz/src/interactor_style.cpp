@@ -34,12 +34,7 @@ void temp_viz::InteractorStyle::Initialize ()
     snapshot_writer_->SetInputConnection (wif_->GetOutputPort ());
 
     init_ = true;
-
     stereo_anaglyph_mask_default_ = true;
-
-    // Add our own mouse callback before any user callback. Used for accurate point picking.
-    mouse_callback_ = vtkSmartPointer<temp_viz::PointPickingCallback>::New ();
-    AddObserver (vtkCommand::LeftButtonPressEvent, mouse_callback_);
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////
@@ -152,12 +147,6 @@ boost::signals2::connection temp_viz::InteractorStyle::registerMouseCallback (bo
 boost::signals2::connection temp_viz::InteractorStyle::registerKeyboardCallback (boost::function<void (const cv::KeyboardEvent&)> callback)
 {
     return (keyboard_signal_.connect (callback));
-}
-
-//////////////////////////////////////////////////////////////////////////////////////////////
-boost::signals2::connection temp_viz::InteractorStyle::registerPointPickingCallback (boost::function<void (const cv::PointPickingEvent&)> callback)
-{
-    return (point_picking_signal_.connect (callback));
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////

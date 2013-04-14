@@ -143,6 +143,13 @@
 
 
 
+#include <vtkAbstractPicker.h>
+#include <vtkAbstractPropPicker.h>
+#include <vtkPointPicker.h>
+#include <vtkMatrix4x4.h>
+#include <vtkInteractorObserver.h>
+
+
 
 #if defined __GNUC__ && defined __DEPRECATED_DISABLED__
 #define __DEPRECATED

@@ -1,7 +1,7 @@
 #pragma once
 
 #include <string>
-
+#include <opencv2/viz/types.hpp>
 
 namespace cv
 {
@@ -105,41 +105,27 @@ namespace cv
     {
       public:
         PointPickingEvent (int idx);
-        PointPickingEvent (int idx, float x, float y, float z);
-        PointPickingEvent (int idx1, int idx2, float x1, float y1, float z1, float x2, float y2, float z2);
+        PointPickingEvent (int idx, const Vec3d& p);
+        PointPickingEvent (int idx1, int idx2, const Vec3d& p1, const Vec3d& p2);
 
         /** \brief Obtain the ID of a point that the user just clicked on. */
         int getPointIndex () const;
 
-        /** \brief Obtain the XYZ point coordinates of a point that the user just clicked on.
-          * \param[out] x the x coordinate of the point that got selected by the user
-          * \param[out] y the y coordinate of the point that got selected by the user
-          * \param[out] z the z coordinate of the point that got selected by the user
-          */
-        void getPoint (float &x, float &y, float &z) const;
+        /** \brief Obtain the XYZ point coordinates of a point that the user just clicked on. */
+        Vec3d getPoint () const;
 
         /** \brief For situations when multiple points are selected in a sequence, return the point coordinates.
-          * \param[out] x1 the x coordinate of the first point that got selected by the user
-          * \param[out] y1 the y coordinate of the first point that got selected by the user
-          * \param[out] z1 the z coordinate of the firts point that got selected by the user
-          * \param[out] x2 the x coordinate of the second point that got selected by the user
-          * \param[out] y2 the y coordinate of the second point that got selected by the user
-          * \param[out] z2 the z coordinate of the second point that got selected by the user
           * \return true, if two points are available and have been clicked by the user, false otherwise
           */
-        bool getPoints (float &x1, float &y1, float &z1, float &x2, float &y2, float &z2) const;
-
+        bool getPoints (Vec3d& p1, Vec3d& p2) const;
 
         /** \brief For situations where multiple points are selected in a sequence, return the points indices.
-          * \param[out] index_1 index of the first point selected by user
-          * \param[out] index_2 index of the second point selected by user
           * \return true, if two points are available and have been clicked by the user, false otherwise
           */
         bool getPointIndices (int &index_1, int &index_2) const;
       private:
         int idx_, idx2_;
-        float x_, y_, z_;
-        float x2_, y2_, z2_;
+        Vec3d p1, p2;
     };
 
 }
@@ -188,20 +174,18 @@ unsigned int cv::MouseEvent::getY () const { return (pointer_y_); }
 unsigned int cv::MouseEvent::getKeyboardModifiers () const { return key_state_; }
 
 
-inline cv::PointPickingEvent::PointPickingEvent(int idx) : idx_(idx), idx2_(-1), x_(), y_(), z_(), x2_(), y2_(), z2_() {}
-inline cv::PointPickingEvent::PointPickingEvent(int idx, float x, float y, float z) : idx_(idx), idx2_(-1), x_(x), y_(y), z_(z), x2_(), y2_(), z2_() {}
-inline cv::PointPickingEvent::PointPickingEvent(int idx1, int idx2, float x1, float y1, float z1, float x2, float y2, float z2) :
-  idx_(idx1), idx2_(idx2), x_(x1), y_(y1), z_(z1), x2_(x2), y2_(y2), z2_(z2) {}
-
+inline cv::PointPickingEvent::PointPickingEvent(int idx) : idx_(idx), idx2_(-1) {}
+inline cv::PointPickingEvent::PointPickingEvent(int idx, const Vec3d& p) : idx_(idx), idx2_(-1), p1(p) {}
+inline cv::PointPickingEvent::PointPickingEvent(int idx1, int idx2, const Vec3d& _p1, const Vec3d& _p2) :  idx_(idx1), idx2_(idx2), p1(_p1), p2(_p2) {}
 inline int cv::PointPickingEvent::getPointIndex() const { return (idx_); }
-inline void cv::PointPickingEvent::getPoint(float &x, float &y, float &z) const { x = x_; y = y_; z = z_; }
+inline cv::Vec3d cv::PointPickingEvent::getPoint() const { return p1; }
 
-inline bool cv::PointPickingEvent::getPoints(float &x1, float &y1, float &z1, float &x2, float &y2, float &z2) const
+inline bool cv::PointPickingEvent::getPoints(Vec3d& _p1, Vec3d& _p2) const
 {
     if (idx2_ == -1)
         return false;
-    x1 = x_; y1 = y_; z1 = z_;
-    x2 = x2_; y2 = y2_; z2 = z2_;
+    _p1 = p1;
+    _p2 = p2;
     return true;
 }
 

@@ -1,7 +1,6 @@
 #pragma once
 
 #include <q/viz_types.h>
-#include <q/point_picking_event.h>
 #include <opencv2/viz/events.hpp>
 
 namespace temp_viz
@@ -75,11 +74,6 @@ namespace temp_viz
                   */
             boost::signals2::connection registerKeyboardCallback (boost::function<void (const cv::KeyboardEvent&)> cb);
 
-            /** \brief Register a callback function for point picking events
-                  * \param[in] cb a boost function that will be registered as a callback for a point picking event
-                  * \return a connection object that allows to disconnect the callback function.
-                  */
-            boost::signals2::connection registerPointPickingCallback (boost::function<void (const cv::PointPickingEvent&)> cb);
 
             /** \brief Save the current rendered image to disk, as a PNG screenshot.
                   * \param[in] file the name of the PNG file
@@ -121,7 +115,6 @@ namespace temp_viz
 
             boost::signals2::signal<void (const cv::MouseEvent&)> mouse_signal_;
             boost::signals2::signal<void (const cv::KeyboardEvent&)> keyboard_signal_;
-            boost::signals2::signal<void (const cv::PointPickingEvent&)> point_picking_signal_;
 
             /** \brief Interactor style internal method. Gets called whenever a key is pressed. */
             virtual void OnChar ();
@@ -151,12 +144,7 @@ namespace temp_viz
             /** \brief True if we're using red-blue colors for anaglyphic stereo, false if magenta-green. */
             bool stereo_anaglyph_mask_default_;
 
-            /** \brief A VTK Mouse Callback object, used for point picking. */
-            vtkSmartPointer<PointPickingCallback> mouse_callback_;
-
             /** \brief The keyboard modifier to use. Default: Alt. */
             InteractorKeyboardModifier modifier_;
-
-            friend class PointPickingCallback;
         };
 }
