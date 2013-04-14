@@ -22,11 +22,11 @@ using namespace cv;
 //////////////////////////////////////////////////////////////////////////////////////////////
 void temp_viz::InteractorStyle::Initialize ()
 {
-    modifier_ = temp_viz::InteractorStyle::INTERACTOR_KB_MOD_ALT;
+    modifier_ = temp_viz::InteractorStyle::KB_MOD_ALT;
     // Set windows size (width, height) to unknown (-1)
-    win_height_ = win_width_ = -1;
-    win_pos_x_ = win_pos_y_ = 0;
-    max_win_height_ = max_win_width_ = -1;
+    win_size_ = Vec2i(-1, -1);
+    win_pos_ = Vec2i(0, 0);
+    max_win_size_ = Vec2i(-1, -1);
 
     // Create the image filter and PNG writer objects
     wif_ = vtkSmartPointer<vtkWindowToImageFilter>::New ();
@@ -86,17 +86,17 @@ void temp_viz::InteractorStyle::OnChar ()
     bool keymod = false;
     switch (modifier_)
     {
-    case INTERACTOR_KB_MOD_ALT:
+    case KB_MOD_ALT:
     {
         keymod = Interactor->GetAltKey ();
         break;
     }
-    case INTERACTOR_KB_MOD_CTRL:
+    case KB_MOD_CTRL:
     {
         keymod = Interactor->GetControlKey ();
         break;
     }
-    case INTERACTOR_KB_MOD_SHIFT:
+    case KB_MOD_SHIFT:
     {
         keymod = Interactor->GetShiftKey ();
         break;
@@ -175,12 +175,9 @@ temp_viz::InteractorStyle::OnKeyDown ()
     }
 
     // Save the initial windows width/height
-    if (win_height_ == -1 || win_width_ == -1)
-    {
-        int *win_size = Interactor->GetRenderWindow ()->GetSize ();
-        win_height_ = win_size[0];
-        win_width_  = win_size[1];
-    }
+    if (win_size_[0] == -1 || win_size_[1] == -1)
+        win_size_ = Vec2i(Interactor->GetRenderWindow ()->GetSize ());
+
 
     // Get the status of special keys (Cltr+Alt+Shift)
     bool shift = Interactor->GetShiftKey   ();
@@ -190,17 +187,17 @@ temp_viz::InteractorStyle::OnKeyDown ()
     bool keymod = false;
     switch (modifier_)
     {
-    case INTERACTOR_KB_MOD_ALT:
+    case KB_MOD_ALT:
     {
         keymod = alt;
         break;
     }
-    case INTERACTOR_KB_MOD_CTRL:
+    case KB_MOD_CTRL:
     {
         keymod = ctrl;
         break;
     }
-    case INTERACTOR_KB_MOD_SHIFT:
+    case KB_MOD_SHIFT:
     {
         keymod = shift;
         break;
@@ -367,12 +364,12 @@ temp_viz::InteractorStyle::OnKeyDown ()
             temp = Interactor->GetRenderWindow ()->GetSize ();
             int win_size[2]; win_size[0] = temp[0]; win_size[1] = temp[1];
             // Is window size = max?
-            if (win_size[0] == max_win_height_ && win_size[1] == max_win_width_)
+            if (win_size[0] == max_win_size_[0] && win_size[1] == max_win_size_[1])
             {
                 // Set the previously saved 'current' window size
-                Interactor->GetRenderWindow ()->SetSize (win_height_, win_width_);
+                Interactor->GetRenderWindow ()->SetSize (win_size_.val);
                 // Set the previously saved window position
-                Interactor->GetRenderWindow ()->SetPosition (win_pos_x_, win_pos_y_);
+                Interactor->GetRenderWindow ()->SetPosition (win_pos_.val);
                 Interactor->GetRenderWindow ()->Render ();
                 Interactor->Render ();
             }
@@ -380,20 +377,15 @@ temp_viz::InteractorStyle::OnKeyDown ()
             else
             {
                 int *win_pos = Interactor->GetRenderWindow ()->GetPosition ();
-                // Save the current window position
-                win_pos_x_  = win_pos[0];
-                win_pos_y_  = win_pos[1];
-                // Save the current window size
-                win_height_ = win_size[0];
-                win_width_  = win_size[1];
+                win_pos_ = Vec2i(win_pos);
+                win_size_ = Vec2i(win_size);
+
                 // Set the maximum window size
                 Interactor->GetRenderWindow ()->SetSize (scr_size[0], scr_size[1]);
                 Interactor->GetRenderWindow ()->Render ();
                 Interactor->Render ();
                 int *win_size = Interactor->GetRenderWindow ()->GetSize ();
-                // Save the maximum window size
-                max_win_height_ = win_size[0];
-                max_win_width_  = win_size[1];
+                max_win_size_ = Vec2i(win_size);
             }
         }
         else

@@ -32,11 +32,11 @@ namespace temp_viz
         {
         public:
 
-            enum InteractorKeyboardModifier
+            enum KeyboardModifier
             {
-                INTERACTOR_KB_MOD_ALT,
-                INTERACTOR_KB_MOD_CTRL,
-                INTERACTOR_KB_MOD_SHIFT
+                KB_MOD_ALT,
+                KB_MOD_CTRL,
+                KB_MOD_SHIFT
             };
 
             static InteractorStyle *New ();
@@ -82,12 +82,12 @@ namespace temp_viz
 
             /** \brief Change the default keyboard modified from ALT to a different special key.
                   * Allowed values are:
-                  * - INTERACTOR_KB_MOD_ALT
-                  * - INTERACTOR_KB_MOD_CTRL
-                  * - INTERACTOR_KB_MOD_SHIFT
+                  * - KB_MOD_ALT
+                  * - KB_MOD_CTRL
+                  * - KB_MOD_SHIFT
                   * \param[in] modifier the new keyboard modifier
                   */
-            inline void setKeyboardModifier (const InteractorKeyboardModifier &modifier) { modifier_ = modifier; }
+            inline void setKeyboardModifier (const KeyboardModifier &modifier) { modifier_ = modifier; }
         protected:
             /** \brief Set to true after initialization is complete. */
             bool init_;
@@ -100,13 +100,13 @@ namespace temp_viz
             cv::Ptr<CloudActorMap> actors_;
 
             /** \brief The current window width/height. */
-            int win_height_, win_width_;
+            Vec2i win_size_;
 
             /** \brief The current window position x/y. */
-            int win_pos_x_, win_pos_y_;
+            Vec2i win_pos_;
 
             /** \brief The maximum resizeable window width/height. */
-            int max_win_height_, max_win_width_;
+            Vec2i max_win_size_;
 
             /** \brief A PNG writer for screenshot captures. */
             vtkSmartPointer<vtkPNGWriter> snapshot_writer_;
@@ -145,6 +145,6 @@ namespace temp_viz
             bool stereo_anaglyph_mask_default_;
 
             /** \brief The keyboard modifier to use. Default: Alt. */
-            InteractorKeyboardModifier modifier_;
+            KeyboardModifier modifier_;
         };
 }
